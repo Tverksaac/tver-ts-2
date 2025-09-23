@@ -2,17 +2,18 @@ import { Networking } from "@flamework/networking";
 import type { SyncPayload } from "@rbxts/charm-sync";
 import { CharacterInfo } from "../utility/interfaces";
 
-interface ClientToServerEvents {}
+interface ClientToServerEvents {
+	request_sync(): void
+}
 interface ServerToClientEvents {
 	sync(
 		payloads: SyncPayload<{
 			atom: Charm.Atom<CharacterInfo | undefined>;
-		}>[],
+		}, true>[],
 	): void;
 }
 
 interface ClientToServerFunctions {
-	request_sunc(): void
 }
 interface ServerToClientFunctions {}
 

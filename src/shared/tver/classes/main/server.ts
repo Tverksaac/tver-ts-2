@@ -1,15 +1,17 @@
 import Charm, { atom } from "@rbxts/charm"
 import CharmSync from "@rbxts/charm-sync"
-import { ServerEvents } from "shared/tver/network/networking"
+import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/interfaces"
 
-export class Server {
+let server_activated = false
+
+class Server {
     private isActive = false
     private server_atom = atom<Map<Instance, CharacterInfo>>(new Map())
 
     private syncer = CharmSync.server(
         {
-            atoms: {server_atom: this.server_atom}  
+            atoms: {atom: this.server_atom}  
         }
     )
 
@@ -23,9 +25,23 @@ export class Server {
                 }
             >
 
-            const payload_to_send: Payload[] = []
+            print(payloads)
 
+            const payload_to_send: Payload[] = []
             for (const payload of payloads) {}
         })
+
+        ServerEvents.request_sync.connect((player) => {
+            this.syncer.hydrate(player)
+        })
     }
+}
+
+export function CreateServer() {
+    if (server_activated) {
+        error("Server cant be created twice!")
+    }
+
+    server_activated = true
+    return new Server()
 }
