@@ -11,7 +11,9 @@ interface ServerToClientEvents {
 	): void;
 }
 
-interface ClientToServerFunctions {}
+interface ClientToServerFunctions {
+	request_sunc(): void
+}
 interface ServerToClientFunctions {}
 
 export const GlobalFunctions = Networking.createFunction<

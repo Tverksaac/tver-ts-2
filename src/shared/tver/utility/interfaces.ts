@@ -4,4 +4,5 @@ export interface CharacterInstance extends Instance {
 
 export interface CharacterInfo {
     instance: CharacterInstance,
+    id: number
 }
