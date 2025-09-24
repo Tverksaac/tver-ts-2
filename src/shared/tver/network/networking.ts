@@ -1,6 +1,6 @@
 import { Networking } from "@flamework/networking";
 import type { SyncPayload } from "@rbxts/charm-sync";
-import { CharacterInfo } from "../utility/interfaces";
+import { CharacterInfo } from "../utility/_ts_only/interfaces";
 
 interface ClientToServerEvents {
 	request_sync(): void

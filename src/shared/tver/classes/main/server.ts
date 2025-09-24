@@ -1,7 +1,7 @@
 import Charm, { atom } from "@rbxts/charm"
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
-import { CharacterInfo } from "shared/tver/utility/interfaces"
+import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
 
 let server_activated = false
 

@@ -1,6 +1,6 @@
 import Signal from "@rbxts/signal";
 import { config } from "shared/tver";
-import { CharacterInfo, CharacterInstance } from "shared/tver/utility/interfaces";
+import { CharacterInfo, CharacterInstance } from "shared/tver/utility/_ts_only/interfaces";
 import { map_to_array } from "shared/tver/utility/utils";
 
 let _character_id = 0;
