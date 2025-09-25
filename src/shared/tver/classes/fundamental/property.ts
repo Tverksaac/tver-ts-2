@@ -67,8 +67,8 @@ export class SeparatedProperty<T> {
 }
 
 export class ConnectedProperty<
-	Name extends keyof WritableInstanceProperties<ConnectedInstance>,
 	ConnectedInstance extends Instance,
+	Name extends keyof WritableInstanceProperties<ConnectedInstance>,
 > extends SeparatedProperty<ConnectedInstance[Name]> {
 	connected_to: Name;
 	instance: ConnectedInstance;

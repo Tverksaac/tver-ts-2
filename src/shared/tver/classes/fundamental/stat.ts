@@ -63,8 +63,8 @@ export class SeparatedStat {
 }
 
 export class ConnectedStat<
-	Name extends ExtractKeys<WritableInstanceProperties<ConnectedInstance>, number>,
 	ConnectedInstance extends Instance,
+	Name extends ExtractKeys<WritableInstanceProperties<ConnectedInstance>, number>,
 > extends SeparatedStat {
 	instance: ConnectedInstance;
 	conected_to: Name;
