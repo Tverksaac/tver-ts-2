@@ -1,16 +1,13 @@
 import Signal from "@rbxts/signal";
 import { config } from "shared/tver";
 import { CharacterInfo, CharacterInstance } from "shared/tver/utility/_ts_only/interfaces";
-import { map_to_array } from "shared/tver/utility/utils";
+import { get_id, map_to_array } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
 import { CompoundEffect } from "./compound_effect";
-
-let _character_id = 0;
-function _get_id() {
-    _character_id++
-    return _character_id
-}
+import { CustomStatEffect, StrictStatEffect } from "../fundamental/stat_effect";
+import { CustomPropertyEffect, StrictPropertyEffect } from "../fundamental/property_effect";
+import { Affects } from "shared/tver/utility/_ts_only/types";
 
 export class Character {
     private static readonly CharactersMap = new Map<CharacterInstance, Character>()
@@ -28,6 +25,11 @@ export class Character {
     private readonly _custom_properties = [] as (SeparatedProperty<defined> | ConnectedProperty<never, never>)[]
 
     private readonly _effects = [] as CompoundEffect[]
+    private readonly _property_effects = [] as (StrictPropertyEffect<Humanoid, Affects<Humanoid>> | CustomPropertyEffect)[]
+    private readonly _stat_effects = [] as (StrictStatEffect<Humanoid> | CustomStatEffect)[]
+
+    public readonly EffectApplied = new Signal()
+    public readonly EffectRemoved = new Signal()
 
     static GetCharacterFromId(id: number): Character | undefined {
         this.CharactersMap.forEach((character) => {
@@ -59,7 +61,7 @@ export class Character {
             error("Character can't be created on client!")
         }
 
-        this.id = _get_id()
+        this.id = get_id()
         this.instance = from_instance
         this.humanoid = this.instance.Humanoid
 
@@ -80,6 +82,10 @@ export class Character {
         Character.CharacterRemoved.Fire(this)
 
         Character.CharactersMap.delete(this.instance)
+    }
+
+    public ApplyEffect<Effect extends CompoundEffect>(effect_to_apply: Effect) {
+        
     }
 
     public GetAppliedEffects(): CompoundEffect[] {
