@@ -11,7 +11,7 @@ export class Stun extends CompoundEffect {
     public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[];
 
     constructor (_duration: number) {
-        super()
+        super("Stun")
         this.duration = _duration
 
         this.PropertyEffects = [

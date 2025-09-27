@@ -4,10 +4,11 @@ import { CharacterInfo, CharacterInstance } from "shared/tver/utility/_ts_only/i
 import { get_id, map_to_array } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
-import { CompoundEffect } from "./compound_effect";
+import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../fundamental/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../fundamental/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
+import { effect } from "@rbxts/charm";
 
 export class Character {
     private static readonly CharactersMap = new Map<CharacterInstance, Character>()
@@ -24,7 +25,7 @@ export class Character {
     private readonly _custom_stats = [] as (SeparatedStat | ConnectedStat<never, never>)[]
     private readonly _custom_properties = [] as (SeparatedProperty<defined> | ConnectedProperty<never, never>)[]
 
-    private readonly _effects = [] as CompoundEffect[]
+    private readonly _effects = [] as AppliedCompoundEffect[]
     private readonly _property_effects = [] as (StrictPropertyEffect<Humanoid, Affects<Humanoid>> | CustomPropertyEffect)[]
     private readonly _stat_effects = [] as (StrictStatEffect<Humanoid> | CustomStatEffect)[]
 
@@ -84,12 +85,24 @@ export class Character {
         Character.CharactersMap.delete(this.instance)
     }
 
-    public ApplyEffect<Effect extends CompoundEffect>(effect_to_apply: Effect) {
-        
+    public ApplyEffect(effect_to_apply: CompoundEffect) {
+        const applied_effect = effect_to_apply.ApplyTo(this)
+
+        this._effects.push(applied_effect)
     }
 
-    public GetAppliedEffects(): CompoundEffect[] {
-        return this._effects
+    public GetAppliedEffectsMap(): Map<string, AppliedCompoundEffect> {
+       const map = new Map<string, AppliedCompoundEffect>
+
+       this._effects.forEach((effect) => {
+        map.set(effect.name, effect)
+       })
+
+       return map
+    }
+
+    public GetAppliedEffectsArray(): Array<AppliedCompoundEffect> {
+        return map_to_array(this.GetAppliedEffectsMap())
     }
 
     public GetCharacterInfo() {
