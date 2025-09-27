@@ -9,5 +9,9 @@ export class AutoRotateEffect extends StrictPropertyEffect<Humanoid, "AutoRotate
 
         this.duration = _dur
         this.strength = _str
+        
+        this.OnClientEnd = () => {
+            print("ended")
+        }
     }
 }
