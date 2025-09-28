@@ -90,7 +90,7 @@ export class Character {
         Character.CharacterAdded.Fire(this) 
     }
     // @internal //
-    private _update_effects_arrays() {
+    private _update_effects_maps() {
         const effects = this.GetAppliedEffectsMap()
 
         effects.forEach((effect, key) => {
@@ -112,6 +112,10 @@ export class Character {
         const calculated = new Map<string, {Affects: string, Strength: unknown, Priority: number}>()
 
         this._property_effects.forEach((effect) => {
+            if (effect.GetState() !== "On") {
+                return
+            }
+
             let member = calculated.get(effect.Affects)
 
             if (member) {} else {
@@ -136,6 +140,10 @@ export class Character {
         const calculated = new Map<string, {Affects: string, Raw: number, Modifer: number}>()
 
         this._stat_effects.forEach((effect) => {
+            if (effect.GetState() !== "On") {
+                return
+            }
+
             let member = calculated.get(effect.Affects)
             const effect_type = effect.EffectType
 
@@ -218,7 +226,7 @@ export class Character {
     }
 
     private _handle_effects() {
-        this._update_effects_arrays()
+        this._update_effects_maps()
         this._update_stats()
         this._update_properties()
     }

@@ -1,3 +1,5 @@
+import { effect } from "@rbxts/charm";
+import { Effect } from "../fundamental/effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../fundamental/property_effect"
 import {CustomStatEffect, StrictStatEffect } from "../fundamental/stat_effect"
 import { Character } from "./character";
@@ -40,21 +42,58 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this._state = "Ready"
     }
 
+    private for_each_effect(callback: (effect: Effect) => void) {
+        this.StatEffects.forEach(callback)
+        this.PropertyEffects.forEach(callback)
+    }
+
     public Start() {
+        if (this._state !== "Ready") {
+            warn(this + " Effect cant be started twice!")
+            return
+        }
 
         this._state = "On"
+
+        this.for_each_effect((effect) => {
+            effect.Start()
+        })
     }
     public Resume() {
+        if (this._state === "Ended") {
+            warn(this + " is already ended!")
+            return
+        }
 
         this._state = "On"
+
+        this.for_each_effect((effect) => {
+            effect.Resume()
+        })
     }
     public Stop() {
+        if (this._state === "Ended") {
+            warn(this + " is already ended!")
+            return
+        }
 
         this._state = "Off"
+
+        this.for_each_effect((effect) => {
+            effect.Stop()
+        })
     }
     public End() {
+        if (this._state === "Ended") {
+            warn(this + " is already ended!")
+            return
+        }
 
         this._state = "Ended"
+
+        this.for_each_effect((effect) => {
+            effect.End()
+        })
     }
 
     public GetState() {
