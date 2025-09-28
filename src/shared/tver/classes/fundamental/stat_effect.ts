@@ -8,27 +8,27 @@ abstract class StatEffect extends Effect {
 }
 
 export abstract class StrictStatEffect<ConnectedInstance extends Instance> extends StatEffect{
-    public readonly affects: AffectType<ConnectedInstance>
+    public readonly Affects: AffectType<ConnectedInstance>
 
-    public abstract readonly duration: number
-    public abstract readonly strength: number
-    public abstract readonly effect_type: EffectType
+    public abstract readonly Duration: number
+    public abstract readonly Strength: number
+    public abstract readonly EffectType: EffectType
 
     constructor (_affects: AffectType<ConnectedInstance>) {
         super()
-        this.affects = _affects
+        this.Affects = _affects
     }
 }
 
 export abstract class CustomStatEffect extends StatEffect {
-    public readonly affects: string
+    public readonly Affects: string
 
-    public abstract readonly duration: number
-    public abstract readonly strength: number
-    public abstract readonly effect_type: EffectType
+    public abstract readonly Duration: number
+    public abstract readonly Strength: number
+    public abstract readonly EffectType: EffectType
 
     constructor (_affects: string) {
         super()
-        this.affects = _affects
+        this.Affects = _affects
     }
 }

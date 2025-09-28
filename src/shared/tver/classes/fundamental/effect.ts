@@ -1,9 +1,9 @@
 import { Timer } from "@rbxts/timer"
 
 export abstract class Effect {
-    public abstract readonly affects: unknown
-    public abstract readonly duration: number
-    public abstract readonly strength: unknown
+    public abstract readonly Affects: unknown
+    public abstract readonly Duration: number
+    public abstract readonly Strength: unknown
 
     public readonly _timer = new Timer(0)
 

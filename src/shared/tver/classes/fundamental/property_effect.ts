@@ -4,32 +4,35 @@ import { Affects, Strength } from "shared/tver/utility/_ts_only/types"
 import { Effect } from "./effect"
 
 abstract class PropertyEffect extends Effect {
-    public abstract priority?: number
+    public abstract Priority?: number
 
     public SetPriority(new_priority: number) {
-        this.priority = new_priority
+        this.Priority = new_priority
     }
 }
 
 export abstract class StrictPropertyEffect<ConnectedInstance extends Instance, Name extends Affects<ConnectedInstance>> extends PropertyEffect {
-    public readonly affects: Affects<ConnectedInstance>
+    public readonly Affects: Affects<ConnectedInstance>
 
-    public abstract readonly duration: number
-    public abstract readonly strength: Strength<ConnectedInstance, Name>
-    public readonly priority?: number
+    public abstract readonly Duration: number
+    public abstract readonly Strength: Strength<ConnectedInstance, Name>
+    public readonly Priority?: number
 
     constructor (affects: Affects<ConnectedInstance>) {
         super()
-        this.affects = affects
+        this.Affects = affects
     }
 }
 
 export abstract class CustomPropertyEffect extends PropertyEffect{
-    public readonly affects: string
-    public readonly priority?: number
+    public readonly Affects: string
+    
+    public abstract readonly Duration: number;
+    public abstract readonly Strength: defined;
+    public abstract readonly Priority?: number
 
     constructor (affects: string) {
         super()
-        this.affects = affects
+        this.Affects = affects
     }
 }

@@ -29,6 +29,8 @@ export class Character {
     private readonly _property_effects = [] as (StrictPropertyEffect<Humanoid, Affects<Humanoid>> | CustomPropertyEffect)[]
     private readonly _stat_effects = [] as (StrictStatEffect<Humanoid> | CustomStatEffect)[]
 
+    private readonly _effect_changed = new Signal()
+
     public readonly EffectApplied = new Signal()
     public readonly EffectRemoved = new Signal()
 
@@ -79,11 +81,79 @@ export class Character {
         Character.CharactersMap.set(this.instance, this)
         Character.CharacterAdded.Fire(this) 
     }
-    public Destroy() {
-        Character.CharacterRemoved.Fire(this)
+    // @internal //
+    private update_effects_arrays() {
+        const effects = this.GetAppliedEffectsMap()
 
-        Character.CharactersMap.delete(this.instance)
+        effects.forEach((effect, key) => {
+            if (effect.GetState() === "Ended") return
+
+            this._stat_effects.clear()
+            this._property_effects.clear()
+
+            effect.StatEffects.forEach((stat_effect) => {
+                this._stat_effects.push(stat_effect)
+            })
+            effect.PropertyEffects.forEach((property_effect) => {
+                this._property_effects.push(property_effect)
+            })
+        })
     }
+
+    private calculate_property_effects() {
+        const calculated = new Map<string, {Affects: string, Strength: unknown, Priority: number}>()
+
+        this._property_effects.forEach((effect) => {
+            let member = calculated.get(effect.Affects)
+
+            if (member) {} else {
+                member = {
+                    Affects: effect.Affects,
+                    Strength: effect.Strength,
+                    Priority: effect.Priority || 1
+                }
+            }
+
+            if (effect.Priority || 1 > member.Priority) {
+                member.Priority = effect.Priority || 1
+                member.Strength = effect.Strength
+            }
+
+            calculated.set(member.Affects, member)
+        })
+
+        return calculated as Map<string, {Affects: string, Strength: unknown, Priority: number}>
+    }
+    private calculate_stat_effects() {
+        const calculated = new Map<string, {Affects: string, Raw: number, Modifer: number}>()
+
+        this._stat_effects.forEach((effect) => {
+            let member = calculated.get(effect.Affects)
+            const effect_type = effect.EffectType
+
+            if (member) {} else {
+                member = {
+                    Affects: effect.Affects,
+                    Raw: 0,
+                    Modifer: 1
+                }
+            }
+
+            if (effect_type === "Modifer") {
+                member.Modifer = member.Modifer * effect.Strength
+            } else if (effect_type == "Raw") {
+                member.Raw = member.Raw + effect.Strength
+             } else {
+                 error(effect + " have wrong effect type property! /n Should be 'Raw' or 'Modifer' but have: " + effect.EffectType)
+            }
+
+            calculated.set(member.Affects, member)
+        })
+
+        return calculated
+    }
+
+    private handle_effects() {}
 
     public ApplyEffect(effect_to_apply: CompoundEffect) {
         const applied_effect = effect_to_apply.ApplyTo(this)
@@ -92,10 +162,10 @@ export class Character {
     }
 
     public GetAppliedEffectsMap(): Map<string, AppliedCompoundEffect> {
-       const map = new Map<string, AppliedCompoundEffect>
+       const map = new Map<string, AppliedCompoundEffect>()
 
        this._effects.forEach((effect) => {
-        map.set(effect.name, effect)
+        map.set(effect.Name, effect)
        })
 
        return map
@@ -112,5 +182,11 @@ export class Character {
         info.id = this.id
 
         return info
+    }
+
+    public Destroy() {
+        Character.CharacterRemoved.Fire(this)
+
+        Character.CharactersMap.delete(this.instance)
     }
 }

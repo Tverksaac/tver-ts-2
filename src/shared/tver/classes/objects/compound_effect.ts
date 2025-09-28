@@ -3,14 +3,14 @@ import {CustomStatEffect, StrictStatEffect } from "../fundamental/stat_effect"
 import { Character } from "./character";
 
 export abstract class CompoundEffect {
-    public readonly name: string
-    public abstract readonly duration: number;
+    public readonly Name: string
+    public abstract readonly Duration: number;
 
     public abstract readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]
     public abstract readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[]
 
     constructor (_name: string) {
-        this.name = _name
+        this.Name = _name
     }
 
     public ApplyTo(to: Character) {
@@ -19,25 +19,45 @@ export abstract class CompoundEffect {
 }
 
 export class AppliedCompoundEffect extends CompoundEffect{
-    public duration: number;
+    public Duration: number;
     public StatEffects: (StrictStatEffect<never> | CustomStatEffect)[];
     public PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[];
+
+    private _state: "Ready" | "On" | "Off" | "Ended"
 
     public readonly InheritsFrom: CompoundEffect
     public readonly CarrierID: number
 
     constructor (from: CompoundEffect, to: Character) {
-        super(from.name)
+        super(from.Name)
         this.InheritsFrom = from
         this.CarrierID = to.id
 
-        this.duration = from.duration
+        this.Duration = from.Duration
         this.StatEffects = from.StatEffects
         this.PropertyEffects = from.PropertyEffects
+        
+        this._state = "Ready"
     }
 
-    public Start() {}
-    public Resume() {}
-    public Stop() {}
-    public End() {}
+    public Start() {
+
+        this._state = "On"
+    }
+    public Resume() {
+
+        this._state = "On"
+    }
+    public Stop() {
+
+        this._state = "Off"
+    }
+    public End() {
+
+        this._state = "Ended"
+    }
+
+    public GetState() {
+        return this._state
+    }
 }
