@@ -8,7 +8,6 @@ import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../fundamental/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../fundamental/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
-import { effect } from "@rbxts/charm";
 
 export class Character {
     private static readonly CharactersMap = new Map<CharacterInstance, Character>()
@@ -20,10 +19,10 @@ export class Character {
     public readonly humanoid: Humanoid
     public readonly id: number
 
-    private readonly _stats = [] as ConnectedStat<Humanoid, ExtractKeys<WritableInstanceProperties<Humanoid>, number>>[]
-    private readonly _properties = [] as ConnectedProperty<Humanoid, WritablePropertyNames<InstanceProperties<Humanoid>>>[]
-    private readonly _custom_stats = [] as (SeparatedStat | ConnectedStat<never, never>)[]
-    private readonly _custom_properties = [] as (SeparatedProperty<defined> | ConnectedProperty<never, never>)[]
+    private readonly _stats = new Map<string, (ConnectedStat<Humanoid, ExtractKeys<WritableInstanceProperties<Humanoid>, number>>)>()
+    private readonly _properties = new Map<string, (ConnectedProperty<Humanoid, WritablePropertyNames<InstanceProperties<Humanoid>>>)>()
+    private readonly _custom_stats = new Map<string, (SeparatedStat | ConnectedStat<never, never>)>()
+    private readonly _custom_properties = new Map<string, (SeparatedProperty<defined> | ConnectedProperty<never, never>)>()
 
     private readonly _effects = [] as AppliedCompoundEffect[]
     private readonly _property_effects = [] as (StrictPropertyEffect<Humanoid, Affects<Humanoid>> | CustomPropertyEffect)[]
@@ -69,20 +68,29 @@ export class Character {
         this.humanoid = this.instance.Humanoid
 
         //Setup Basic Stats & Properties
-        this._stats = [
+        //IMPORTANT: Name of property/stat should be same as what it affects
+        const _stats = [
             new ConnectedStat<Humanoid, "Health">("Health", 100, this.humanoid, "Health"),
             new ConnectedStat<Humanoid, "WalkSpeed">("WalkSpeed", 16, this.humanoid, "WalkSpeed"),
             new ConnectedStat<Humanoid, "JumpHeight">("JumpHeight", 7.2, this.humanoid, "JumpHeight")
         ]
-        this._properties = [
+        const _properties = [
             new ConnectedProperty<Humanoid, "AutoRotate">("AutoRotate", true, this.humanoid, "AutoRotate", true)
         ]
 
+        _stats.forEach((stat) => {
+            this._stats.set(stat.name, stat)
+        })
+        _properties.forEach((prop) => {
+            this._properties.set(prop.name, prop)
+        })
+
+        //init
         Character.CharactersMap.set(this.instance, this)
         Character.CharacterAdded.Fire(this) 
     }
     // @internal //
-    private update_effects_arrays() {
+    private _update_effects_arrays() {
         const effects = this.GetAppliedEffectsMap()
 
         effects.forEach((effect, key) => {
@@ -100,7 +108,7 @@ export class Character {
         })
     }
 
-    private calculate_property_effects() {
+    private _calculate_property_effects() {
         const calculated = new Map<string, {Affects: string, Strength: unknown, Priority: number}>()
 
         this._property_effects.forEach((effect) => {
@@ -124,7 +132,7 @@ export class Character {
 
         return calculated as Map<string, {Affects: string, Strength: unknown, Priority: number}>
     }
-    private calculate_stat_effects() {
+    private _calculate_stat_effects() {
         const calculated = new Map<string, {Affects: string, Raw: number, Modifer: number}>()
 
         this._stat_effects.forEach((effect) => {
@@ -144,7 +152,7 @@ export class Character {
             } else if (effect_type === "Raw") {
                 member.Raw = member.Raw + effect.Strength
              } else {
-                 error(effect + " have wrong effect type property! /n Should be 'Raw' or 'Modifer' but have: " + effect.EffectType)
+                 error(effect + " have wrong effect type property! /n Should be 'Raw' or 'Modifer' but have value of: " + effect.EffectType)
             }
 
             calculated.set(member.Affects, member)
@@ -153,7 +161,67 @@ export class Character {
         return calculated
     }
 
-    private handle_effects() {}
+    private _update_stats() {
+        const calculated = this._calculate_stat_effects()
+
+        calculated.forEach((stat, key) => {
+            let stat_to_affect
+            stat_to_affect = this._stats.get(stat.Affects)
+
+            if (stat_to_affect) {
+                //stat to affect is innate stat
+                stat_to_affect.Bonus.Modifer.Set(stat.Modifer)
+                stat_to_affect.Bonus.Raw.Set(stat.Raw)               
+            } else {
+                stat_to_affect = this._custom_stats.get(stat.Affects)
+
+                if (stat_to_affect) {
+                    //stat to affect is custom stat
+                    stat_to_affect.Bonus.Modifer.Set(stat.Modifer)
+                    stat_to_affect.Bonus.Raw.Set(stat.Raw)  
+                } else {
+                    error(stat + " Cant affect any of stats becuase theres no stat with name: " + stat.Affects)
+                } 
+            }
+        })
+    }
+    private _update_properties() {
+        const calculated = this._calculate_property_effects()
+
+        calculated.forEach((prop, key) => {
+            let prop_to_affect
+            prop_to_affect = this._properties.get(prop.Affects)
+
+            if (prop_to_affect) {
+                //property to affect is innate property
+                if (typeOf(prop.Strength) === typeOf(prop_to_affect.Get())) {
+                    prop_to_affect.Set(prop.Strength as never)
+                } else {
+                    error(prop + " Have wrong Strength value! /n Cant assign " + typeOf(prop.Strength) + "to " + typeOf(prop_to_affect.Get()))
+                }
+                
+            } else {
+                prop_to_affect = this._custom_properties.get(prop.Affects)
+
+                if (prop_to_affect) {
+                    //property to affect is custom added property
+                    if (typeOf(prop.Strength) === typeOf(prop_to_affect.Get())) {
+                        prop_to_affect.Set(prop.Strength as never)
+                    } else {
+                        error(prop + " Have wrong Strength value! /n Cant assign " + typeOf(prop.Strength) + "to " + typeOf(prop_to_affect.Get()))
+                    }
+                } else {
+                    error(prop + " Cant affect any of properties becuase theres no property with name: " + prop.Affects)
+                }
+            }
+        })
+    }
+
+    private _handle_effects() {
+        this._update_effects_arrays()
+        this._update_stats()
+        this._update_properties()
+    }
 
     public ApplyEffect(effect_to_apply: CompoundEffect) {
         const applied_effect = effect_to_apply.ApplyTo(this)
