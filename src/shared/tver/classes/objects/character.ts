@@ -141,7 +141,7 @@ export class Character {
 
             if (effect_type === "Modifer") {
                 member.Modifer = member.Modifer * effect.Strength
-            } else if (effect_type == "Raw") {
+            } else if (effect_type === "Raw") {
                 member.Raw = member.Raw + effect.Strength
              } else {
                  error(effect + " have wrong effect type property! /n Should be 'Raw' or 'Modifer' but have: " + effect.EffectType)
