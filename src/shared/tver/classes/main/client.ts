@@ -23,7 +23,7 @@ class Client {
     }
 }
 
-export function Create() {
+export function CreateClient() {
     if (client_activated) {
         error("Client already created")
     }
