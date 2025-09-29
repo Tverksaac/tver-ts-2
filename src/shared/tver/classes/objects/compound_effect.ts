@@ -1,10 +1,9 @@
-import { effect, StateOf } from "@rbxts/charm";
 import { Effect } from "../fundamental/effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../fundamental/property_effect"
 import {CustomStatEffect, StrictStatEffect } from "../fundamental/stat_effect"
 import { Character } from "./character";
-import Signal from "@rbxts/signal";
 import { EffectState } from "shared/tver/utility/_ts_only/types";
+import { StateMachine } from "../fundamental/state_machine";
 
 export abstract class CompoundEffect {
     public readonly Name: string
@@ -28,12 +27,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
     public StatEffects: (StrictStatEffect<never> | CustomStatEffect)[];
     public PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[];
 
-    private _state: EffectState = "Ready"
+    public readonly state = new StateMachine<[EffectState]>()
 
     public readonly InheritsFrom: CompoundEffect
     public readonly CarrierID: number
-
-    public readonly StateChanged = new Signal<(new_state: EffectState, prev_state: EffectState) => void>()
 
     constructor (from: CompoundEffect, to: Character) {
         super(from.Name)
@@ -49,65 +46,53 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.StatEffects.forEach(callback)
         this.PropertyEffects.forEach(callback)
     }
-    private _set_state(to: EffectState) {
-        if (this._state === to) return
-
-        const _prev = this._state
-        this._state = to
-
-        this.StateChanged.Fire(this._state, _prev)
-    }
 
     public Start() {
-        if (this._state !== "Ready") {
+        if (this.state.GetState() !== "Ready") {
             warn(this + " Effect cant be started twice!")
             return
         }
 
-        this._set_state("On")
+        this.state.SetState("On")
 
         this.for_each_effect((effect) => {
             effect.Start()
         })
     }
     public Resume() {
-        if (this._state === "Ended") {
+        if (this.state.GetState() === "Ended") {
             warn(this + " is already ended!")
             return
         }
 
-        this._set_state("On")
+        this.state.SetState("On")
 
         this.for_each_effect((effect) => {
             effect.Resume()
         })
     }
     public Stop() {
-        if (this._state === "Ended") {
+        if (this.state.GetState() === "Ended") {
             warn(this + " is already ended!")
             return
         }
 
-        this._set_state("Off")
+        this.state.SetState("Off")
 
         this.for_each_effect((effect) => {
             effect.Stop()
         })
     }
     public End() {
-        if (this._state === "Ended") {
+        if (this.state.GetState() === "Ended") {
             warn(this + " is already ended!")
             return
         }
 
-        this._set_state("Ended")
+        this.state.SetState("Ended")
 
         this.for_each_effect((effect) => {
             effect.End()
         })
-    }
-
-    public GetState() {
-        return this._state
     }
 }

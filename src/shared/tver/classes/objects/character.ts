@@ -94,7 +94,7 @@ export class Character {
         const effects = this.GetAppliedEffectsMap()
 
         effects.forEach((effect, key) => {
-            if (effect.GetState() === "Ended") return
+            if (effect.state.GetState() === "Ended") return
 
             this._stat_effects.clear()
             this._property_effects.clear()
