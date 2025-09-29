@@ -1,5 +1,5 @@
-import { CustomPropertyEffect, StrictPropertyEffect } from "../classes/fundamental/property_effect";
-import { CustomStatEffect, StrictStatEffect } from "../classes/fundamental/stat_effect";
+import { CustomPropertyEffect, StrictPropertyEffect } from "../classes/intermediate/property_effect";
+import { CustomStatEffect, StrictStatEffect } from "../classes/intermediate/stat_effect";
 import { CompoundEffect } from "../classes/objects/compound_effect";
 import { AutoRotateEffect } from "./property_effect_classes";
 import { JumpHeightEffect} from "./stat_effect_classes";

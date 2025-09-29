@@ -1,6 +1,6 @@
-import { Effect } from "../fundamental/effect";
-import { CustomPropertyEffect, StrictPropertyEffect } from "../fundamental/property_effect"
-import {CustomStatEffect, StrictStatEffect } from "../fundamental/stat_effect"
+import { Effect } from "../intermediate/effect";
+import { CustomPropertyEffect, StrictPropertyEffect } from "../intermediate/property_effect"
+import {CustomStatEffect, StrictStatEffect } from "../intermediate/stat_effect"
 import { Character } from "./character";
 import { EffectState } from "shared/tver/utility/_ts_only/types";
 import { StateMachine } from "../fundamental/state_machine";

@@ -5,8 +5,8 @@ import { get_id, map_to_array } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
 import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
-import { CustomStatEffect, StrictStatEffect } from "../fundamental/stat_effect";
-import { CustomPropertyEffect, StrictPropertyEffect } from "../fundamental/property_effect";
+import { CustomStatEffect, StrictStatEffect } from "../intermediate/stat_effect";
+import { CustomPropertyEffect, StrictPropertyEffect } from "../intermediate/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
 
 export class Character {

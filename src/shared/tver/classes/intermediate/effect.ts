@@ -1,7 +1,7 @@
 import Signal from "@rbxts/signal"
 import { Timer } from "@rbxts/timer"
 import { EffectState } from "shared/tver/utility/_ts_only/types"
-import { StateMachine } from "./state_machine"
+import { StateMachine } from "../fundamental/state_machine"
 
 export abstract class Effect {
     public abstract readonly Affects: unknown

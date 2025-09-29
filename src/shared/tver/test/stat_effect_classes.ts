@@ -1,4 +1,4 @@
-import { StrictStatEffect } from "../classes/fundamental/stat_effect";
+import { StrictStatEffect } from "../classes/intermediate/stat_effect";
 
 export class JumpHeightEffect extends StrictStatEffect<Humanoid> {
     public readonly Duration: number;
