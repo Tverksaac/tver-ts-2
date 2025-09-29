@@ -1,8 +1,10 @@
-import { effect } from "@rbxts/charm";
+import { effect, StateOf } from "@rbxts/charm";
 import { Effect } from "../fundamental/effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../fundamental/property_effect"
 import {CustomStatEffect, StrictStatEffect } from "../fundamental/stat_effect"
 import { Character } from "./character";
+import Signal from "@rbxts/signal";
+import { EffectState } from "shared/tver/utility/_ts_only/types";
 
 export abstract class CompoundEffect {
     public readonly Name: string
@@ -20,15 +22,18 @@ export abstract class CompoundEffect {
     }
 }
 
+
 export class AppliedCompoundEffect extends CompoundEffect{
     public Duration: number;
     public StatEffects: (StrictStatEffect<never> | CustomStatEffect)[];
     public PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[];
 
-    private _state: "Ready" | "On" | "Off" | "Ended"
+    private _state: EffectState = "Ready"
 
     public readonly InheritsFrom: CompoundEffect
     public readonly CarrierID: number
+
+    public readonly StateChanged = new Signal<(new_state: EffectState, prev_state: EffectState) => void>()
 
     constructor (from: CompoundEffect, to: Character) {
         super(from.Name)
@@ -38,13 +43,19 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.Duration = from.Duration
         this.StatEffects = from.StatEffects
         this.PropertyEffects = from.PropertyEffects
-        
-        this._state = "Ready"
     }
 
     private for_each_effect(callback: (effect: Effect) => void) {
         this.StatEffects.forEach(callback)
         this.PropertyEffects.forEach(callback)
+    }
+    private _set_state(to: EffectState) {
+        if (this._state === to) return
+
+        const _prev = this._state
+        this._state = to
+
+        this.StateChanged.Fire(this._state, _prev)
     }
 
     public Start() {
@@ -53,7 +64,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             return
         }
 
-        this._state = "On"
+        this._set_state("On")
 
         this.for_each_effect((effect) => {
             effect.Start()
@@ -65,7 +76,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             return
         }
 
-        this._state = "On"
+        this._set_state("On")
 
         this.for_each_effect((effect) => {
             effect.Resume()
@@ -77,7 +88,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             return
         }
 
-        this._state = "Off"
+        this._set_state("Off")
 
         this.for_each_effect((effect) => {
             effect.Stop()
@@ -89,7 +100,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             return
         }
 
-        this._state = "Ended"
+        this._set_state("Ended")
 
         this.for_each_effect((effect) => {
             effect.End()

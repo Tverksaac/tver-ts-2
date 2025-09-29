@@ -112,7 +112,7 @@ export class Character {
         const calculated = new Map<string, {Affects: string, Strength: unknown, Priority: number}>()
 
         this._property_effects.forEach((effect) => {
-            if (effect.GetState() !== "On") {
+            if (effect.state.GetState() !== "On") {
                 return
             }
 
@@ -140,7 +140,7 @@ export class Character {
         const calculated = new Map<string, {Affects: string, Raw: number, Modifer: number}>()
 
         this._stat_effects.forEach((effect) => {
-            if (effect.GetState() !== "On") {
+            if (effect.state.GetState() !== "On") {
                 return
             }
 

@@ -1,5 +1,7 @@
+import Signal from "@rbxts/signal"
 import { Timer } from "@rbxts/timer"
 import { EffectState } from "shared/tver/utility/_ts_only/types"
+import { StateMachine } from "./state_machine"
 
 export abstract class Effect {
     public abstract readonly Affects: unknown
@@ -8,7 +10,7 @@ export abstract class Effect {
 
     private readonly _timer = new Timer(0)
 
-    private _state: EffectState = "Ready"
+    public readonly state = new StateMachine<[EffectState]>
 
     protected OnClientStart?: () => void = () => {}
     protected OnServerStart?: () => void = () => {}
@@ -21,10 +23,7 @@ export abstract class Effect {
         return this._timer.getTimeLeft()
     }
     public IsActive() {
-        return this._state !== "Ended" && this._state !== "Ready"
-    }
-    public GetState() {
-        return this._state
+        return this.state.GetState() !== "Ended" && this.state.GetState() !== "Ready"
     }
 
     public Start() {
@@ -33,7 +32,7 @@ export abstract class Effect {
             return
         }
 
-        this._state = "On"
+        this.state.SetState("On")
 
         this._timer.setLength(this.Duration)
         this._timer.start()
@@ -44,7 +43,7 @@ export abstract class Effect {
             return
         }
 
-        this._state = "On"
+        this.state.SetState("On")
 
         this._timer.resume()
     }
@@ -54,7 +53,7 @@ export abstract class Effect {
             return
         }
 
-        this._state = "Off"
+        this.state.SetState("Off")
 
         this._timer.pause()
     }
@@ -63,7 +62,7 @@ export abstract class Effect {
             warn(this + " is not active, cant end!")
         }
 
-        this._state = "Ended"
+        this.state.SetState("Ended")
 
         this._timer.stop()
     }
