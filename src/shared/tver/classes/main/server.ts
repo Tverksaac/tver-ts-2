@@ -5,36 +5,16 @@ import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
 import { client_atom } from "shared/tver/utility/shared"
 import { is_server_context } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
+import { Players } from "@rbxts/services"
 
 let server_activated = false
 
 class Server {
     private isActive = false
-    private server_atom = atom<Map<Instance, CharacterInfo>>(new Map())
-
-    private syncer = CharmSync.server(
-        {
-            atoms: {atom: this.server_atom}  
-        }
-    )
 
     constructor () {}
 
     public Start() {
-        this.syncer.connect((player, ...payloads) => {
-            type Payload = CharmSync.SyncPayload<
-                {
-                    server_atom: Charm.Atom<CharacterInfo | undefined>
-                }
-            >
-
-            const payload_to_send: Payload[] = []
-            for (const payload of payloads) {}
-        })
-
-        ServerEvents.request_sync.connect((player) => {
-            this.syncer.hydrate(player)
-        })
     }
 }
 
