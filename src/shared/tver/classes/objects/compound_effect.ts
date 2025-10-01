@@ -1,9 +1,10 @@
-import { Effect } from "../intermediate/effect";
-import { CustomPropertyEffect, StrictPropertyEffect } from "../intermediate/property_effect"
-import {CustomStatEffect, StrictStatEffect } from "../intermediate/stat_effect"
+import { Effect } from "../core/effect";
+import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect"
+import {CustomStatEffect, StrictStatEffect } from "../core/stat_effect"
 import { Character } from "./character";
 import { EffectState } from "shared/tver/utility/_ts_only/types";
 import { StateMachine } from "../fundamental/state_machine";
+import { get_id } from "shared/tver/utility/utils";
 
 export abstract class CompoundEffect {
     public readonly Name: string
@@ -28,6 +29,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
     public PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[];
 
     public readonly state = new StateMachine<[EffectState]>()
+    public readonly id = get_id()
 
     public readonly InheritsFrom: CompoundEffect
     public readonly CarrierID: number

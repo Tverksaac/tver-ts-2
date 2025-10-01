@@ -1,4 +1,4 @@
-import { StrictPropertyEffect } from "../classes/intermediate/property_effect";
+import { StrictPropertyEffect } from "../classes/core/property_effect";
 
 export class AutoRotateEffect extends StrictPropertyEffect<Humanoid, "AutoRotate"> {
     public Duration: number;

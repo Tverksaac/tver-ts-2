@@ -1,21 +1,21 @@
 import Signal from "@rbxts/signal";
 import { config } from "shared/tver";
-import { CharacterInfo, CharacterInstance } from "shared/tver/utility/_ts_only/interfaces";
-import { get_id, map_to_array } from "shared/tver/utility/utils";
+import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces";
+import { get_id, is_server_context, map_to_array, setup_humanoid } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
 import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
-import { CustomStatEffect, StrictStatEffect } from "../intermediate/stat_effect";
-import { CustomPropertyEffect, StrictPropertyEffect } from "../intermediate/property_effect";
+import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
+import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
 
 export class Character {
-    private static readonly CharactersMap = new Map<CharacterInstance, Character>()
+    private static readonly CharactersMap = new Map<Instance, Character>()
 
     public static readonly CharacterAdded = new Signal<(Character: Character) => void>
     public static readonly CharacterRemoved = new Signal<(Character: Character) => void>
 
-    public readonly instance: CharacterInstance
+    public readonly instance: Instance
     public readonly humanoid: Humanoid
     public readonly id: number
 
@@ -41,7 +41,7 @@ export class Character {
         })
         return undefined
     }
-    static GetCharacterFromInstance(instance: CharacterInstance): Character | undefined {
+    static GetCharacterFromInstance(instance: Instance): Character | undefined {
         this.CharactersMap.forEach((character, key) => {
             if (key === instance) {
                 return character
@@ -50,7 +50,7 @@ export class Character {
         return undefined
     }
 
-    static GetAllCharactersMap(): Map<CharacterInstance, Character> {
+    static GetAllCharactersMap(): Map<Instance, Character> {
         return this.CharactersMap
     }
 
@@ -58,14 +58,14 @@ export class Character {
         return map_to_array(this.GetAllCharactersMap())
     }
 
-    constructor(from_instance: CharacterInstance) {
+    constructor(from_instance: Instance) {
         if (!config.CharacterCanBeCreatedOnClient) {
             error("Character can't be created on client!")
         }
 
         this.id = get_id()
         this.instance = from_instance
-        this.humanoid = this.instance.Humanoid
+        this.humanoid = this.instance.FindFirstChildWhichIsA("Humanoid") || setup_humanoid(this.instance)
 
         //Setup Basic Stats & Properties
         //IMPORTANT: Name of property/stat should be same as what it affects
@@ -87,9 +87,12 @@ export class Character {
 
         //init
         Character.CharactersMap.set(this.instance, this)
-        Character.CharacterAdded.Fire(this) 
+        Character.CharacterAdded.Fire(this)
+        
+        print(is_server_context())
     }
     // @internal //
+    //STATUS EFFECTS
     private _update_effects_maps() {
         const effects = this.GetAppliedEffectsMap()
 
@@ -115,7 +118,7 @@ export class Character {
             if (effect.state.GetState() !== "On") {
                 return
             }
-
+            
             let member = calculated.get(effect.Affects)
 
             if (member) {} else {
@@ -225,12 +228,14 @@ export class Character {
         })
     }
 
+    //MAIN
     private _handle_effects() {
         this._update_effects_maps()
         this._update_stats()
         this._update_properties()
     }
 
+    //PUBLIC
     public ApplyEffect(effect_to_apply: CompoundEffect) {
         const applied_effect = effect_to_apply.ApplyTo(this)
 
@@ -256,7 +261,7 @@ export class Character {
         
         info.instance = this.instance
         info.id = this.id
-
+        
         return info
     }
 

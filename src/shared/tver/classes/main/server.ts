@@ -2,6 +2,7 @@ import Charm, { atom } from "@rbxts/charm"
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
+import { is_server_context } from "shared/tver/utility/utils"
 
 let server_activated = false
 
@@ -38,6 +39,9 @@ class Server {
 }
 
 export function CreateServer() {
+    if (!is_server_context()) {
+        error("Server can be only created on Server Side!")
+    }
     if (server_activated) {
         error("Server cant be created twice!")
     }

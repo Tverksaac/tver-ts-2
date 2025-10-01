@@ -9,8 +9,19 @@ export function map_to_array<K extends defined, V extends defined>(map: Map<K, V
 
     return array
 }
-export function is_client_context() {
+export function is_client_context(): boolean {
     return RunService.IsClient()
+}
+export function is_server_context(): boolean {
+    return RunService.IsServer()
+}
+
+export function setup_humanoid(into: Instance): Humanoid {
+    const humanoid = new Instance("Humanoid")
+
+    humanoid.Parent = into
+    
+    return humanoid
 }
 
 //id generator

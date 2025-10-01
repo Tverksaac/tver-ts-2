@@ -44,7 +44,7 @@ export abstract class Effect {
         }
 
         this.state.SetState("On")
-
+        
         this._timer.resume()
     }
     public Stop() {
