@@ -2,6 +2,8 @@ import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents } from "shared/tver/network/networking"
 import { client_atom } from "shared/tver/utility/shared"
 import { is_client_context } from "shared/tver/utility/utils"
+import { Character } from "../objects/character"
+import { subscribe } from "@rbxts/charm"
 
 let client_activated = false
 
@@ -16,11 +18,23 @@ class Client {
     constructor () {}
 
     public Start() {
+        this.start_replication()
+
         ClientEvents.sync.connect((payloads) => {
             this.syncer.sync(...payloads)
         })
 
         ClientEvents.request_sync.fire()
+    }
+
+    private start_replication() {
+        let character: Character | undefined
+
+        subscribe(client_atom, (state) => {
+            if (state && !character) {
+                character = new Character(state.instance)
+            }
+        })
     }
 }
 

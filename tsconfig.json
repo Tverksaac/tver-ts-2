@@ -11,12 +11,14 @@
 		"noLib": true,
 		"resolveJsonModule": true,
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
 		"forceConsistentCasingInFileNames": true,
 		"moduleDetection": "force",
 		"strict": true,
 		"target": "ESNext",
 		"typeRoots": ["node_modules/@rbxts", "node_modules/@flamework"],
+		"plugins": [
+			{ "transform": "rbxts-transformer-flamework" }
+		],
 
 		// configurable
 		"rootDir": "src",

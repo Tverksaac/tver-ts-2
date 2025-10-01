@@ -11,5 +11,7 @@ if (plr) {
     const tver_char = char? new Character(char): undefined
 
     if (tver_char) {
+        print("MAde char!")
+        print(Character.GetAllCharactersArray())
     }
 }

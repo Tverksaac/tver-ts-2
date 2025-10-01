@@ -1,0 +1,29 @@
+{
+	"version": 1,
+	"flameworkVersion": "1.3.2",
+	"identifiers": {
+		"tver-ts-2:out/shared/tver/classes/main/server@Server": "shared/tver/classes/main/server@Server",
+		"tver-ts-2:out/shared/tver/classes/main/client@Client": "shared/tver/classes/main/client@Client",
+		"tver-ts-2:out/shared/tver/classes/fundamental/property@SeparatedProperty": "shared/tver/classes/fundamental/property@SeparatedProperty",
+		"tver-ts-2:out/shared/tver/classes/fundamental/property@ConnectedProperty": "shared/tver/classes/fundamental/property@ConnectedProperty",
+		"tver-ts-2:out/shared/tver/classes/fundamental/stat@SeparatedStat": "shared/tver/classes/fundamental/stat@SeparatedStat",
+		"tver-ts-2:out/shared/tver/classes/fundamental/stat@ConnectedStat": "shared/tver/classes/fundamental/stat@ConnectedStat",
+		"tver-ts-2:out/shared/tver/classes/fundamental/state_machine@StateMachine": "shared/tver/classes/fundamental/state_machine@StateMachine",
+		"tver-ts-2:out/shared/tver/classes/core/effect@Effect": "shared/tver/classes/core/effect@Effect",
+		"tver-ts-2:out/shared/tver/classes/core/property_effect@PropertyEffect": "shared/tver/classes/core/property_effect@PropertyEffect",
+		"tver-ts-2:out/shared/tver/classes/core/property_effect@StrictPropertyEffect": "shared/tver/classes/core/property_effect@StrictPropertyEffect",
+		"tver-ts-2:out/shared/tver/classes/core/property_effect@CustomPropertyEffect": "shared/tver/classes/core/property_effect@CustomPropertyEffect",
+		"tver-ts-2:out/shared/tver/classes/core/stat_effect@StatEffect": "shared/tver/classes/core/stat_effect@StatEffect",
+		"tver-ts-2:out/shared/tver/classes/core/stat_effect@StrictStatEffect": "shared/tver/classes/core/stat_effect@StrictStatEffect",
+		"tver-ts-2:out/shared/tver/classes/core/stat_effect@CustomStatEffect": "shared/tver/classes/core/stat_effect@CustomStatEffect",
+		"tver-ts-2:out/shared/tver/classes/objects/compound_effect@CompoundEffect": "shared/tver/classes/objects/compound_effect@CompoundEffect",
+		"tver-ts-2:out/shared/tver/classes/objects/compound_effect@AppliedCompoundEffect": "shared/tver/classes/objects/compound_effect@AppliedCompoundEffect",
+		"tver-ts-2:out/shared/tver/classes/objects/character@Character": "shared/tver/classes/objects/character@Character",
+		"tver-ts-2:out/shared/tver/test/property_effect_classes@AutoRotateEffect": "shared/tver/test/property_effect_classes@AutoRotateEffect",
+		"tver-ts-2:out/shared/tver/test/stat_effect_classes@JumpHeightEffect": "shared/tver/test/stat_effect_classes@JumpHeightEffect",
+		"tver-ts-2:out/shared/tver/test/compound_effects_classes@Stun": "shared/tver/test/compound_effects_classes@Stun",
+		"tver-ts-2:out/shared/tver/network/networking@GlobalFunctions": "shared/tver/network/networking@GlobalFunctions",
+		"tver-ts-2:out/shared/tver/network/networking@GlobalEvents": "shared/tver/network/networking@GlobalEvents"
+	},
+	"metadata": {}
+}

@@ -1,7 +1,7 @@
 import Signal from "@rbxts/signal";
 import { config } from "shared/tver";
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces";
-import { get_id, is_server_context, map_to_array, setup_humanoid } from "shared/tver/utility/utils";
+import { get_id, is_client_context, is_server_context, map_to_array, setup_humanoid } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
 import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
@@ -59,7 +59,7 @@ export class Character {
     }
 
     constructor(from_instance: Instance) {
-        if (!config.CharacterCanBeCreatedOnClient) {
+        if (is_client_context() && !config.CharacterCanBeCreatedOnClient) {
             error("Character can't be created on client!")
         }
 
