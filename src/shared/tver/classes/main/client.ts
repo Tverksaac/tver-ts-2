@@ -10,9 +10,37 @@ let client_activated = false
 class Client {
     private isActive = false
 
+    private syncer = CharmSync.client(
+        {
+            atoms: {atom: client_atom}
+        }
+    )
+
     constructor () {}
 
     public Start() {
+        if (this.isActive) {
+            warn(this + " Cant be Started twice!")
+            return
+        }
+
+        this.start_replication()
+
+        ClientEvents.sync.connect((payloads) => {
+            this.syncer.sync(...payloads)
+        })
+        
+        ClientEvents.request_sync.fire()
+    }
+
+    private start_replication() {
+        let character: Character | undefined
+
+        subscribe(client_atom, (state) => {
+            if (!character && state) {
+                character = new Character(state.instance)
+            }
+        })
     }
 }
 

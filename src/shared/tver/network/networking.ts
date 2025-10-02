@@ -1,6 +1,7 @@
 import { Networking } from "@flamework/networking";
 import type { SyncPayload } from "@rbxts/charm-sync";
 import { CharacterInfo } from "../utility/_ts_only/interfaces";
+import CharmSync from "@rbxts/charm-sync";
 
 interface ClientToServerEvents {
 	request_sync(): void
@@ -8,7 +9,7 @@ interface ClientToServerEvents {
 
 interface ServerToClientEvents {
 	sync(
-		payloads: SyncPayload<
+		payloads: CharmSync.SyncPayload<
 			{atom: Charm.Atom<CharacterInfo | undefined>}
 		>[]
 	): void
