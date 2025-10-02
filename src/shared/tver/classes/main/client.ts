@@ -3,7 +3,7 @@ import { ClientEvents } from "shared/tver/network/networking"
 import { client_atom } from "shared/tver/utility/shared"
 import { is_client_context } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
-import { subscribe } from "@rbxts/charm"
+import { observe, subscribe } from "@rbxts/charm"
 
 let client_activated = false
 
@@ -24,6 +24,10 @@ class Client {
             return
         }
 
+        subscribe(client_atom, (state) => {
+            print(state)
+        })
+
         this.start_replication()
 
         ClientEvents.sync.connect((payloads) => {
@@ -31,6 +35,8 @@ class Client {
         })
         
         ClientEvents.request_sync.fire()
+
+        print("Client Started!")
     }
 
     private start_replication() {
