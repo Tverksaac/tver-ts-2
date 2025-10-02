@@ -38,7 +38,7 @@ class Server {
 
             print(payloads)
             for (const payload of payloads) {
-                if (payload.type == "init") {
+                if (payload.type === "init") {
                 }
             }
 
