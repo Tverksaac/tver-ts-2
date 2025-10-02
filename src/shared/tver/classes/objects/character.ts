@@ -88,9 +88,46 @@ export class Character {
         //init
         Character.CharactersMap.set(this.instance, this)
         Character.CharacterAdded.Fire(this)
-        
-        print(is_server_context())
+
+        this.start_replication()
     }
+
+    //PUBLIC
+    public ApplyEffect(effect_to_apply: CompoundEffect) {
+        const applied_effect = effect_to_apply.ApplyTo(this)
+
+        this._effects.push(applied_effect)
+    }
+
+    public GetAppliedEffectsMap(): Map<string, AppliedCompoundEffect> {
+       const map = new Map<string, AppliedCompoundEffect>()
+
+       this._effects.forEach((effect) => {
+        map.set(effect.Name, effect)
+       })
+
+       return map
+    }
+
+    public GetAppliedEffectsArray(): Array<AppliedCompoundEffect> {
+        return map_to_array(this.GetAppliedEffectsMap())
+    }
+
+    public GetCharacterInfo() {
+        const info = {} as CharacterInfo
+        
+        info.instance = this.instance
+        info.id = this.id
+        
+        return info
+    }
+
+    public Destroy() {
+        Character.CharacterRemoved.Fire(this)
+
+        Character.CharactersMap.delete(this.instance)
+    }
+    
     // @internal //
     //STATUS EFFECTS
     private _update_effects_maps() {
@@ -228,46 +265,19 @@ export class Character {
         })
     }
 
+    //REPLICATION
+    private start_replication() {
+        if (!is_client_context()) {
+            return
+        }
+
+        print("From client")
+    }
+
     //MAIN
     private _handle_effects() {
         this._update_effects_maps()
         this._update_stats()
         this._update_properties()
-    }
-
-    //PUBLIC
-    public ApplyEffect(effect_to_apply: CompoundEffect) {
-        const applied_effect = effect_to_apply.ApplyTo(this)
-
-        this._effects.push(applied_effect)
-    }
-
-    public GetAppliedEffectsMap(): Map<string, AppliedCompoundEffect> {
-       const map = new Map<string, AppliedCompoundEffect>()
-
-       this._effects.forEach((effect) => {
-        map.set(effect.Name, effect)
-       })
-
-       return map
-    }
-
-    public GetAppliedEffectsArray(): Array<AppliedCompoundEffect> {
-        return map_to_array(this.GetAppliedEffectsMap())
-    }
-
-    public GetCharacterInfo() {
-        const info = {} as CharacterInfo
-        
-        info.instance = this.instance
-        info.id = this.id
-        
-        return info
-    }
-
-    public Destroy() {
-        Character.CharacterRemoved.Fire(this)
-
-        Character.CharactersMap.delete(this.instance)
     }
 }

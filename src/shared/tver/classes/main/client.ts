@@ -37,6 +37,7 @@ class Client {
         let character: Character | undefined
 
         subscribe(client_atom, (state) => {
+            print("SUBSCRIBE WORKED WW")
             if (!character && state) {
                 character = new Character(state.instance)
             }
