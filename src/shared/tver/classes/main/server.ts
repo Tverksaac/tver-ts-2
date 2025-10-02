@@ -28,6 +28,7 @@ class Server {
         }
 
         ServerEvents.request_sync.connect((player) => {
+            print('hydrating' + player)
             this.syncer.hydrate(player)
         })
         

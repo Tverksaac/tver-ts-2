@@ -8,6 +8,7 @@ import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
+import { client_atom } from "shared/tver/utility/shared";
 
 export class Character {
     private static readonly CharactersMap = new Map<Instance, Character>()
