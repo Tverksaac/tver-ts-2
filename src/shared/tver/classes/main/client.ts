@@ -1,7 +1,7 @@
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents } from "shared/tver/network/networking"
 import { client_atom } from "shared/tver/utility/shared"
-import { is_client_context } from "shared/tver/utility/utils"
+import { is_client_context, set_handler } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
 import { observe, subscribe } from "@rbxts/charm"
 
@@ -17,6 +17,7 @@ export class Client {
     )
 
     constructor () {
+        set_handler(this)
     }
 
     public Start() {
