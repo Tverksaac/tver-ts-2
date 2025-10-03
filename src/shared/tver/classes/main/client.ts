@@ -6,9 +6,8 @@ import { Character } from "../objects/character"
 import { observe, subscribe } from "@rbxts/charm"
 
 let client_activated = false
-let client: Client | undefined = undefined
 
-class Client {
+export class Client {
     private isActive = false
 
     private syncer = CharmSync.client(
@@ -18,7 +17,6 @@ class Client {
     )
 
     constructor () {
-        client = this
     }
 
     public Start() {
@@ -62,8 +60,4 @@ export function CreateClient() {
 
     client_activated = true
     return new Client()
-}
-
-export function GetCurrentClient() {
-    return client
 }

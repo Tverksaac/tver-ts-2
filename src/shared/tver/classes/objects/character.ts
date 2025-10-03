@@ -1,7 +1,7 @@
 import Signal from "@rbxts/signal";
 import { config } from "shared/tver";
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces";
-import { get_id, is_client_context, is_server_context, map_to_array, setup_humanoid } from "shared/tver/utility/utils";
+import { get_handler, get_id, is_client_context, is_server_context, map_to_array, setup_humanoid } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
 import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
@@ -9,8 +9,8 @@ import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
 import { client_atom } from "shared/tver/utility/shared";
-import { GetCurrentServer } from "../main/server";
-import { GetCurrentClient } from "../main/client";
+import { Server } from "../main/server";
+import { Client } from "../main/client";
 
 export class Character {
     private static readonly CharactersMap = new Map<Instance, Character>()
@@ -271,10 +271,10 @@ export class Character {
     //REPLICATION
     private start_replication() {
         if (is_client_context()) {
-            const client = GetCurrentClient()
+            const client = get_handler() as Client
             if (!client) error("Client not found! Maybe you forgot to Create it?")
         } else if (is_server_context()) {
-            const server = GetCurrentServer()
+            const server = get_handler() as Server
             if (!server) error("Server not found! Maybe you forgot to Create it?")
 
             server.atom((state) => {

@@ -8,9 +8,8 @@ import { Character } from "../objects/character"
 import { Players } from "@rbxts/services"
 
 let server_activated = false
-let server: Server | undefined = undefined
 
-class Server {
+export class Server {
     private isActive = false
 
     public atom = atom<Map<Instance, CharacterInfo>>(new Map())
@@ -21,7 +20,6 @@ class Server {
     )
 
     constructor () {
-        server = this
     }
 
     public Start() {
@@ -98,8 +96,4 @@ export function CreateServer() {
 
     server_activated = true
     return new Server()
-}
-
-export function GetCurrentServer(): Server | undefined {
-    return server
 }
