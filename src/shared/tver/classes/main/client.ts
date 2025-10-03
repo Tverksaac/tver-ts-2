@@ -6,6 +6,7 @@ import { Character } from "../objects/character"
 import { observe, subscribe } from "@rbxts/charm"
 
 let client_activated = false
+let client: Client | undefined = undefined
 
 class Client {
     private isActive = false
@@ -16,7 +17,9 @@ class Client {
         }
     )
 
-    constructor () {}
+    constructor () {
+        client = this
+    }
 
     public Start() {
         if (this.isActive) {
@@ -24,13 +27,11 @@ class Client {
             return
         }
 
-        subscribe(client_atom, (state) => {
-            print(state)
-        })
-
         this.start_replication()
 
         ClientEvents.sync.connect((payloads) => {
+            print("Syncing")
+            print(payloads)
             this.syncer.sync(...payloads)
         })
         
@@ -61,4 +62,8 @@ export function CreateClient() {
 
     client_activated = true
     return new Client()
+}
+
+export function GetCurrentClient() {
+    return client
 }

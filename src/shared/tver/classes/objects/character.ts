@@ -9,6 +9,8 @@ import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
 import { client_atom } from "shared/tver/utility/shared";
+import { GetCurrentServer } from "../main/server";
+import { GetCurrentClient } from "../main/client";
 
 export class Character {
     private static readonly CharactersMap = new Map<Instance, Character>()
@@ -61,7 +63,7 @@ export class Character {
 
     constructor(from_instance: Instance) {
         if (is_client_context() && !config.CharacterCanBeCreatedOnClient) {
-            error("Character can't be created on client!")
+            warn("Character can't be created on client!")
         }
 
         this.id = get_id()
@@ -268,11 +270,26 @@ export class Character {
 
     //REPLICATION
     private start_replication() {
-        if (!is_client_context()) {
-            return
-        }
+        if (is_client_context()) {
+            const client = GetCurrentClient()
+            if (!client) error("Client not found! Maybe you forgot to Create it?")
+        } else if (is_server_context()) {
+            const server = GetCurrentServer()
+            if (!server) error("Server not found! Maybe you forgot to Create it?")
 
-        print("From client")
+            server.atom((state) => {
+                const new_state = state
+
+                const data = new_state.get(this.instance)
+                if (!data) {
+                    new_state.set(this.instance, this.GetCharacterInfo())
+                }
+
+                print(new_state)
+
+                return new_state
+            })
+        }        
     }
 
     //MAIN

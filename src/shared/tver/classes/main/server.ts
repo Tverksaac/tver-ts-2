@@ -1,4 +1,4 @@
-import Charm, { atom, subscribe } from "@rbxts/charm"
+import Charm, { Atom, atom, subscribe } from "@rbxts/charm"
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
@@ -8,18 +8,21 @@ import { Character } from "../objects/character"
 import { Players } from "@rbxts/services"
 
 let server_activated = false
+let server: Server | undefined = undefined
 
 class Server {
     private isActive = false
 
-    private readonly atom = atom<Map<Instance, CharacterInfo>>(new Map())
-    private readonly syncer = CharmSync.server(
+    public atom = atom<Map<Instance, CharacterInfo>>(new Map())
+    private syncer = CharmSync.server(
         {
             atoms: {atom: this.atom}
         }
     )
 
-    constructor () {}
+    constructor () {
+        server = this
+    }
 
     public Start() {
         if (this.isActive) {
@@ -28,16 +31,30 @@ class Server {
         }
 
         ServerEvents.request_sync.connect((player) => {
-            print('hydrating' + player)
+            print('Hydrating: ' + player)
             this.syncer.hydrate(player)
         })
         
+        const players = new Map<Player, number>()
+        Players.PlayerRemoving.Connect((player) => {
+            players.delete(player)
+        })
+
         this.syncer.connect((player, ...payloads) => {
+            const id = players.get(player) ? players.get(player) : player.Character? Character.GetCharacterFromInstance(player.Character)?.id : undefined
+            
+            print(payloads)
+            print(player)
+            print(id)
+            
+            if (id === undefined) return
+            players.set(player, id)
+
             const payload_to_sync = [] as CharmSync.SyncPayload<{
                 atom: Charm.Atom<CharacterInfo | undefined>
             }>[]
 
-            print(payloads)
+            
             for (const payload of payloads) {
                 if (payload.type === "init") {
                     const data = player.Character? payload.data.atom?.get(player.Character) : undefined
@@ -62,7 +79,8 @@ class Server {
                     )
                 }
             }
-
+            
+            print(payload_to_sync)
             ServerEvents.sync.fire(player, payload_to_sync)
         })
 
@@ -80,4 +98,8 @@ export function CreateServer() {
 
     server_activated = true
     return new Server()
+}
+
+export function GetCurrentServer(): Server | undefined {
+    return server
 }
