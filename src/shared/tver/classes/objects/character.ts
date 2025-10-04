@@ -127,7 +127,6 @@ export class Character {
 
     public Destroy() {
         Character.CharacterRemoved.Fire(this)
-
         Character.CharactersMap.delete(this.instance)
     }
     
@@ -273,22 +272,24 @@ export class Character {
         if (is_client_context()) {
             const client = get_handler() as Client
             if (!client) error("Client not found! Maybe you forgot to Create it?")
+
         } else if (is_server_context()) {
             const server = get_handler() as Server
+            print(server)
             if (!server) error("Server not found! Maybe you forgot to Create it?")
-
+            
             server.atom((state) => {
-                const new_state = state
+                const new_state = table.clone(state)
 
                 const data = new_state.get(this.instance)
                 if (!data) {
                     new_state.set(this.instance, this.GetCharacterInfo())
                 }
 
-                print(new_state)
-
                 return new_state
             })
+
+            print("From Server!")
         }        
     }
 

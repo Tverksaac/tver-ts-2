@@ -1,4 +1,4 @@
-import Charm, { Atom, atom, subscribe } from "@rbxts/charm"
+import Charm, { Atom, atom, effect, subscribe } from "@rbxts/charm"
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
@@ -29,6 +29,15 @@ export class Server {
             return
         }
 
+        //test
+        subscribe(this.atom, (state) => {
+            print("SERVER ATOM WAS MODIFED! NEW STATE:")
+            print(state)
+            print("SHOULD BE SYNCING NOW...")
+
+        })
+        //test
+
         ServerEvents.request_sync.connect((player) => {
             print('Hydrating: ' + player)
             this.syncer.hydrate(player)
@@ -40,12 +49,8 @@ export class Server {
         })
 
         this.syncer.connect((player, ...payloads) => {
+            print("SYNCING...")
             const id = players.get(player) ? players.get(player) : player.Character? Character.GetCharacterFromInstance(player.Character)?.id : undefined
-            
-            print(payloads)
-            print(player)
-            print(id)
-            
             if (id === undefined) return
             players.set(player, id)
 
@@ -78,12 +83,13 @@ export class Server {
                     )
                 }
             }
-            
-            print(payload_to_sync)
+
             ServerEvents.sync.fire(player, payload_to_sync)
         })
 
         this.isActive = true
+
+        print("Server Started!")
     }
 }
 

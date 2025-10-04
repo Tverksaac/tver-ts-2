@@ -29,7 +29,7 @@ export class Client {
         this.start_replication()
 
         ClientEvents.sync.connect((payloads) => {
-            print("Syncing")
+            print("Syncing...\nGOT MESSAGE FROM SERVER")
             print(payloads)
             this.syncer.sync(...payloads)
         })
@@ -43,7 +43,6 @@ export class Client {
         let character: Character | undefined
 
         subscribe(client_atom, (state) => {
-            print("SUBSCRIBE WORKED WW")
             if (!character && state) {
                 character = new Character(state.instance)
             }
