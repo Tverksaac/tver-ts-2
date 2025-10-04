@@ -50,6 +50,7 @@ export class Server {
 
         this.syncer.connect((player, ...payloads) => {
             print("SYNCING...")
+            print(player, payloads)
             const id = players.get(player) ? players.get(player) : player.Character? Character.GetCharacterFromInstance(player.Character)?.id : undefined
             if (id === undefined) return
             players.set(player, id)
