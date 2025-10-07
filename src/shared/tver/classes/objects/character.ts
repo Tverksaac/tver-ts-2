@@ -8,7 +8,6 @@ import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
-import { client_atom } from "shared/tver/utility/shared";
 import { Server } from "../main/server";
 import { Client } from "../main/client";
 
@@ -269,6 +268,7 @@ export class Character {
 
     //REPLICATION
     private start_replication() {
+        print(is_client_context() + ": IS CLIENT CONTEXT")
         if (is_client_context()) {
             const client = get_handler() as Client
             if (!client) error("Client not found! Maybe you forgot to Create it?")
@@ -289,7 +289,7 @@ export class Character {
                 return new_state
             })
 
-            print("From Server!")
+            print("NEW SERVER ATOM STATE: " + server.atom())
         }        
     }
 

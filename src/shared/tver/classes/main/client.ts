@@ -1,6 +1,6 @@
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents } from "shared/tver/network/networking"
-import { client_atom } from "shared/tver/utility/shared"
+import { client_atom, wlog } from "shared/tver/utility/shared"
 import { is_client_context, set_handler } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
 import { observe, subscribe } from "@rbxts/charm"
@@ -29,23 +29,19 @@ export class Client {
         this.start_replication()
 
         ClientEvents.sync.connect((payloads) => {
-            print("Syncing...\nGOT MESSAGE FROM SERVER")
+            print("TRYING TO SYNC...")
             print(payloads)
             this.syncer.sync(...payloads)
         })
         
         ClientEvents.request_sync.fire()
 
-        print("Client Started!")
-    }
+        wlog("Client Was Succesfully Started")
+    }   
 
     private start_replication() {
-        let character: Character | undefined
-
         subscribe(client_atom, (state) => {
-            if (!character && state) {
-                character = new Character(state.instance)
-            }
+            print("!!!SUBSCRIBE WORKED!!!")
         })
     }
 }

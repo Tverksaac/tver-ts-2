@@ -2,10 +2,10 @@ import Charm, { Atom, atom, effect, subscribe } from "@rbxts/charm"
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
-import { client_atom } from "shared/tver/utility/shared"
 import { is_server_context, set_handler } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
 import { Players } from "@rbxts/services"
+import { wlog } from "shared/tver/utility/shared"
 
 let server_activated = false
 
@@ -42,18 +42,10 @@ export class Server {
             print('Hydrating: ' + player)
             this.syncer.hydrate(player)
         })
-        
-        const players = new Map<Player, number>()
-        Players.PlayerRemoving.Connect((player) => {
-            players.delete(player)
-        })
 
         this.syncer.connect((player, ...payloads) => {
             print("SYNCING...")
             print(player, payloads)
-            const id = players.get(player) ? players.get(player) : player.Character? Character.GetCharacterFromInstance(player.Character)?.id : undefined
-            if (id === undefined) return
-            players.set(player, id)
 
             const payload_to_sync = [] as CharmSync.SyncPayload<{
                 atom: Charm.Atom<CharacterInfo | undefined>
@@ -63,7 +55,6 @@ export class Server {
             for (const payload of payloads) {
                 if (payload.type === "init") {
                     const data = player.Character? payload.data.atom?.get(player.Character) : undefined
-                    if (data === undefined) {continue}
                     payload_to_sync.push(
                          {
                              type: "init",
@@ -85,12 +76,15 @@ export class Server {
                 }
             }
 
+            print(payloads)
+            print(payload_to_sync)
+
             ServerEvents.sync.fire(player, payload_to_sync)
         })
 
         this.isActive = true
 
-        print("Server Started!")
+        wlog("Server Was Succesfully Started")
     }
 }
 
