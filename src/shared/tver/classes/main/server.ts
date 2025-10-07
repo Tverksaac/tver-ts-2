@@ -2,10 +2,9 @@ import Charm, { Atom, atom, effect, subscribe } from "@rbxts/charm"
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
-import { is_server_context, set_handler } from "shared/tver/utility/utils"
+import { is_server_context, set_handler, wlog } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
 import { Players } from "@rbxts/services"
-import { wlog } from "shared/tver/utility/shared"
 
 let server_activated = false
 
@@ -75,9 +74,6 @@ export class Server {
                     )
                 }
             }
-
-            print(payloads)
-            print(payload_to_sync)
 
             ServerEvents.sync.fire(player, payload_to_sync)
         })

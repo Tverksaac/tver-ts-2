@@ -40,3 +40,20 @@ export function set_handler(new_handler: Server | Client) {
 export function get_handler(): Server | Client | undefined {
     return handler
 }
+
+//Output
+const LOG_KEY = "[TVER]: "
+
+export function log(text: string): true {
+    print(LOG_KEY + text)
+    return true
+}
+
+export function wlog(text: string): true {
+    warn(LOG_KEY + text)
+    return true
+}
+
+export function elog(text: string) {
+    return error(LOG_KEY + text + "\n" + debug.traceback())
+}

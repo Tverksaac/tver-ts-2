@@ -1,7 +1,7 @@
 import Signal from "@rbxts/signal";
 import { config } from "shared/tver";
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces";
-import { get_handler, get_id, is_client_context, is_server_context, map_to_array, setup_humanoid } from "shared/tver/utility/utils";
+import { elog, get_handler, get_id, is_client_context, is_server_context, map_to_array, setup_humanoid, wlog } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
 import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
@@ -61,13 +61,9 @@ export class Character {
     }
 
     constructor(from_instance: Instance) {
-        if (is_client_context() && !config.CharacterCanBeCreatedOnClient) {
-            warn("Character can't be created on client!")
-        }
-
-        this.id = get_id()
+        this.id = is_server_context()? get_id() : 1
         this.instance = from_instance
-        this.humanoid = this.instance.FindFirstChildWhichIsA("Humanoid") || setup_humanoid(this.instance)
+        this.humanoid = this.instance.FindFirstChildWhichIsA("Humanoid") || wlog(this.instance + " Do not have humanoid in it! \n Humanoid was created automatically") && setup_humanoid(this.instance)
 
         //Setup Basic Stats & Properties
         //IMPORTANT: Name of property/stat should be same as what it affects
@@ -268,15 +264,14 @@ export class Character {
 
     //REPLICATION
     private start_replication() {
-        print(is_client_context() + ": IS CLIENT CONTEXT")
         if (is_client_context()) {
             const client = get_handler() as Client
-            if (!client) error("Client not found! Maybe you forgot to Create it?")
+            if (!client) elog("Client not found! Maybe you forgot to Create it?")
 
         } else if (is_server_context()) {
             const server = get_handler() as Server
             print(server)
-            if (!server) error("Server not found! Maybe you forgot to Create it?")
+            if (!server) elog("Server not found! Maybe you forgot to Create it?")
             
             server.atom((state) => {
                 const new_state = table.clone(state)
@@ -288,8 +283,6 @@ export class Character {
 
                 return new_state
             })
-
-            print("NEW SERVER ATOM STATE: " + server.atom())
         }        
     }
 
