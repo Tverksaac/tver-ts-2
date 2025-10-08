@@ -1,4 +1,4 @@
-import { RunService } from "@rbxts/services"
+import { Players, RunService } from "@rbxts/services"
 import { Client, Server } from "../exports"
 
 export function map_to_array<K extends defined, V extends defined>(map: Map<K, V>): V[] {
@@ -18,9 +18,19 @@ export function is_server_context(): boolean {
 }
 
 export function setup_humanoid(into: Instance): Humanoid {
+    const player = Players.GetPlayerFromCharacter(into)
     const humanoid = new Instance("Humanoid")
+    const animator = new Instance("Animator")
+    const description = player? Players.GetHumanoidDescriptionFromUserId(player.UserId) : undefined
 
     humanoid.Parent = into
+    animator.Parent = humanoid
+
+    humanoid.RigType = !into.FindFirstChild("UpperTorso") && Enum.HumanoidRigType.R6|| Enum.HumanoidRigType.R15
+
+    if (description) {
+        humanoid.ApplyDescriptionReset(description)
+    }
     
     return humanoid
 }

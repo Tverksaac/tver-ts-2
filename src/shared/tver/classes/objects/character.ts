@@ -10,6 +10,9 @@ import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_eff
 import { Affects } from "shared/tver/utility/_ts_only/types";
 import { Server } from "../main/server";
 import { Client } from "../main/client";
+import { subscribe } from "@rbxts/charm";
+import { client_atom } from "shared/tver/utility/shared";
+import { find } from "@rbxts/immut/src/table";
 
 export class Character {
     private static readonly CharactersMap = new Map<Instance, Character>()
@@ -32,8 +35,8 @@ export class Character {
 
     private readonly _effect_changed = new Signal()
 
-    public readonly EffectApplied = new Signal()
-    public readonly EffectRemoved = new Signal()
+    public readonly EffectApplied = new Signal<(AppliedEffect: AppliedCompoundEffect) => void>()
+    public readonly EffectRemoved = new Signal<(RemovedEffect: AppliedCompoundEffect) => void>()
 
     static GetCharacterFromId(id: number): Character | undefined {
         this.CharactersMap.forEach((character) => {
@@ -63,7 +66,7 @@ export class Character {
     constructor(from_instance: Instance) {
         this.id = is_server_context()? get_id() : 1
         this.instance = from_instance
-        this.humanoid = this.instance.FindFirstChildWhichIsA("Humanoid") || wlog(this.instance + " Do not have humanoid in it! \n Humanoid was created automatically") && setup_humanoid(this.instance)
+        this.humanoid = this.instance.FindFirstChildWhichIsA("Humanoid") || elog(this.instance + " Do not have Humanoid as Child!")
 
         //Setup Basic Stats & Properties
         //IMPORTANT: Name of property/stat should be same as what it affects
@@ -91,26 +94,6 @@ export class Character {
     }
 
     //PUBLIC
-    public ApplyEffect(effect_to_apply: CompoundEffect) {
-        const applied_effect = effect_to_apply.ApplyTo(this)
-
-        this._effects.push(applied_effect)
-    }
-
-    public GetAppliedEffectsMap(): Map<string, AppliedCompoundEffect> {
-       const map = new Map<string, AppliedCompoundEffect>()
-
-       this._effects.forEach((effect) => {
-        map.set(effect.Name, effect)
-       })
-
-       return map
-    }
-
-    public GetAppliedEffectsArray(): Array<AppliedCompoundEffect> {
-        return map_to_array(this.GetAppliedEffectsMap())
-    }
-
     public GetCharacterInfo() {
         const info = {} as CharacterInfo
         
@@ -120,6 +103,37 @@ export class Character {
         return info
     }
 
+    //PUBLIC: STATUS EFFECTS
+    public GetAppliedEffectsMap(): Map<string, AppliedCompoundEffect> {
+       const map = new Map<string, AppliedCompoundEffect>()
+
+       this._effects.forEach((effect) => {
+        map.set(effect.Name, effect)
+       })
+
+       return map
+    }
+    public GetAppliedEffectsArray(): Array<AppliedCompoundEffect> {
+        return map_to_array(this.GetAppliedEffectsMap())
+    }
+    public GetAppliedEffectFromName(name: string): AppliedCompoundEffect | undefined {
+        this._effects.forEach((effect) => {
+            if (effect.Name === name) {
+                return effect
+            }
+        })
+        return undefined
+    }
+    public GetAppliedEffectFromId(id: number): AppliedCompoundEffect | undefined {
+        this._effects.forEach((effect) => {
+            if (effect.id === id) {
+                return effect
+            }
+        })
+        return
+    }
+
+    //PUBLIC: DESTROY
     public Destroy() {
         Character.CharacterRemoved.Fire(this)
         Character.CharactersMap.delete(this.instance)
@@ -127,6 +141,23 @@ export class Character {
     
     // @internal //
     //STATUS EFFECTS
+    public _internal_apply_effect(applied_effect: AppliedCompoundEffect) {
+        this._effects.push(applied_effect)
+        this.EffectApplied.Fire(applied_effect)
+    }
+    public _internal_remove_effect(find_from: string | number): AppliedCompoundEffect | undefined {
+        const effect = type(find_from) === "string"? this.GetAppliedEffectFromName(find_from as string) : this.GetAppliedEffectFromId(find_from as number)
+
+        this._effects.forEach((val, index) => {
+            if (val === effect) {
+                this.EffectRemoved.Fire(effect)
+                this._effects.remove(index)
+            }
+        })
+
+        return effect
+    }
+
     private _update_effects_maps() {
         const effects = this.GetAppliedEffectsMap()
 
@@ -268,9 +299,10 @@ export class Character {
             const client = get_handler() as Client
             if (!client) elog("Client not found! Maybe you forgot to Create it?")
 
+            //Handle Character changes
+
         } else if (is_server_context()) {
             const server = get_handler() as Server
-            print(server)
             if (!server) elog("Server not found! Maybe you forgot to Create it?")
             
             server.atom((state) => {

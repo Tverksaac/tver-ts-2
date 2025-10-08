@@ -1,5 +1,6 @@
 import { Players } from "@rbxts/services";
 import { Character, CreateServer } from "shared/tver/exports";
+import { Stun } from "shared/tver/test/compound_effects_classes";
 import { CharacterInstance } from "shared/tver/utility/_ts_only/interfaces";
 
 const server = CreateServer()
@@ -11,7 +12,9 @@ if (plr) {
     const tver_char = char? new Character(char): undefined
 
     if (tver_char) {
-        print("MAde char!")
-        print(Character.GetAllCharactersArray())
+        const effect = new Stun(5)
+
+        effect.ApplyTo(tver_char)
+        print(tver_char)
     }
 }

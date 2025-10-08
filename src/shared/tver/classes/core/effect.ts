@@ -5,11 +5,10 @@ import { StateMachine } from "../fundamental/state_machine"
 
 export abstract class Effect {
     public abstract readonly Affects: unknown
-    public abstract readonly Duration: number
     public abstract readonly Strength: unknown
+    public abstract readonly Duration: number
 
-    private readonly _timer = new Timer(0)
-
+    public readonly timer = new Timer(1)
     public readonly state = new StateMachine<[EffectState]>
 
     protected OnClientStart?: () => void = () => {}
@@ -20,7 +19,7 @@ export abstract class Effect {
     constructor () {}
 
     public GetTimeLeft() {
-        return this._timer.getTimeLeft()
+        return this.timer.getTimeLeft()
     }
     public IsActive() {
         return this.state.GetState() !== "Ended" && this.state.GetState() !== "Ready"
@@ -34,8 +33,8 @@ export abstract class Effect {
 
         this.state.SetState("On")
 
-        this._timer.setLength(this.Duration)
-        this._timer.start()
+        this.timer.setLength(this.Duration)
+        this.timer.start()
     }
     public Resume() {
         if (!this.IsActive()) {
@@ -45,7 +44,7 @@ export abstract class Effect {
 
         this.state.SetState("On")
         
-        this._timer.resume()
+        this.timer.resume()
     }
     public Stop() {
         if (!this.IsActive()) {
@@ -55,7 +54,7 @@ export abstract class Effect {
 
         this.state.SetState("Off")
 
-        this._timer.pause()
+        this.timer.pause()
     }
     public End() {
         if (!this.IsActive()) {
@@ -64,6 +63,6 @@ export abstract class Effect {
 
         this.state.SetState("Ended")
 
-        this._timer.stop()
+        this.timer.stop()
     }
 }

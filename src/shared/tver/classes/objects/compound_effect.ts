@@ -4,7 +4,15 @@ import {CustomStatEffect, StrictStatEffect } from "../core/stat_effect"
 import { Character } from "./character";
 import { EffectState } from "shared/tver/utility/_ts_only/types";
 import { StateMachine } from "../fundamental/state_machine";
-import { get_id } from "shared/tver/utility/utils";
+import { get_id, is_client_context, wlog } from "shared/tver/utility/utils";
+
+function throw_client_warn(): boolean {
+    if (is_client_context()) {
+        wlog("Cant manipulate status effect on client!")
+        return true
+    }
+    return false
+}
 
 export abstract class CompoundEffect {
     public readonly Name: string
@@ -42,6 +50,13 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.Duration = from.Duration
         this.StatEffects = from.StatEffects
         this.PropertyEffects = from.PropertyEffects
+
+        this.ApplyTo = () => {
+            wlog("Cant call :ApplyTo on AppliedStatusEffect!")
+            return this
+        }
+
+        to._internal_apply_effect(this)
     }
 
     private for_each_effect(callback: (effect: Effect) => void) {
@@ -50,6 +65,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
 
     public Start() {
+        if (throw_client_warn()) return
         if (this.state.GetState() !== "Ready") {
             warn(this + " Effect cant be started twice!")
             return
@@ -62,6 +78,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
         })
     }
     public Resume() {
+    if (throw_client_warn()) return
         if (this.state.GetState() === "Ended") {
             warn(this + " is already ended!")
             return
@@ -74,6 +91,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
         })
     }
     public Stop() {
+        if (throw_client_warn()) return
         if (this.state.GetState() === "Ended") {
             warn(this + " is already ended!")
             return
@@ -86,6 +104,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
         })
     }
     public End() {
+        if (throw_client_warn()) return
         if (this.state.GetState() === "Ended") {
             warn(this + " is already ended!")
             return
@@ -96,5 +115,14 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.for_each_effect((effect) => {
             effect.End()
         })
+    }
+    public Destroy() {
+        if (throw_client_warn()) return
+        const carrier = Character.GetCharacterFromId(this.CarrierID)
+        if (!carrier) return
+
+        this.End()
+
+        carrier.EffectRemoved.Fire(this)
     }
 }
