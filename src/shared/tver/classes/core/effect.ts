@@ -16,7 +16,14 @@ export abstract class Effect {
     protected OnClientEnd?: () => void = () => {}
     protected OnServerEnd?: () => void = () => {}
 
-    constructor () {}
+    public readonly Changed = new Signal<(effect: Effect, args: unknown) => void>()
+
+    constructor () {
+        this.state.SetState("Ready")
+
+        this.init()
+
+    }
 
     public GetTimeLeft() {
         return this.timer.getTimeLeft()
@@ -63,6 +70,29 @@ export abstract class Effect {
 
         this.state.SetState("Ended")
 
-        this.timer.stop()
+        if (this.timer.getTimeLeft() > 0) {
+            this.timer.stop()
+        }
+    }
+
+    private _listen_for_changes() {
+        const listen_for = [
+            this.state.StateChanged,
+        ]
+        listen_for.forEach((signal) => {
+            signal.Connect((...args) => {
+                this.Changed.Fire(this, args)
+            })
+        })
+    }
+    private _listen_for_timer() {
+        this.timer.completed.Connect(() => {
+            this.End()
+        })
+    }
+
+    private init() {
+        this._listen_for_changes()
+        this._listen_for_timer()
     }
 }

@@ -1,5 +1,6 @@
 import { Janitor } from "@rbxts/janitor";
 import { SeparatedProperty } from "./property";
+import { is_client_context } from "shared/tver/utility/utils";
 
 function calculate_total_bonus(stat: SeparatedStat): number {
 	const base = stat.Base.Get();
@@ -75,9 +76,14 @@ export class ConnectedStat<
 		this.instance = ConnectToInstance;
 		type Indexable = ConnectedInstance[Name];
 
+		print("SET")
 		this.instance[InstancePropertyName] = this.Total.Get() as Indexable;
 		this.conected_to = InstancePropertyName;
-
+		
+		//test reasons
+		print(is_client_context())
+		if (is_client_context()) return
+		print("NOT CLIENT")
 		this._janitor.Add(
 			this.Total.changed.Connect(() => {
 				this.instance[InstancePropertyName] = this.Total.Get() as Indexable;
@@ -85,6 +91,7 @@ export class ConnectedStat<
 		);
 		this._janitor.Add(
 			this.instance.GetPropertyChangedSignal(InstancePropertyName).Connect(() => {
+				print(this.Total.Get())
 				this.instance[InstancePropertyName] = this.Total.Get() as Indexable;
 			}),
 		);

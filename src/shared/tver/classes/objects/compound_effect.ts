@@ -56,10 +56,13 @@ export class AppliedCompoundEffect extends CompoundEffect{
             return this
         }
 
+        this.state.SetState("Ready")
+        this.Start()
+
         to._internal_apply_effect(this)
     }
 
-    private for_each_effect(callback: (effect: Effect) => void) {
+    public for_each_effect(callback: (effect: Effect) => void) {
         this.StatEffects.forEach(callback)
         this.PropertyEffects.forEach(callback)
     }

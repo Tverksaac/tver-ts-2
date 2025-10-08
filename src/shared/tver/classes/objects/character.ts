@@ -90,7 +90,7 @@ export class Character {
         Character.CharactersMap.set(this.instance, this)
         Character.CharacterAdded.Fire(this)
 
-        this.start_replication()
+        this.init()
     }
 
     //PUBLIC
@@ -157,21 +157,40 @@ export class Character {
 
         return effect
     }
+    private _start_listen_to_effect_changes() {
+        const listen_to: Signal[] = [
+            this.EffectApplied,
+            this.EffectRemoved,
+            this._effect_changed
+        ]
+        listen_to.forEach(signal => signal.Connect(() => {
+            this._handle_effects()
+            print(this)
+        }))
+    }
 
     private _update_effects_maps() {
         const effects = this.GetAppliedEffectsMap()
 
+        this._stat_effects.clear()
+        this._property_effects.clear()
+
         effects.forEach((effect, key) => {
             if (effect.state.GetState() === "Ended") return
 
-            this._stat_effects.clear()
-            this._property_effects.clear()
-
             effect.StatEffects.forEach((stat_effect) => {
                 this._stat_effects.push(stat_effect)
+                print(stat_effect)
             })
             effect.PropertyEffects.forEach((property_effect) => {
                 this._property_effects.push(property_effect)
+                print(property_effect)
+            })
+
+            effect.for_each_effect((_effect) => {
+                _effect.Changed.Connect(() => {
+                    this._effect_changed.Fire()
+                })
             })
         })
     }
@@ -208,6 +227,7 @@ export class Character {
         const calculated = new Map<string, {Affects: string, Raw: number, Modifer: number}>()
 
         this._stat_effects.forEach((effect) => {
+            print(effect.state.GetState())
             if (effect.state.GetState() !== "On") {
                 return
             }
@@ -243,7 +263,6 @@ export class Character {
         calculated.forEach((stat, key) => {
             let stat_to_affect
             stat_to_affect = this._stats.get(stat.Affects)
-
             if (stat_to_affect) {
                 //stat to affect is innate stat
                 stat_to_affect.Bonus.Modifer.Set(stat.Modifer)
@@ -260,6 +279,9 @@ export class Character {
                 } 
             }
         })
+
+        //TODO
+        //переработать статус эффекты немного. Сделать чтобы через все циклил и если нету значения задавал бонус на ноль. Эт очевидно но чёт я не додумался
     }
     private _update_properties() {
         const calculated = this._calculate_property_effects()
@@ -294,7 +316,7 @@ export class Character {
     }
 
     //REPLICATION
-    private start_replication() {
+    private _start_replication() {
         if (is_client_context()) {
             const client = get_handler() as Client
             if (!client) elog("Client not found! Maybe you forgot to Create it?")
@@ -323,5 +345,11 @@ export class Character {
         this._update_effects_maps()
         this._update_stats()
         this._update_properties()
+    }
+
+    private init() {
+        this._start_replication()
+        task.wait(3)
+        this._start_listen_to_effect_changes()
     }
 }

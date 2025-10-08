@@ -54,16 +54,16 @@ export function get_handler(): Server | Client | undefined {
 //Output
 const LOG_KEY = "[TVER]: "
 
-export function log(text: string): true {
+export function log(text: unknown): true {
     print(LOG_KEY + text)
     return true
 }
 
-export function wlog(text: string): true {
+export function wlog(text: unknown): true {
     warn(LOG_KEY + text)
     return true
 }
 
-export function elog(text: string) {
+export function elog(text: unknown) {
     return error(LOG_KEY + text + "\n" + debug.traceback())
 }
