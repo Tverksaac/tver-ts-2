@@ -76,14 +76,10 @@ export class ConnectedStat<
 		this.instance = ConnectToInstance;
 		type Indexable = ConnectedInstance[Name];
 
-		print("SET")
 		this.instance[InstancePropertyName] = this.Total.Get() as Indexable;
 		this.conected_to = InstancePropertyName;
 		
-		//test reasons
-		print(is_client_context())
 		if (is_client_context()) return
-		print("NOT CLIENT")
 		this._janitor.Add(
 			this.Total.changed.Connect(() => {
 				this.instance[InstancePropertyName] = this.Total.Get() as Indexable;

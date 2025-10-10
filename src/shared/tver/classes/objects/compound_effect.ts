@@ -118,14 +118,19 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.for_each_effect((effect) => {
             effect.End()
         })
+
+        const carrier = Character.GetCharacterFromId(this.CarrierID)
+        carrier?._internal_remove_effect(this.id)
+
+        this.Destroy()
     }
     public Destroy() {
         if (throw_client_warn()) return
-        const carrier = Character.GetCharacterFromId(this.CarrierID)
-        if (!carrier) return
 
-        this.End()
+        if (this.state.GetState() !== "Ended") {this.End()}
 
-        carrier.EffectRemoved.Fire(this)
+        this.for_each_effect((effect) => {
+            effect.Destroy()
+        })
     }
 }

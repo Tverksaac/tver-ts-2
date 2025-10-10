@@ -2,6 +2,7 @@ import Signal from "@rbxts/signal"
 import { Timer } from "@rbxts/timer"
 import { EffectState } from "shared/tver/utility/_ts_only/types"
 import { StateMachine } from "../fundamental/state_machine"
+import { Janitor } from "@rbxts/janitor"
 
 export abstract class Effect {
     public abstract readonly Affects: unknown
@@ -17,6 +18,8 @@ export abstract class Effect {
     protected OnServerEnd?: () => void = () => {}
 
     public readonly Changed = new Signal<(effect: Effect, args: unknown) => void>()
+
+    private readonly _janitor = new Janitor()
 
     constructor () {
         this.state.SetState("Ready")
@@ -75,20 +78,28 @@ export abstract class Effect {
         }
     }
 
+    public Destroy() {
+        this._janitor.Cleanup()
+    }
+
     private _listen_for_changes() {
         const listen_for = [
             this.state.StateChanged,
         ]
         listen_for.forEach((signal) => {
-            signal.Connect((...args) => {
-                this.Changed.Fire(this, args)
-            })
+            this._janitor.Add(
+                signal.Connect((...args) => {
+                    this.Changed.Fire(this, args)
+                })
+            )
         })
     }
     private _listen_for_timer() {
-        this.timer.completed.Connect(() => {
-            this.End()
-        })
+        this._janitor.Add(
+            this.timer.completed.Connect(() => {
+                this.End()
+            })
+        )
     }
 
     private init() {

@@ -1,5 +1,6 @@
 import { Janitor } from "@rbxts/janitor";
 import { RunService } from "@rbxts/services";
+import { is_client_context } from "shared/tver/utility/utils";
 
 export class SeparatedProperty<T> {
 	protected _janitor = new Janitor()
@@ -88,6 +89,7 @@ export class ConnectedProperty<
 		this.connected_to = InstancesPropertyName;
 		this.override = Override;
 
+		if (is_client_context()) require 
 		this._janitor.Add(
 			this.changed.Connect((new_value: ConnectedInstance[Name]) => {
 				this.instance[InstancesPropertyName] = new_value;

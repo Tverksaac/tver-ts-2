@@ -14,6 +14,11 @@ import { subscribe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
 import { find } from "@rbxts/immut/src/table";
 
+type _possible_stats_type = (ConnectedStat<Humanoid, ExtractKeys<WritableInstanceProperties<Humanoid>, number>>)
+type _possible_custom_stats_type = (SeparatedStat | ConnectedStat<never, never>)
+type _possible_properties_type = (ConnectedProperty<Humanoid, WritablePropertyNames<InstanceProperties<Humanoid>>>)
+type _possible_custom_properties_type = (SeparatedProperty<defined> | ConnectedProperty<never, never>)
+
 export class Character {
     private static readonly CharactersMap = new Map<Instance, Character>()
 
@@ -24,10 +29,10 @@ export class Character {
     public readonly humanoid: Humanoid
     public readonly id: number
 
-    private readonly _stats = new Map<string, (ConnectedStat<Humanoid, ExtractKeys<WritableInstanceProperties<Humanoid>, number>>)>()
-    private readonly _properties = new Map<string, (ConnectedProperty<Humanoid, WritablePropertyNames<InstanceProperties<Humanoid>>>)>()
-    private readonly _custom_stats = new Map<string, (SeparatedStat | ConnectedStat<never, never>)>()
-    private readonly _custom_properties = new Map<string, (SeparatedProperty<defined> | ConnectedProperty<never, never>)>()
+    private readonly _stats = new Map<string, _possible_stats_type>()
+    private readonly _properties = new Map<string, _possible_properties_type>()
+    private readonly _custom_stats = new Map<string, _possible_custom_stats_type>()
+    private readonly _custom_properties = new Map<string, _possible_custom_properties_type>()
 
     private readonly _effects = [] as AppliedCompoundEffect[]
     private readonly _property_effects = [] as (StrictPropertyEffect<Humanoid, Affects<Humanoid>> | CustomPropertyEffect)[]
@@ -260,6 +265,15 @@ export class Character {
     private _update_stats() {
         const calculated = this._calculate_stat_effects()
 
+        //return stats to base values
+        const _return_to_base_value = (stat: _possible_stats_type | _possible_custom_stats_type) => {
+            if (calculated.has(stat.name)) return
+            stat.Bonus.Modifer.Set(1)
+            stat.Bonus.Raw.Set(0)
+        }
+        this._stats.forEach(_return_to_base_value)
+        this._custom_stats.forEach(_return_to_base_value)
+
         calculated.forEach((stat, key) => {
             let stat_to_affect
             stat_to_affect = this._stats.get(stat.Affects)
@@ -279,9 +293,6 @@ export class Character {
                 } 
             }
         })
-
-        //TODO
-        //переработать статус эффекты немного. Сделать чтобы через все циклил и если нету значения задавал бонус на ноль. Эт очевидно но чёт я не додумался
     }
     private _update_properties() {
         const calculated = this._calculate_property_effects()
@@ -349,7 +360,6 @@ export class Character {
 
     private init() {
         this._start_replication()
-        task.wait(3)
         this._start_listen_to_effect_changes()
     }
 }
