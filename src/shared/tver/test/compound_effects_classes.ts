@@ -7,20 +7,17 @@ import { JumpHeightEffect} from "./stat_effect_classes";
 
 @CompoundEffectDecorator
 export class Stun extends CompoundEffect {
-    public readonly Duration: number;
-
     public readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[];
     public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[];
 
-    constructor (_duration: number) {
+    constructor () {
         super("Stun")
-        this.Duration = _duration
 
         this.PropertyEffects = [
-            new AutoRotateEffect(false, this.Duration)
+            new AutoRotateEffect(false)
         ]
         this.StatEffects = [
-            new JumpHeightEffect("Modifer", 0, this.Duration)
+            new JumpHeightEffect("Modifer", 0)
         ]
     }
 }

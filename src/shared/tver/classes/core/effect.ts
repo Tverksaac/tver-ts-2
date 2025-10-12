@@ -7,7 +7,6 @@ import { Janitor } from "@rbxts/janitor"
 export abstract class Effect {
     public abstract readonly Affects: unknown
     public abstract readonly Strength: unknown
-    public abstract readonly Duration: number
 
     public readonly timer = new Timer(1)
     public readonly state = new StateMachine<[EffectState]>
@@ -33,7 +32,7 @@ export abstract class Effect {
         return this.state.GetState() !== "Ended" && this.state.GetState() !== "Ready"
     }
 
-    public Start() {
+    public Start(duration: number) {
         if (this.IsActive()) {
             warn(this + " already was started!")
             return
@@ -41,7 +40,7 @@ export abstract class Effect {
 
         this.state.SetState("On")
 
-        this.timer.setLength(this.Duration)
+        this.timer.setLength(duration)
         this.timer.start()
     }
     public Resume() {
@@ -96,10 +95,12 @@ export abstract class Effect {
         })
     }
     private _listen_for_timer() {
+        const connection = 
+        this.timer.completed.Connect(() => {
+            this.End()
+        })
         this._janitor.Add(
-            this.timer.completed.Connect(() => {
-                this.End()
-            })
+            () => connection.Disconnect()
         )
     }
 

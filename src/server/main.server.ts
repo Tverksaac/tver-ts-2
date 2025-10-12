@@ -7,11 +7,15 @@ server.Start()
 task.wait(3)
 
 const effect = CompoundEffectsContainer.GetCompoundEffectFromConstructor(Stun)
+const _test = CompoundEffectsContainer.GetCompoundEffectFromName("Stun")
+print("HERE::")
+print(effect)
+print(_test)
 const plr = Players.GetPlayers()[0]
 if (plr) {
     const char = plr.Character
     const tver_char = char? new Character(char): undefined
     if (tver_char) {
-        effect?.ApplyTo(tver_char)
+        effect?.ApplyTo(tver_char, 5)
     }
 }

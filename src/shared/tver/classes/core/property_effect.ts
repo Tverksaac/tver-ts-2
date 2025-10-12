@@ -14,7 +14,6 @@ abstract class PropertyEffect extends Effect {
 export abstract class StrictPropertyEffect<ConnectedInstance extends Instance, Name extends Affects<ConnectedInstance>> extends PropertyEffect {
     public readonly Affects: Affects<ConnectedInstance>
 
-    public abstract readonly Duration: number
     public abstract readonly Strength: Strength<ConnectedInstance, Name>
     public readonly Priority?: number
 
@@ -27,7 +26,6 @@ export abstract class StrictPropertyEffect<ConnectedInstance extends Instance, N
 export abstract class CustomPropertyEffect extends PropertyEffect{
     public readonly Affects: string
     
-    public abstract readonly Duration: number;
     public abstract readonly Strength: defined;
     public abstract readonly Priority?: number
 

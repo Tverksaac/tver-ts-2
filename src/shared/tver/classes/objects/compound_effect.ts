@@ -33,7 +33,6 @@ export class CompoundEffectsContainer {
 
 export abstract class CompoundEffect {
     public readonly Name: string
-    public abstract readonly Duration: number;
 
     public abstract readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]
     public abstract readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[]
@@ -42,8 +41,8 @@ export abstract class CompoundEffect {
         this.Name = _name
     }
 
-    public ApplyTo(to: Character) {
-        return new AppliedCompoundEffect(this, to)
+    public ApplyTo(to: Character, duration: number) {
+        return new AppliedCompoundEffect(this, to, duration)
     }
 
     public Destroy() {
@@ -68,12 +67,12 @@ export class AppliedCompoundEffect extends CompoundEffect{
     public readonly InheritsFrom: CompoundEffect
     public readonly CarrierID: number
 
-    constructor (from: CompoundEffect, to: Character) {
+    constructor (from: CompoundEffect, to: Character, duration: number) {
         super(from.Name)
         this.InheritsFrom = from
         this.CarrierID = to.id
 
-        this.Duration = from.Duration
+        this.Duration = duration
         this.StatEffects = from.StatEffects
         this.PropertyEffects = from.PropertyEffects
 
@@ -103,7 +102,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.state.SetState("On")
 
         this.for_each_effect((effect) => {
-            effect.Start()
+            effect.Start(this.Duration)
         })
     }
     public Resume() {

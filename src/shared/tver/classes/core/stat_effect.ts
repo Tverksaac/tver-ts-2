@@ -10,7 +10,6 @@ abstract class StatEffect extends Effect {
 export abstract class StrictStatEffect<ConnectedInstance extends Instance> extends StatEffect{
     public readonly Affects: AffectType<ConnectedInstance>
 
-    public abstract readonly Duration: number
     public abstract readonly Strength: number
     public abstract readonly EffectType: EffectType
 
@@ -23,7 +22,6 @@ export abstract class StrictStatEffect<ConnectedInstance extends Instance> exten
 export abstract class CustomStatEffect extends StatEffect {
     public readonly Affects: string
 
-    public abstract readonly Duration: number
     public abstract readonly Strength: number
     public abstract readonly EffectType: EffectType
 

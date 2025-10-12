@@ -1,13 +1,11 @@
 import { StrictPropertyEffect } from "../classes/core/property_effect";
 
 export class AutoRotateEffect extends StrictPropertyEffect<Humanoid, "AutoRotate"> {
-    public Duration: number;
     public Strength: boolean;
 
-    constructor (_str: boolean, _dur: number) {
+    constructor (_str: boolean) {
         super("AutoRotate")
 
-        this.Duration = _dur
         this.Strength = _str
         
         this.OnClientEnd = () => {
