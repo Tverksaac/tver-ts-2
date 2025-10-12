@@ -23,7 +23,8 @@
 		"tver-ts-2:out/shared/tver/test/stat_effect_classes@JumpHeightEffect": "shared/tver/test/stat_effect_classes@JumpHeightEffect",
 		"tver-ts-2:out/shared/tver/test/compound_effects_classes@Stun": "shared/tver/test/compound_effects_classes@Stun",
 		"tver-ts-2:out/shared/tver/network/networking@GlobalFunctions": "shared/tver/network/networking@GlobalFunctions",
-		"tver-ts-2:out/shared/tver/network/networking@GlobalEvents": "shared/tver/network/networking@GlobalEvents"
+		"tver-ts-2:out/shared/tver/network/networking@GlobalEvents": "shared/tver/network/networking@GlobalEvents",
+		"tver-ts-2:out/shared/tver/classes/objects/compound_effect@CompoundEffectsContainer": "shared/tver/classes/objects/compound_effect@CompoundEffectsContainer"
 	},
 	"metadata": {}
 }

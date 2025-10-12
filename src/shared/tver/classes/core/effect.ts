@@ -23,9 +23,7 @@ export abstract class Effect {
 
     constructor () {
         this.state.SetState("Ready")
-
         this.init()
-
     }
 
     public GetTimeLeft() {
@@ -79,7 +77,10 @@ export abstract class Effect {
     }
 
     public Destroy() {
-        this._janitor.Cleanup()
+        this._janitor.Destroy()
+        this.timer.destroy()
+        this.state.Destroy()
+        this.Changed.Destroy()
     }
 
     private _listen_for_changes() {

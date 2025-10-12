@@ -10,7 +10,7 @@ import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_eff
 import { Affects } from "shared/tver/utility/_ts_only/types";
 import { Server } from "../main/server";
 import { Client } from "../main/client";
-import { subscribe } from "@rbxts/charm";
+import { observe, subscribe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
 import { find } from "@rbxts/immut/src/table";
 
@@ -170,7 +170,6 @@ export class Character {
         ]
         listen_to.forEach(signal => signal.Connect(() => {
             this._handle_effects()
-            print(this)
         }))
     }
 
@@ -327,28 +326,30 @@ export class Character {
     }
 
     //REPLICATION
+    private _replicate_compound_effect(from: CompoundEffect) {
+        
+    }
+
+    private _server_replication() {
+        const server = get_handler() as Server
+        if (!server) elog("Server not found! Maybe you forgot to Create it?")
+        
+        server.atom((state) => {
+            const new_state = table.clone(state)
+            const data = new_state.get(this.instance)
+            if (!data) {
+                new_state.set(this.instance, this.GetCharacterInfo())
+            }
+
+            return new_state
+        })
+    }
+    private _client_replication() {
+        const client = get_handler() as Client
+        if (!client) elog("Client not found! Maybe you forgot to Create it?")
+    }
     private _start_replication() {
-        if (is_client_context()) {
-            const client = get_handler() as Client
-            if (!client) elog("Client not found! Maybe you forgot to Create it?")
-
-            //Handle Character changes
-
-        } else if (is_server_context()) {
-            const server = get_handler() as Server
-            if (!server) elog("Server not found! Maybe you forgot to Create it?")
-            
-            server.atom((state) => {
-                const new_state = table.clone(state)
-
-                const data = new_state.get(this.instance)
-                if (!data) {
-                    new_state.set(this.instance, this.GetCharacterInfo())
-                }
-
-                return new_state
-            })
-        }        
+        if (is_client_context()) this._client_replication(); else if (is_server_context()) this._server_replication();
     }
 
     //MAIN

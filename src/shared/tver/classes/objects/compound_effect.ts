@@ -5,6 +5,7 @@ import { Character } from "./character";
 import { EffectState } from "shared/tver/utility/_ts_only/types";
 import { StateMachine } from "../fundamental/state_machine";
 import { get_id, is_client_context, wlog } from "shared/tver/utility/utils";
+import { Constructor } from "@flamework/core/out/utility";
 
 function throw_client_warn(): boolean {
     if (is_client_context()) {
@@ -12,6 +13,22 @@ function throw_client_warn(): boolean {
         return true
     }
     return false
+}
+
+export class CompoundEffectsContainer {
+    public static readonly RegisteredCompoundEffects = new Map<string, CompoundEffect>()
+
+    static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
+        const effect = new Effect()
+        if (this.RegisteredCompoundEffects.has(effect.Name)) {wlog(Effect + " Already was registred!"); return}
+        this.RegisteredCompoundEffects.set(effect.Name, effect)
+    }
+    static GetCompoundEffectFromName(name: string): CompoundEffect | undefined {
+        return this.RegisteredCompoundEffects.get(name)
+    }
+    static GetCompoundEffectFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): CompoundEffect | undefined {
+        return this.RegisteredCompoundEffects.get(tostring(Constructor))
+    }
 }
 
 export abstract class CompoundEffect {
@@ -27,6 +44,15 @@ export abstract class CompoundEffect {
 
     public ApplyTo(to: Character) {
         return new AppliedCompoundEffect(this, to)
+    }
+
+    public Destroy() {
+        this.StatEffects.forEach((val) => {
+            val.Destroy()
+        })
+        this.PropertyEffects.forEach((val) => [
+            val.Destroy()
+        ])
     }
 }
 
@@ -133,4 +159,8 @@ export class AppliedCompoundEffect extends CompoundEffect{
             effect.Destroy()
         })
     }
+}
+
+export function CompoundEffectDecorator<T extends CompoundEffect>(Constructor: Constructor<T>) {
+    CompoundEffectsContainer.Register(Constructor)
 }

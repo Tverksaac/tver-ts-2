@@ -22,4 +22,8 @@ export class StateMachine<States extends string[]> {
     public GetState() {
         return this._state
     }
+
+    public Destroy() {
+        this.StateChanged.Destroy()
+    }
 }
