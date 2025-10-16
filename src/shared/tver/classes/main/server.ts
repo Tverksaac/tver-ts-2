@@ -30,8 +30,7 @@ export class Server {
 
         //test
         subscribe(this.atom, (state) => {
-            dwlog("Server's atom state was modifer!")
-            print(state)
+            dlog("Server's atom state was modifer!")
 
         })
         //test

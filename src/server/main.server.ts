@@ -1,4 +1,3 @@
-
 import { Players, Workspace } from "@rbxts/services";
 import { Character, CompoundEffectsContainer, CreateServer } from "shared/tver/exports";
 import { Stun } from "shared/tver/test/compound_effects_classes";
@@ -8,9 +7,6 @@ task.wait(3)
 
 const effect = CompoundEffectsContainer.GetCompoundEffectFromConstructor(Stun)
 const _test = CompoundEffectsContainer.GetCompoundEffectFromName("Stun")
-print("HERE::")
-print(effect)
-print(_test)
 const plr = Players.GetPlayers()[0]
 if (plr) {
     const char = plr.Character
