@@ -1,5 +1,6 @@
 import { Janitor } from "@rbxts/janitor";
 import { RunService } from "@rbxts/services";
+import Signal from "@rbxts/signal";
 import { is_client_context } from "shared/tver/utility/utils";
 
 export class SeparatedProperty<T> {
@@ -7,7 +8,7 @@ export class SeparatedProperty<T> {
 
 	readonly name: string;
 	protected value: T;
-	changed: RBXScriptSignal<Callback>;
+	changed = new Signal<(new_value: T, prev_value: T) => void>()
 
 	Behaviours: {
 		OnTick: (this: void) => void;
@@ -15,14 +16,9 @@ export class SeparatedProperty<T> {
 		CanSet: (this: void) => boolean;
 	};
 
-	protected _changed_bind: BindableEvent<Callback>;
-
 	constructor(name: string, value: T) {
 		this.name = name;
 		this.value = value;
-
-		this._changed_bind = new Instance("BindableEvent");
-		this.changed = this._changed_bind.Event;
 
 		this.Behaviours = {
 			OnTick() {},
@@ -44,13 +40,13 @@ export class SeparatedProperty<T> {
 		);
 	}
 
-	Set(set_to: T) {
+	Set(set_to: T, silent = false) {
 		if (this.Behaviours.CanSet()) {
 			if (this.value === set_to) {
 				return true;
 			}
-			this._changed_bind.Fire(set_to, this.value);
 			this.value = set_to;
+			if (!silent) this.changed.Fire(set_to, this.value);
 			return true;
 		} else {
 			return false;
@@ -62,7 +58,6 @@ export class SeparatedProperty<T> {
 	}
 
 	Destroy() {
-		this._janitor.Cleanup();
 		this._janitor.Destroy();
 	}
 }
@@ -89,7 +84,8 @@ export class ConnectedProperty<
 		this.connected_to = InstancesPropertyName;
 		this.override = Override;
 
-		if (is_client_context()) require 
+		if (is_client_context()) return
+		print("SET ON CLIENT")
 		this._janitor.Add(
 			this.changed.Connect((new_value: ConnectedInstance[Name]) => {
 				this.instance[InstancesPropertyName] = new_value;

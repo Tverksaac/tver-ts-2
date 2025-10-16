@@ -58,7 +58,6 @@ export class SeparatedStat {
 	}
 
 	Destroy() {
-		this._janitor.Cleanup();
 		this._janitor.Destroy();
 	}
 }
@@ -80,6 +79,7 @@ export class ConnectedStat<
 		this.conected_to = InstancePropertyName;
 		
 		if (is_client_context()) return
+		print("SET ON CLIENT")
 		this._janitor.Add(
 			this.Total.changed.Connect(() => {
 				this.instance[InstancePropertyName] = this.Total.Get() as Indexable;
@@ -87,7 +87,6 @@ export class ConnectedStat<
 		);
 		this._janitor.Add(
 			this.instance.GetPropertyChangedSignal(InstancePropertyName).Connect(() => {
-				print(this.Total.Get())
 				this.instance[InstancePropertyName] = this.Total.Get() as Indexable;
 			}),
 		);

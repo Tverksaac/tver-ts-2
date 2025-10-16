@@ -267,8 +267,8 @@ export class Character {
         //return stats to base values
         const _return_to_base_value = (stat: _possible_stats_type | _possible_custom_stats_type) => {
             if (calculated.has(stat.name)) return
-            stat.Bonus.Modifer.Set(1)
-            stat.Bonus.Raw.Set(0)
+            stat.Bonus.Modifer.Set(1, true)
+            stat.Bonus.Raw.Set(0, true)
         }
         this._stats.forEach(_return_to_base_value)
         this._custom_stats.forEach(_return_to_base_value)
@@ -361,6 +361,7 @@ export class Character {
 
     private init() {
         this._start_replication()
+        task.wait(3)
         this._start_listen_to_effect_changes()
     }
 }
