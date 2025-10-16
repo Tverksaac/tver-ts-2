@@ -12,6 +12,6 @@ if (plr) {
     const char = plr.Character
     const tver_char = char? new Character(char): undefined
     if (tver_char !== undefined) {
-        effect?.ApplyTo(tver_char, 15)
+        effect?.ApplyTo(tver_char, 3)
     }
 }

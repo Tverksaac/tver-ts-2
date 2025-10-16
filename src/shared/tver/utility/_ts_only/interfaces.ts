@@ -13,5 +13,5 @@ export interface CharacterInfo {
     id: number
 
     skills: Map<string, SkillInfo>
-    effects_applied: Map<string, CompoundEffectInfo>
+    compound_effects: Map<string, CompoundEffectInfo>
 }

@@ -1,7 +1,7 @@
 import Signal from "@rbxts/signal";
 import { config } from "shared/tver";
-import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces";
-import { elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array, setup_humanoid, wlog } from "shared/tver/utility/utils";
+import { CharacterInfo, CompoundEffectInfo, SkillInfo } from "shared/tver/utility/_ts_only/interfaces";
+import { dwlog, elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array, setup_humanoid, wlog } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
 import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
@@ -12,6 +12,8 @@ import { Server } from "../main/server";
 import { Client } from "../main/client";
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking";
 import { Players } from "@rbxts/services";
+import { observe, subscribe } from "@rbxts/charm";
+import { client_atom } from "shared/tver/utility/shared";
 
 const LOG_KEY = "CHARACTER"
 const log = get_logger(LOG_KEY)
@@ -48,6 +50,8 @@ export class Character {
 
     public readonly EffectApplied = new Signal<(AppliedEffect: AppliedCompoundEffect) => void>()
     public readonly EffectRemoved = new Signal<(RemovedEffect: AppliedCompoundEffect) => void>()
+    public readonly SkillAdded = new Signal<(AddedSkill: unknown) => void>()
+    public readonly SkillRemoved = new Signal<(RemovedSkill: unknown) => void>()
 
     static GetCharacterFromId(id: number): Character | undefined {
         this.CharactersMap.forEach((character) => {
@@ -110,8 +114,18 @@ export class Character {
     //PUBLIC
     public GetCharacterInfo() {
         const info = {} as CharacterInfo
+
+        const compound_effects = new Map<string, CompoundEffectInfo>()
+        const skills = new Map<string, SkillInfo>()
+        this._effects.forEach((effect) => {
+            compound_effects.set(effect.Name, {
+                id: effect.id,
+                carrier_id: effect.CarrierID
+            })
+        })
         
         info.instance = this.instance
+        info.compound_effects = compound_effects
         info.id = this.id
         
         return info
@@ -333,6 +347,32 @@ export class Character {
     }
 
     //REPLICATION
+    private _update_server_atom() {
+        const server = get_handler() as Server
+
+        server.atom((state) => {
+            const new_state = table.clone(state)
+            new_state.set(this.instance, this.GetCharacterInfo())
+
+            return new_state
+        })
+    }
+
+    private _connect_server_atom_updating() {
+        const signals = [
+            this.EffectApplied,
+            this.EffectRemoved,
+            this.SkillAdded,
+            this.SkillRemoved
+        ]
+
+        signals.forEach((signal) => {
+            signal.Connect(() => {
+                this._update_server_atom()
+            })
+        })
+    }
+
     private _replicate_compound_effect(from: CompoundEffect) {
         
     }
@@ -341,15 +381,8 @@ export class Character {
         const server = get_handler() as Server
         if (!server) log.e("Server not found! Maybe you forgot to Create it?")
         
-        server.atom((state) => {
-            const new_state = table.clone(state)
-            const data = new_state.get(this.instance)
-            if (!data) {
-                new_state.set(this.instance, this.GetCharacterInfo())
-            }
-
-            return new_state
-        })
+        this._connect_server_atom_updating()
+        this._update_server_atom()
 
         if (this.player) {
             ServerEvents.character_replication_done.connect((player) => {
@@ -362,8 +395,13 @@ export class Character {
     private _client_replication() {
         if (!this.player) return
         const client = get_handler() as Client
-        if (!client) log.e("Client not found! Maybe you forgot to Create it?")
-            
+        if (!client) {log.e("Client not found! Maybe you forgot to Create it?")}
+
+        observe(
+            () => client_atom()?.compound_effects || new Map<string, CompoundEffectInfo>(),
+            (val, key) => {print(val, key)}
+        )
+        
         ClientEvents.character_replication_done.fire()
     }
     private _start_replication() {
