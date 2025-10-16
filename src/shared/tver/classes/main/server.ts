@@ -3,8 +3,6 @@ import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
 import { get_logger, is_server_context, set_handler } from "shared/tver/utility/utils"
-import { Character } from "../objects/character"
-import { Players } from "@rbxts/services"
 
 const LOG_KEY = "[SERVER]"
 const log = get_logger(LOG_KEY)
@@ -34,8 +32,8 @@ export class Server {
 
         //test
         subscribe(this.atom, (state) => {
-            dlog.l("Server's atom state was modifer!")
-
+            dlog.l("Server's atom state was modifed to ")
+            print(state)
         })
         //test
 

@@ -4,7 +4,7 @@ import { CharacterInfo, CompoundEffectInfo, SkillInfo } from "shared/tver/utilit
 import { dwlog, elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array, setup_humanoid, wlog } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
-import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
+import { AppliedCompoundEffect, CompoundEffect, CompoundEffectsContainer } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
@@ -15,7 +15,7 @@ import { Players } from "@rbxts/services";
 import { observe, subscribe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
 
-const LOG_KEY = "CHARACTER"
+const LOG_KEY = "[CHARACTER]"
 const log = get_logger(LOG_KEY)
 const dlog = get_logger(LOG_KEY, true)
 
@@ -349,7 +349,7 @@ export class Character {
     //REPLICATION
     private _update_server_atom() {
         const server = get_handler() as Server
-
+        log.l("Updating server state!")
         server.atom((state) => {
             const new_state = table.clone(state)
             new_state.set(this.instance, this.GetCharacterInfo())
@@ -399,7 +399,9 @@ export class Character {
 
         observe(
             () => client_atom()?.compound_effects || new Map<string, CompoundEffectInfo>(),
-            (val, key) => {print(val, key)}
+            (val, key) => {
+                print(val, key)
+            }
         )
         
         ClientEvents.character_replication_done.fire()
@@ -417,7 +419,7 @@ export class Character {
 
     private init() {
         this._start_replication()
-        while(!this.replication_done) {task.wait()} // yield until replciation is done
+        while(!this.replication_done && !is_client_context()) {task.wait()} // yield until replciation is don
         this._start_listen_to_effect_changes()
         return true
     }

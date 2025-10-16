@@ -87,5 +87,6 @@ export function get_logger(logger_key: string, debug = false) {
         l: (text: unknown) => {!debug? log(key + text) : dlog(key + text)},
         w: (text: unknown) => {!debug? wlog(key + text) : dwlog(key + text)},
         e: (text: unknown) => {!debug? elog(key + text) : delog(key + text)},
+        r: (text: unknown) => (print(key, text))
     }
 }

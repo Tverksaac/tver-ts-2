@@ -4,8 +4,15 @@ import {CustomStatEffect, StrictStatEffect } from "../core/stat_effect"
 import { Character } from "./character";
 import { EffectState } from "shared/tver/utility/_ts_only/types";
 import { StateMachine } from "../fundamental/state_machine";
-import { get_id, is_client_context, wlog } from "shared/tver/utility/utils";
+import { get_id, get_logger, is_client_context, wlog } from "shared/tver/utility/utils";
 import { Constructor } from "@flamework/core/out/utility";
+import { Timer } from "@rbxts/timer";
+import { Janitor } from "@rbxts/janitor";
+
+const LOG_KEY = "[EFFECT]"
+
+const log = get_logger(LOG_KEY)
+const dlog = get_logger(LOG_KEY, true)
 
 function throw_client_warn(): boolean {
     if (is_client_context()) {
@@ -62,10 +69,13 @@ export class AppliedCompoundEffect extends CompoundEffect{
     public PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[];
 
     public readonly state = new StateMachine<[EffectState]>()
+    public readonly timer = new Timer(1)
     public readonly id = get_id()
 
     public readonly InheritsFrom: CompoundEffect
     public readonly CarrierID: number
+    
+    private readonly _janitor = new Janitor()
 
     constructor (from: CompoundEffect, to: Character, duration: number) {
         super(from.Name)
@@ -81,6 +91,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             return this
         }
 
+        this.init()
         this.state.SetState("Ready")
         this.Start()
 
@@ -98,8 +109,11 @@ export class AppliedCompoundEffect extends CompoundEffect{
             warn(this + " Effect cant be started twice!")
             return
         }
-
+        
         this.state.SetState("On")
+
+        this.timer.setLength(this.Duration)
+        this.timer.start()
 
         this.for_each_effect((effect) => {
             effect.Start(this.Duration)
@@ -114,6 +128,8 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
         this.state.SetState("On")
 
+        this.timer.resume()
+
         this.for_each_effect((effect) => {
             effect.Resume()
         })
@@ -127,6 +143,8 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
         this.state.SetState("Off")
 
+        this.timer.pause()
+
         this.for_each_effect((effect) => {
             effect.Stop()
         })
@@ -138,14 +156,20 @@ export class AppliedCompoundEffect extends CompoundEffect{
             return
         }
 
-        this.state.SetState("Ended")
+        this.state.SetState("Ended") // change state
 
+        if (!this.timer.stopped) this.timer.stop() // stop timer if still going
+
+        //end all effects
         this.for_each_effect((effect) => {
             effect.End()
         })
 
         const carrier = Character.GetCharacterFromId(this.CarrierID)
-        carrier?._internal_remove_effect(this.id)
+        carrier?._internal_remove_effect(this.id) // remove effect from carrier
+
+        log.w("ENDING EFFECT")
+        log.w("CARRIER NAME: " + carrier?.instance.Name)
 
         this.Destroy()
     }
@@ -157,6 +181,22 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.for_each_effect((effect) => {
             effect.Destroy()
         })
+
+        this._janitor.Cleanup()
+    }
+    
+    private _listen_for_timer() {
+        const connection =
+        this.timer.stopped.Connect(() => {
+            this.Destroy()
+        })
+
+        this._janitor.Add(
+            () => connection.Disconnect()
+        )
+    }
+    private init() {
+        this._listen_for_timer()
     }
 }
 
