@@ -1,9 +1,13 @@
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents } from "shared/tver/network/networking"
 import { client_atom } from "shared/tver/utility/shared"
-import { is_client_context, set_handler, wlog } from "shared/tver/utility/utils"
+import { get_logger, is_client_context, set_handler } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
 import { observe, subscribe } from "@rbxts/charm"
+
+const LOG_KEY = "[CLIENT]"
+const log = get_logger(LOG_KEY)
+const dlog = get_logger(LOG_KEY, true)
 
 let client_activated = false
 
@@ -34,7 +38,7 @@ export class Client {
         
         ClientEvents.request_sync.fire()
 
-        wlog("Client Was Succesfully Started")
+        log.w("Client Was Succesfully Started")
     }   
 
     private start_replication() {

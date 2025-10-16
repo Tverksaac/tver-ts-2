@@ -2,9 +2,13 @@ import Charm, { Atom, atom, effect, subscribe } from "@rbxts/charm"
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
-import { dlog, dwlog, is_server_context, set_handler, wlog } from "shared/tver/utility/utils"
+import { get_logger, is_server_context, set_handler } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
 import { Players } from "@rbxts/services"
+
+const LOG_KEY = "[SERVER]"
+const log = get_logger(LOG_KEY)
+const dlog = get_logger(LOG_KEY, true)
 
 let server_activated = false
 
@@ -30,13 +34,13 @@ export class Server {
 
         //test
         subscribe(this.atom, (state) => {
-            dlog("Server's atom state was modifer!")
+            dlog.l("Server's atom state was modifer!")
 
         })
         //test
 
         ServerEvents.request_sync.connect((player) => {
-            dlog('Hydrating: ' + player)
+            dlog.l('Hydrating: ' + player)
             this.syncer.hydrate(player)
         })
 
@@ -75,7 +79,7 @@ export class Server {
 
         this.isActive = true
 
-        wlog("Server Was Succesfully Started")
+        log.w("Server Was Succesfully Started")
     }
 }
 

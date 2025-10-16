@@ -1,6 +1,9 @@
 import { Janitor } from "@rbxts/janitor";
 import { SeparatedProperty } from "./property";
-import { dwlog, is_client_context, wlog } from "shared/tver/utility/utils";
+import { dwlog, get_logger, is_client_context } from "shared/tver/utility/utils";
+
+const LOG_KEY = "[STAT]"
+const dlog = get_logger(LOG_KEY, true)
 
 function calculate_total_bonus(stat: SeparatedStat): number {
 	const base = stat.Base.Get();
@@ -11,7 +14,7 @@ function calculate_total_bonus(stat: SeparatedStat): number {
 }
 
 function update_total(stat: SeparatedStat): void {
-	dwlog(stat.name + " updated to " + calculate_total_bonus(stat))
+	dlog.w(stat.name + " updated to " + calculate_total_bonus(stat))
 	stat.Total.Set(calculate_total_bonus(stat));
 }
 
@@ -49,7 +52,7 @@ export class SeparatedStat {
 		);
 		this._janitor.Add(
 			this.Bonus.Modifer.changed.Connect(() => {
-				dwlog("Modifer for " + this.name + " changed to " + this.Bonus.Modifer.Get())
+				dlog.w("Modifer for " + this.name + " changed to " + this.Bonus.Modifer.Get())
 				update_total(this);
 			}),
 		);

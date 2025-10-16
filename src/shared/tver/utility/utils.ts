@@ -53,7 +53,7 @@ export function get_handler(): Server | Client | undefined {
 }
 
 //Output
-const LOG_KEY = "[TVER]: "
+const LOG_KEY = "[TVER]"
 
 export function log(text: unknown): true {
     print(LOG_KEY + text)
@@ -79,4 +79,13 @@ export function dwlog(text: unknown) {
 
 export function delog(text: unknown) {
     if (__DEBUG__) elog(text)
+}
+
+export function get_logger(key: string, debug = false) {
+    key = key + debug? "[DEBUG]: " : ": "
+    return {
+        l: (text: unknown) => {!debug? log(key + text) : dlog(key + text)},
+        w: (text: unknown) => {!debug? wlog(key + text) : dwlog(key + text)},
+        e: (text: unknown) => {!debug? elog(key + text) : delog(key + text)},
+    }
 }

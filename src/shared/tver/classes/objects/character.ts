@@ -1,7 +1,7 @@
 import Signal from "@rbxts/signal";
 import { config } from "shared/tver";
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces";
-import { elog, get_handler, get_id, is_client_context, is_server_context, map_to_array, setup_humanoid, wlog } from "shared/tver/utility/utils";
+import { elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array, setup_humanoid, wlog } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
 import { AppliedCompoundEffect, CompoundEffect } from "./compound_effect";
@@ -10,11 +10,12 @@ import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_eff
 import { Affects } from "shared/tver/utility/_ts_only/types";
 import { Server } from "../main/server";
 import { Client } from "../main/client";
-import { observe, subscribe } from "@rbxts/charm";
-import { client_atom } from "shared/tver/utility/shared";
-import { find } from "@rbxts/immut/src/table";
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking";
 import { Players } from "@rbxts/services";
+
+const LOG_KEY = "CHARACTER"
+const log = get_logger(LOG_KEY)
+const dlog = get_logger(LOG_KEY, true)
 
 type _possible_stats_type = (ConnectedStat<Humanoid, ExtractKeys<WritableInstanceProperties<Humanoid>, number>>)
 type _possible_custom_stats_type = (SeparatedStat | ConnectedStat<never, never>)
@@ -338,7 +339,7 @@ export class Character {
 
     private _server_replication() {
         const server = get_handler() as Server
-        if (!server) elog("Server not found! Maybe you forgot to Create it?")
+        if (!server) log.e("Server not found! Maybe you forgot to Create it?")
         
         server.atom((state) => {
             const new_state = table.clone(state)
@@ -361,7 +362,7 @@ export class Character {
     private _client_replication() {
         if (!this.player) return
         const client = get_handler() as Client
-        if (!client) elog("Client not found! Maybe you forgot to Create it?")
+        if (!client) log.e("Client not found! Maybe you forgot to Create it?")
             
         ClientEvents.character_replication_done.fire()
     }
