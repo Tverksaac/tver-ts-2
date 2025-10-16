@@ -73,6 +73,7 @@ export class Character {
         return map_to_array(this.GetAllCharactersMap())
     }
 
+    //Yields!
     constructor(from_instance: Instance) {
         this.id = is_server_context()? get_id() : 1
         this.instance = from_instance
@@ -191,11 +192,9 @@ export class Character {
 
             effect.StatEffects.forEach((stat_effect) => {
                 this._stat_effects.push(stat_effect)
-                print(stat_effect)
             })
             effect.PropertyEffects.forEach((property_effect) => {
                 this._property_effects.push(property_effect)
-                print(property_effect)
             })
 
             effect.for_each_effect((_effect) => {
@@ -238,7 +237,6 @@ export class Character {
         const calculated = new Map<string, {Affects: string, Raw: number, Modifer: number}>()
 
         this._stat_effects.forEach((effect) => {
-            print(effect.state.GetState())
             if (effect.state.GetState() !== "On") {
                 return
             }
@@ -272,17 +270,14 @@ export class Character {
         const calculated = this._calculate_stat_effects()
 
         //return stats to base values
-        print(calculated)
         const _return_to_base_value = (stat: _possible_stats_type | _possible_custom_stats_type) => {
             if (calculated.has(stat.name)) return
             stat.Bonus.Modifer.Set(1)
             stat.Bonus.Raw.Set(0)
-            print(stat)
 
         }
         this._stats.forEach(_return_to_base_value)
         this._custom_stats.forEach(_return_to_base_value)
-        print(this._stats)
 
         calculated.forEach((stat, key) => {
             let stat_to_affect
@@ -383,7 +378,7 @@ export class Character {
 
     private init() {
         this._start_replication()
-        while(!this.replication_done) {task.wait()}
+        while(!this.replication_done) {task.wait()} // yield until replciation is done
         this._start_listen_to_effect_changes()
         return true
     }

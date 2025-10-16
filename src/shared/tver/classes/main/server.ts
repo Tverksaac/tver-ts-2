@@ -2,7 +2,7 @@ import Charm, { Atom, atom, effect, subscribe } from "@rbxts/charm"
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
-import { is_server_context, set_handler, wlog } from "shared/tver/utility/utils"
+import { dlog, dwlog, is_server_context, set_handler, wlog } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
 import { Players } from "@rbxts/services"
 
@@ -30,22 +30,18 @@ export class Server {
 
         //test
         subscribe(this.atom, (state) => {
-            print("SERVER ATOM WAS MODIFED! NEW STATE:")
+            dwlog("Server's atom state was modifer!")
             print(state)
-            print("SHOULD BE SYNCING NOW...")
 
         })
         //test
 
         ServerEvents.request_sync.connect((player) => {
-            print('Hydrating: ' + player)
+            dlog('Hydrating: ' + player)
             this.syncer.hydrate(player)
         })
 
         this.syncer.connect((player, ...payloads) => {
-            print("SYNCING...")
-            print(player, payloads)
-
             const payload_to_sync = [] as CharmSync.SyncPayload<{
                 atom: Charm.Atom<CharacterInfo | undefined>
             }>[]

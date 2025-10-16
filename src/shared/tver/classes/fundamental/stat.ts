@@ -1,6 +1,6 @@
 import { Janitor } from "@rbxts/janitor";
 import { SeparatedProperty } from "./property";
-import { is_client_context, wlog } from "shared/tver/utility/utils";
+import { dwlog, is_client_context, wlog } from "shared/tver/utility/utils";
 
 function calculate_total_bonus(stat: SeparatedStat): number {
 	const base = stat.Base.Get();
@@ -11,7 +11,7 @@ function calculate_total_bonus(stat: SeparatedStat): number {
 }
 
 function update_total(stat: SeparatedStat): void {
-	wlog(stat.name + " updated to " + calculate_total_bonus(stat))
+	dwlog(stat.name + " updated to " + calculate_total_bonus(stat))
 	stat.Total.Set(calculate_total_bonus(stat));
 }
 
@@ -49,7 +49,7 @@ export class SeparatedStat {
 		);
 		this._janitor.Add(
 			this.Bonus.Modifer.changed.Connect(() => {
-				wlog("Modifer for " + this.name + " changed to " + this.Bonus.Modifer.Get())
+				dwlog("Modifer for " + this.name + " changed to " + this.Bonus.Modifer.Get())
 				update_total(this);
 			}),
 		);
@@ -81,7 +81,6 @@ export class ConnectedStat<
 		this.conected_to = InstancePropertyName;
 		
 		if (is_client_context()) return
-		print("SET ON CLIENT")
 		this._janitor.Add(
 			this.Total.changed.Connect(() => {
 				this.instance[InstancePropertyName] = this.Total.Get() as Indexable;

@@ -85,7 +85,6 @@ export class ConnectedProperty<
 		this.override = Override;
 
 		if (is_client_context()) return
-		print("SET ON CLIENT")
 		this._janitor.Add(
 			this.changed.Connect((new_value: ConnectedInstance[Name]) => {
 				this.instance[InstancesPropertyName] = new_value;

@@ -1,5 +1,6 @@
 import { Players, RunService } from "@rbxts/services"
 import { Client, Server } from "../exports"
+import { __DEBUG__ } from ".."
 
 export function map_to_array<K extends defined, V extends defined>(map: Map<K, V>): V[] {
     const array : V[] = []
@@ -66,4 +67,16 @@ export function wlog(text: unknown): true {
 
 export function elog(text: unknown) {
     return error(LOG_KEY + text + "\n" + debug.traceback())
+}
+
+export function dlog(text: unknown) {
+    if (__DEBUG__) log(text)
+}
+
+export function dwlog(text: unknown) {
+    if (__DEBUG__) wlog(text)
+}
+
+export function delog(text: unknown) {
+    if (__DEBUG__) elog(text)
 }
