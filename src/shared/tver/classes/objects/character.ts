@@ -258,7 +258,7 @@ export class Character {
             } else if (effect_type === "Raw") {
                 member.Raw = member.Raw + effect.Strength
              } else {
-                 error(effect + " have wrong effect type property! /n Should be 'Raw' or 'Modifer' but have value of: " + effect.EffectType)
+                 log.e(effect + " have wrong effect type property! /n Should be 'Raw' or 'Modifer' but have value of: " + effect.EffectType)
             }
 
             calculated.set(member.Affects, member)
@@ -295,7 +295,7 @@ export class Character {
                     stat_to_affect.Bonus.Modifer.Set(stat.Modifer)
                     stat_to_affect.Bonus.Raw.Set(stat.Raw)  
                 } else {
-                    error(stat + " Cant affect any of stats becuase theres no stat with name: " + stat.Affects)
+                    log.e(stat + " Cant affect any of stats becuase theres no stat with name: " + stat.Affects)
                 } 
             }
         })
@@ -312,7 +312,7 @@ export class Character {
                 if (typeOf(prop.Strength) === typeOf(prop_to_affect.Get())) {
                     prop_to_affect.Set(prop.Strength as never)
                 } else {
-                    error(prop + " Have wrong Strength value! /n Cant assign " + typeOf(prop.Strength) + "to " + typeOf(prop_to_affect.Get()))
+                    log.e(prop + " Have wrong Strength value! /n Cant assign " + typeOf(prop.Strength) + "to " + typeOf(prop_to_affect.Get()))
                 }
                 
             } else {
@@ -323,10 +323,10 @@ export class Character {
                     if (typeOf(prop.Strength) === typeOf(prop_to_affect.Get())) {
                         prop_to_affect.Set(prop.Strength as never)
                     } else {
-                        error(prop + " Have wrong Strength value! /n Cant assign " + typeOf(prop.Strength) + "to " + typeOf(prop_to_affect.Get()))
+                        log.e(prop + " Have wrong Strength value! /n Cant assign " + typeOf(prop.Strength) + "to " + typeOf(prop_to_affect.Get()))
                     }
                 } else {
-                    error(prop + " Cant affect any of properties becuase theres no property with name: " + prop.Affects)
+                    log.e(prop + " Cant affect any of properties becuase theres no property with name: " + prop.Affects)
                 }
             }
         })

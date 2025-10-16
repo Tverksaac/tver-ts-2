@@ -81,8 +81,8 @@ export function delog(text: unknown) {
     if (__DEBUG__) elog(text)
 }
 
-export function get_logger(key: string, debug = false) {
-    key = key + debug? "[DEBUG]: " : ": "
+export function get_logger(logger_key: string, debug = false) {
+    const key = logger_key + (debug? "[DEBUG]: " : ": ")
     return {
         l: (text: unknown) => {!debug? log(key + text) : dlog(key + text)},
         w: (text: unknown) => {!debug? wlog(key + text) : dwlog(key + text)},
