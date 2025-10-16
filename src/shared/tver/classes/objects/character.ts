@@ -13,6 +13,8 @@ import { Client } from "../main/client";
 import { observe, subscribe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
 import { find } from "@rbxts/immut/src/table";
+import { ClientEvents, ServerEvents } from "shared/tver/network/networking";
+import { Players } from "@rbxts/services";
 
 type _possible_stats_type = (ConnectedStat<Humanoid, ExtractKeys<WritableInstanceProperties<Humanoid>, number>>)
 type _possible_custom_stats_type = (SeparatedStat | ConnectedStat<never, never>)
@@ -25,9 +27,12 @@ export class Character {
     public static readonly CharacterAdded = new Signal<(Character: Character) => void>
     public static readonly CharacterRemoved = new Signal<(Character: Character) => void>
 
+    public readonly player?: Player | undefined
     public readonly instance: Instance
     public readonly humanoid: Humanoid
     public readonly id: number
+
+    private replication_done = false
 
     private readonly _stats = new Map<string, _possible_stats_type>()
     private readonly _properties = new Map<string, _possible_properties_type>()
@@ -72,6 +77,7 @@ export class Character {
         this.id = is_server_context()? get_id() : 1
         this.instance = from_instance
         this.humanoid = this.instance.FindFirstChildWhichIsA("Humanoid") || elog(this.instance + " Do not have Humanoid as Child!")
+        this.player = Players.GetPlayerFromCharacter(this.instance)
 
         //Setup Basic Stats & Properties
         //IMPORTANT: Name of property/stat should be same as what it affects
@@ -92,10 +98,11 @@ export class Character {
         })
 
         //init
+        this.init() // should be here, then everything else, so character fully loads
+        //init
+
         Character.CharactersMap.set(this.instance, this)
         Character.CharacterAdded.Fire(this)
-
-        this.init()
     }
 
     //PUBLIC
@@ -265,13 +272,17 @@ export class Character {
         const calculated = this._calculate_stat_effects()
 
         //return stats to base values
+        print(calculated)
         const _return_to_base_value = (stat: _possible_stats_type | _possible_custom_stats_type) => {
             if (calculated.has(stat.name)) return
-            stat.Bonus.Modifer.Set(1, true)
-            stat.Bonus.Raw.Set(0, true)
+            stat.Bonus.Modifer.Set(1)
+            stat.Bonus.Raw.Set(0)
+            print(stat)
+
         }
         this._stats.forEach(_return_to_base_value)
         this._custom_stats.forEach(_return_to_base_value)
+        print(this._stats)
 
         calculated.forEach((stat, key) => {
             let stat_to_affect
@@ -343,13 +354,24 @@ export class Character {
 
             return new_state
         })
+
+        if (this.player) {
+            ServerEvents.character_replication_done.connect((player) => {
+                this.replication_done = true
+            })
+        } else {
+            this.replication_done = true
+        }
     }
     private _client_replication() {
+        if (!this.player) return
         const client = get_handler() as Client
         if (!client) elog("Client not found! Maybe you forgot to Create it?")
+            
+        ClientEvents.character_replication_done.fire()
     }
     private _start_replication() {
-        if (is_client_context()) this._client_replication(); else if (is_server_context()) this._server_replication();
+        is_client_context()? this._client_replication() : this._server_replication()
     }
 
     //MAIN
@@ -361,7 +383,8 @@ export class Character {
 
     private init() {
         this._start_replication()
-        task.wait(3)
+        while(!this.replication_done) {task.wait()}
         this._start_listen_to_effect_changes()
+        return true
     }
 }

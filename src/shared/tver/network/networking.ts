@@ -4,7 +4,8 @@ import { CharacterInfo } from "../utility/_ts_only/interfaces";
 import CharmSync from "@rbxts/charm-sync";
 
 interface ClientToServerEvents {
-	request_sync(): void
+	request_sync(): void,
+	character_replication_done(): void
 }
 
 interface ServerToClientEvents {
