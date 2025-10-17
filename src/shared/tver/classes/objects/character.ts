@@ -14,6 +14,7 @@ import { ClientEvents, ServerEvents } from "shared/tver/network/networking";
 import { Players } from "@rbxts/services";
 import { observe, subscribe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
+import { isConstructor } from "@flamework/components/out/utility";
 
 const LOG_KEY = "[CHARACTER]"
 const log = get_logger(LOG_KEY)
@@ -23,6 +24,8 @@ type _possible_stats_type = (ConnectedStat<Humanoid, ExtractKeys<WritableInstanc
 type _possible_custom_stats_type = (SeparatedStat | ConnectedStat<never, never>)
 type _possible_properties_type = (ConnectedProperty<Humanoid, WritablePropertyNames<InstanceProperties<Humanoid>>>)
 type _possible_custom_properties_type = (SeparatedProperty<defined> | ConnectedProperty<never, never>)
+type _every_possible_stats_type = _possible_stats_type | _possible_custom_stats_type
+type _every_possible_properties_type = _possible_properties_type | _possible_custom_properties_type
 
 export class Character {
     private static readonly CharactersMap = new Map<Instance, Character>()
@@ -35,7 +38,8 @@ export class Character {
     public readonly humanoid: Humanoid
     public readonly id: number
 
-    private replication_done = false
+    private replication_done: boolean
+    = is_client_context()
 
     private readonly _stats = new Map<string, _possible_stats_type>()
     private readonly _properties = new Map<string, _possible_properties_type>()
@@ -88,6 +92,7 @@ export class Character {
         //Setup Basic Stats & Properties
         //IMPORTANT: Name of property/stat should be same as what it affects
         const _stats = [
+            new ConnectedStat<Humanoid, "MaxHealth">("MaxHealth", 100, this.humanoid, "MaxHealth"),
             new ConnectedStat<Humanoid, "Health">("Health", 100, this.humanoid, "Health"),
             new ConnectedStat<Humanoid, "WalkSpeed">("WalkSpeed", 16, this.humanoid, "WalkSpeed"),
             new ConnectedStat<Humanoid, "JumpHeight">("JumpHeight", 7.2, this.humanoid, "JumpHeight")
@@ -161,6 +166,33 @@ export class Character {
         return
     }
 
+    public AddStat(stat: _every_possible_stats_type): boolean {
+        print(stat.getType())
+        if (this._stats.get(stat.name) || this._custom_stats.get(stat.name)) {
+            log.w(stat + " is already exists in " + this + "!")
+            return false
+        }
+        if (stat.getType() === "ConnectedStat") {
+            this._stats.set(stat.name, stat as _possible_stats_type)
+        } else {
+            this._custom_stats.set(stat.name, stat as _possible_custom_stats_type)
+        }
+        return true
+    }
+    public AddProperty(prop: _every_possible_properties_type): boolean {
+        print(prop.getType())
+        if (this._properties.get(prop.name) || this._custom_properties.get(prop.name)) {
+            log.w(prop + " is already exists in " + this + "!")
+            return false
+        }
+        if (prop.getType() === "ConnectedProperty") {
+            this._properties.set(prop.name, prop as _possible_properties_type)
+        } else {
+            this._custom_properties.set(prop.name, prop as _possible_custom_properties_type)
+        }
+        return true
+    }
+
     //PUBLIC: DESTROY
     public Destroy() {
         Character.CharacterRemoved.Fire(this)
@@ -169,6 +201,8 @@ export class Character {
     
     // @internal //
     //STATUS EFFECTS
+
+    //!!Dont use, even tho its public!!---
     public _internal_apply_effect(applied_effect: AppliedCompoundEffect) {
         this._effects.push(applied_effect)
         this.EffectApplied.Fire(applied_effect)
@@ -185,6 +219,8 @@ export class Character {
 
         return effect
     }
+    //^^^!!Dont use, even tho its public!!---^^^
+
     private _start_listen_to_effect_changes() {
         const listen_to: Signal[] = [
             this.EffectApplied,
@@ -259,7 +295,7 @@ export class Character {
             let member = calculated.get(effect.Affects)
             const effect_type = effect.EffectType
 
-            if (member) {} else {
+            if (!member) {
                 member = {
                     Affects: effect.Affects,
                     Raw: 0,
@@ -271,7 +307,7 @@ export class Character {
                 member.Modifer = member.Modifer * effect.Strength
             } else if (effect_type === "Raw") {
                 member.Raw = member.Raw + effect.Strength
-             } else {
+            } else {
                  log.e(effect + " have wrong effect type property! /n Should be 'Raw' or 'Modifer' but have value of: " + effect.EffectType)
             }
 
@@ -296,22 +332,14 @@ export class Character {
 
         calculated.forEach((stat, key) => {
             let stat_to_affect
-            stat_to_affect = this._stats.get(stat.Affects)
+            stat_to_affect = this._stats.get(stat.Affects) || this._custom_stats.get(stat.Affects)
             if (stat_to_affect) {
                 //stat to affect is innate stat
                 stat_to_affect.Bonus.Modifer.Set(stat.Modifer)
-                stat_to_affect.Bonus.Raw.Set(stat.Raw)               
+                 stat_to_affect.Bonus.Raw.Set(stat.Raw)               
             } else {
-                stat_to_affect = this._custom_stats.get(stat.Affects)
-
-                if (stat_to_affect) {
-                    //stat to affect is custom stat
-                    stat_to_affect.Bonus.Modifer.Set(stat.Modifer)
-                    stat_to_affect.Bonus.Raw.Set(stat.Raw)  
-                } else {
-                    log.e(stat + " Cant affect any of stats becuase theres no stat with name: " + stat.Affects)
-                } 
-            }
+                log.e(stat + " Cant affect any of stats becuase theres no stat with name: " + stat.Affects)
+            } 
         })
     }
     private _update_properties() {
@@ -419,7 +447,7 @@ export class Character {
 
     private init() {
         this._start_replication()
-        while(!this.replication_done && !is_client_context()) {task.wait()} // yield until replciation is don
+        while(!this.replication_done && !is_client_context()) {task.wait()} // yield until replciation is done
         this._start_listen_to_effect_changes()
         return true
     }
