@@ -2,7 +2,6 @@ import { Janitor } from "@rbxts/janitor";
 import { RunService } from "@rbxts/services";
 import Signal from "@rbxts/signal";
 import { is_client_context } from "shared/tver/utility/utils";
-
 export class SeparatedProperty<T> {
 	protected _janitor = new Janitor()
 
@@ -38,6 +37,10 @@ export class SeparatedProperty<T> {
 				this.Behaviours.OnTick();
 			}),
 		);
+	}
+
+	getType() {
+		return tostring(this)
 	}
 
 	Set(set_to: T, silent = false) {
