@@ -39,7 +39,7 @@ export class Character {
     public readonly id: number
 
     private replication_done: boolean
-    = is_client_context()
+    = false
 
     private readonly _stats = new Map<string, _possible_stats_type>()
     private readonly _properties = new Map<string, _possible_properties_type>()
