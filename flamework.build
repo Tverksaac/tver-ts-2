@@ -25,7 +25,8 @@
 		"tver-ts-2:out/shared/tver/network/networking@GlobalFunctions": "shared/tver/network/networking@GlobalFunctions",
 		"tver-ts-2:out/shared/tver/network/networking@GlobalEvents": "shared/tver/network/networking@GlobalEvents",
 		"tver-ts-2:out/shared/tver/classes/objects/compound_effect@CompoundEffectsContainer": "shared/tver/classes/objects/compound_effect@CompoundEffectsContainer",
-		"tver-ts-2:out/shared/tver/test/stat_effect_classes@WalkSpeedEffect": "shared/tver/test/stat_effect_classes@WalkSpeedEffect"
+		"tver-ts-2:out/shared/tver/test/stat_effect_classes@WalkSpeedEffect": "shared/tver/test/stat_effect_classes@WalkSpeedEffect",
+		"tver-ts-2:out/shared/tver/classes/core/handler@Handler": "shared/tver/classes/core/handler@Handler"
 	},
 	"metadata": {}
 }

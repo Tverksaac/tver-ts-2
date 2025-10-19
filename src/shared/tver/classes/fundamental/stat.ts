@@ -64,7 +64,7 @@ export class SeparatedStat {
 	}
 
 	public getType() {
-		return tostring(this)
+		return "SeparatedStat"
 	}
 
 	public Destroy() {
@@ -80,6 +80,7 @@ export class ConnectedStat<
 	conected_to: Name;
 
 	constructor(Name: Name, Value: number, ConnectToInstance: ConnectedInstance) {
+		dlog.l(tostring(Name))
 		super(tostring(Name), Value);
 		this.instance = ConnectToInstance;
 		this.conected_to = Name;
@@ -105,5 +106,9 @@ export class ConnectedStat<
 				this.instance[Name] = this.Total.Get() as Indexable;
 			}),
 		);
+	}
+
+	public getType(): string {
+		return "ConnectedStat"
 	}
 }

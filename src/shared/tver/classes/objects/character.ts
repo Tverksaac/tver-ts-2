@@ -94,7 +94,7 @@ export class Character {
         const _stats = [
             new ConnectedStat<Humanoid, "MaxHealth">("MaxHealth", 100, this.humanoid),
             new ConnectedStat<Humanoid, "Health">("Health", 100, this.humanoid),
-            new ConnectedStat<Humanoid, "WalkSpeed">("WalkSpeed", 16, this.humanoid),
+            new ConnectedStat<Humanoid, "WalkSpeed">("WalkSpeed", 25, this.humanoid),
             new ConnectedStat<Humanoid, "JumpHeight">("JumpHeight", 7.2, this.humanoid)
         ]
         const _properties = [
@@ -102,10 +102,10 @@ export class Character {
         ]
 
         _stats.forEach((stat) => {
-            this._stats.set(stat.name, stat)
+            this.AddStat(stat)
         })
         _properties.forEach((prop) => {
-            this._properties.set(prop.name, prop)
+            this.AddProperty(prop)
         })
 
         //init

@@ -3,6 +3,7 @@ import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
 import { get_logger, is_server_context, set_handler } from "shared/tver/utility/utils"
+import { Handler } from "../core/handler"
 
 const LOG_KEY = "[SERVER]"
 const log = get_logger(LOG_KEY)
@@ -10,8 +11,8 @@ const dlog = get_logger(LOG_KEY, true)
 
 let server_activated = false
 
-export class Server {
-    private isActive = false
+export class Server extends Handler {
+    public Activated = false
 
     public atom = atom<Map<Instance, CharacterInfo>>(new Map())
     private syncer = CharmSync.server(
@@ -21,21 +22,17 @@ export class Server {
     )
 
     constructor () {
+        super()
         set_handler(this)
     }
 
     public Start() {
-        if (this.isActive) {
+        if (this.Activated) {
             warn(this + " Cant be Started twice!")
             return
         }
 
-        //test
-        subscribe(this.atom, (state) => {
-            dlog.l("Server's atom state was modifed to ")
-            print(state)
-        })
-        //test
+        this.Load()
 
         ServerEvents.request_sync.connect((player) => {
             dlog.l('Hydrating: ' + player)
@@ -47,7 +44,6 @@ export class Server {
                 atom: Charm.Atom<CharacterInfo | undefined>
             }>[]
 
-            
             for (const payload of payloads) {
                 if (payload.type === "init") {
                     const data = player.Character? payload.data.atom?.get(player.Character) : undefined
@@ -75,8 +71,7 @@ export class Server {
             ServerEvents.sync.fire(player, payload_to_sync)
         })
 
-        this.isActive = true
-
+        this.Activated = true
         log.w("Server Was Succesfully Started")
     }
 }

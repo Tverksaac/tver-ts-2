@@ -44,10 +44,6 @@ export class SeparatedProperty<T> {
 		);
 	}
 
-	getType() {
-		return tostring(this)
-	}
-
 	Set(set_to: T, silent = false) {
 		if (this.Behaviours.CanSet()) {
 			if (this.value === set_to) {
@@ -63,6 +59,10 @@ export class SeparatedProperty<T> {
 
 	Get() {
 		return this.value;
+	}
+
+	getType(): string {
+		return "SeparatedProperty"
 	}
 
 	Destroy() {
@@ -113,5 +113,9 @@ export class ConnectedProperty<
 				}
 			}),
 		);
+	}
+	
+	public getType(): string {
+		return "ConnectedProperty"
 	}
 }

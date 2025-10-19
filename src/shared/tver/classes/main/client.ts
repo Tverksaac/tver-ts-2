@@ -4,6 +4,7 @@ import { client_atom } from "shared/tver/utility/shared"
 import { get_logger, is_client_context, set_handler } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
 import { observe, subscribe } from "@rbxts/charm"
+import { Handler } from "../core/handler"
 
 const LOG_KEY = "[CLIENT]"
 const log = get_logger(LOG_KEY)
@@ -11,8 +12,8 @@ const dlog = get_logger(LOG_KEY, true)
 
 let client_activated = false
 
-export class Client {
-    private isActive = false
+export class Client extends Handler {
+    public Activated = false;
 
     private syncer = CharmSync.client(
         {
@@ -21,14 +22,17 @@ export class Client {
     )
 
     constructor () {
+        super()
         set_handler(this)
     }
 
     public Start() {
-        if (this.isActive) {
+        if (this.Activated) {
             warn(this + " Cant be Started twice!")
             return
         }
+
+        this.Load()
 
         this.start_replication()
 
@@ -38,6 +42,7 @@ export class Client {
         
         ClientEvents.request_sync.fire()
 
+        this.Activated = true
         log.w("Client Was Succesfully Started")
     }   
 
