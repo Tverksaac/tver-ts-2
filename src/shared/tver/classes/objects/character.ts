@@ -168,7 +168,7 @@ export class Character {
 
     public AddStat(stat: _every_possible_stats_type): boolean {
         if (this._stats.get(stat.name) || this._custom_stats.get(stat.name)) {
-            log.w(stat + " is already exists in " + this + "!")
+            log.w(stat.name + " Stat" + " is already exists in " + this.instance.Name + "!")
             return false
         }
         if (stat.getType() === "ConnectedStat") {
@@ -181,7 +181,7 @@ export class Character {
     public AddProperty(prop: _every_possible_properties_type): boolean {
         print(prop.getType())
         if (this._properties.get(prop.name) || this._custom_properties.get(prop.name)) {
-            log.w(prop + " is already exists in " + this + "!")
+            log.w(prop.name + " is already exists in " + this.instance.Name + "!")
             return false
         }
         if (prop.getType() === "ConnectedProperty") {

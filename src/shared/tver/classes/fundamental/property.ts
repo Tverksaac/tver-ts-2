@@ -1,7 +1,12 @@
 import { Janitor } from "@rbxts/janitor";
 import { RunService } from "@rbxts/services";
 import Signal from "@rbxts/signal";
-import { is_client_context } from "shared/tver/utility/utils";
+import { get_logger, is_client_context } from "shared/tver/utility/utils";
+
+const LOG_KEY = "[PROPERTY]"
+const CONNECTED_TAG = "[TVER]" + LOG_KEY + " Connected to "
+const dlog = get_logger(LOG_KEY, true)
+
 export class SeparatedProperty<T> {
 	protected _janitor = new Janitor()
 
@@ -81,11 +86,17 @@ export class ConnectedProperty<
 		CanBeCreatedOnClient = false
 	) {
 		super(tostring(Name), Value);
-
 		this.instance = ConnectToInstance;
 		this.instance[Name] = this.value;
 		this.connected_to = Name;
 		this.override = Override;
+
+		if (ConnectToInstance.HasTag(CONNECTED_TAG + tostring(Name))) {
+			this.Destroy()
+			return
+		} else {
+			ConnectToInstance.AddTag(CONNECTED_TAG + tostring(Name))
+		}
 
 		if (is_client_context() && !CanBeCreatedOnClient) return
 		this._janitor.Add(

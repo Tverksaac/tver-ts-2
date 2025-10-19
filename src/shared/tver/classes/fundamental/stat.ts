@@ -2,8 +2,8 @@ import { Janitor } from "@rbxts/janitor";
 import { SeparatedProperty } from "./property";
 import { dwlog, get_logger, is_client_context } from "shared/tver/utility/utils";
 
-const CONNECTED_TAG = "[TVER][STAT] Connected to "
 const LOG_KEY = "[STAT]"
+const CONNECTED_TAG = "[TVER]" + LOG_KEY + " Connected to "
 const dlog = get_logger(LOG_KEY, true)
 
 function calculate_total_bonus(stat: SeparatedStat): number {

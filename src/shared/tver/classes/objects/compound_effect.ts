@@ -168,9 +168,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
         const carrier = Character.GetCharacterFromId(this.CarrierID)
         carrier?._internal_remove_effect(this.id) // remove effect from carrier
 
-        log.w("ENDING EFFECT")
-        log.w("CARRIER NAME: " + carrier?.instance.Name)
-
         this.Destroy()
     }
     public Destroy() {
