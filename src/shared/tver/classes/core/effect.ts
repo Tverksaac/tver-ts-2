@@ -21,7 +21,6 @@ export abstract class Effect {
     private readonly _janitor = new Janitor()
 
     constructor () {
-        this.state.SetState("Ready")
         this.init()
     }
 
@@ -105,6 +104,8 @@ export abstract class Effect {
     }
 
     private init() {
+        this.state.SetState("Ready")
+        
         this._listen_for_changes()
         this._listen_for_timer()
     }

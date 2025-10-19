@@ -80,7 +80,6 @@ export class ConnectedStat<
 	conected_to: Name;
 
 	constructor(Name: Name, Value: number, ConnectToInstance: ConnectedInstance) {
-		dlog.l(tostring(Name))
 		super(tostring(Name), Value);
 		this.instance = ConnectToInstance;
 		this.conected_to = Name;

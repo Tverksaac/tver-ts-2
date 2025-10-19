@@ -179,7 +179,6 @@ export class Character {
         return true
     }
     public AddProperty(prop: _every_possible_properties_type): boolean {
-        print(prop.getType())
         if (this._properties.get(prop.name) || this._custom_properties.get(prop.name)) {
             log.w(prop.name + " is already exists in " + this.instance.Name + "!")
             return false
@@ -370,7 +369,6 @@ export class Character {
     //REPLICATION
     private _update_server_atom() {
         const server = get_handler() as Server
-        log.l("Updating server state!")
         server.atom((state) => {
             const new_state = table.clone(state)
             new_state.set(this.instance, this.GetCharacterInfo())

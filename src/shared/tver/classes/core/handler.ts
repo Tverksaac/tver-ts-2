@@ -3,7 +3,7 @@ import { get_logger, is_client_context } from "shared/tver/utility/utils"
 export abstract class Handler {
     public Type = is_client_context()? "Client" : "Server"
     public Activated = false
-    public log = get_logger(this.Type.upper())
+    public log = get_logger("[" + this.Type.upper() + "]")
 
     private readonly _registered: ModuleScript[] = []
 
@@ -31,16 +31,12 @@ export abstract class Handler {
         const _failed: defined[] = []
 
         this._registered.forEach((module) => {
-            let success, err = pcall(() => {
+            let _, result = pcall(() => {
                 require(module)
             })
-            if (err) {
-                _failed.push(err)
+            if (!result[0]) {
+                this.log.e(module.Name + " Expirienced error while loading!")
             }
-        })
-
-        _failed.forEach((err) => {
-            this.log.w(err)
         })
     }
 }
