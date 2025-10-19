@@ -171,7 +171,7 @@ export class Character {
             log.w(stat + " is already exists in " + this + "!")
             return false
         }
-        if (stat.getType() == "ConnectedStat") {
+        if (stat.getType() === "ConnectedStat") {
             this._stats.set(stat.name, stat as _possible_stats_type)
         } else {
             this._custom_stats.set(stat.name, stat as _possible_custom_stats_type)
