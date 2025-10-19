@@ -2,6 +2,7 @@ import { Janitor } from "@rbxts/janitor";
 import { SeparatedProperty } from "./property";
 import { dwlog, get_logger, is_client_context } from "shared/tver/utility/utils";
 
+const CONNECTED_TAG = "[TVER][STAT] Connected to "
 const LOG_KEY = "[STAT]"
 const dlog = get_logger(LOG_KEY, true)
 
@@ -78,24 +79,30 @@ export class ConnectedStat<
 	instance: ConnectedInstance;
 	conected_to: Name;
 
-	constructor(Name: string, Value: number, ConnectToInstance: ConnectedInstance, InstancePropertyName: Name) {
-		super(Name, Value);
-
+	constructor(Name: Name, Value: number, ConnectToInstance: ConnectedInstance) {
+		super(tostring(Name), Value);
 		this.instance = ConnectToInstance;
-		type Indexable = ConnectedInstance[Name];
-
-		this.instance[InstancePropertyName] = this.Total.Get() as Indexable;
-		this.conected_to = InstancePropertyName;
+		this.conected_to = Name;
 		
+		if (ConnectToInstance.HasTag(CONNECTED_TAG + tostring(Name))) {
+			this.Destroy()
+			return
+		} else {
+			ConnectToInstance.AddTag(CONNECTED_TAG + tostring(Name))
+		}
+
+		type Indexable = ConnectedInstance[Name];
+		this.instance[Name] = this.Total.Get() as Indexable;
+
 		if (is_client_context()) return
 		this._janitor.Add(
 			this.Total.changed.Connect(() => {
-				this.instance[InstancePropertyName] = this.Total.Get() as Indexable;
+				this.instance[Name] = this.Total.Get() as Indexable;
 			}),
 		);
 		this._janitor.Add(
-			this.instance.GetPropertyChangedSignal(InstancePropertyName).Connect(() => {
-				this.instance[InstancePropertyName] = this.Total.Get() as Indexable;
+			this.instance.GetPropertyChangedSignal(Name).Connect(() => {
+				this.instance[Name] = this.Total.Get() as Indexable;
 			}),
 		);
 	}

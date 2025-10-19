@@ -14,7 +14,7 @@ import { ClientEvents, ServerEvents } from "shared/tver/network/networking";
 import { Players } from "@rbxts/services";
 import { observe, subscribe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
-import { isConstructor } from "@flamework/components/out/utility";
+import { Constructor, isConstructor } from "@flamework/components/out/utility";
 
 const LOG_KEY = "[CHARACTER]"
 const log = get_logger(LOG_KEY)
@@ -39,7 +39,7 @@ export class Character {
     public readonly id: number
 
     private replication_done: boolean
-    = false
+    = is_client_context()
 
     private readonly _stats = new Map<string, _possible_stats_type>()
     private readonly _properties = new Map<string, _possible_properties_type>()
@@ -92,13 +92,13 @@ export class Character {
         //Setup Basic Stats & Properties
         //IMPORTANT: Name of property/stat should be same as what it affects
         const _stats = [
-            new ConnectedStat<Humanoid, "MaxHealth">("MaxHealth", 100, this.humanoid, "MaxHealth"),
-            new ConnectedStat<Humanoid, "Health">("Health", 100, this.humanoid, "Health"),
-            new ConnectedStat<Humanoid, "WalkSpeed">("WalkSpeed", 16, this.humanoid, "WalkSpeed"),
-            new ConnectedStat<Humanoid, "JumpHeight">("JumpHeight", 7.2, this.humanoid, "JumpHeight")
+            new ConnectedStat<Humanoid, "MaxHealth">("MaxHealth", 100, this.humanoid),
+            new ConnectedStat<Humanoid, "Health">("Health", 100, this.humanoid),
+            new ConnectedStat<Humanoid, "WalkSpeed">("WalkSpeed", 16, this.humanoid),
+            new ConnectedStat<Humanoid, "JumpHeight">("JumpHeight", 7.2, this.humanoid)
         ]
         const _properties = [
-            new ConnectedProperty<Humanoid, "AutoRotate">("AutoRotate", true, this.humanoid, "AutoRotate", true)
+            new ConnectedProperty<Humanoid, "AutoRotate">("AutoRotate", true, this.humanoid)
         ]
 
         _stats.forEach((stat) => {
@@ -167,12 +167,11 @@ export class Character {
     }
 
     public AddStat(stat: _every_possible_stats_type): boolean {
-        print(stat.getType())
         if (this._stats.get(stat.name) || this._custom_stats.get(stat.name)) {
             log.w(stat + " is already exists in " + this + "!")
             return false
         }
-        if (stat.getType() === "ConnectedStat") {
+        if (stat.getType() == "ConnectedStat") {
             this._stats.set(stat.name, stat as _possible_stats_type)
         } else {
             this._custom_stats.set(stat.name, stat as _possible_custom_stats_type)
@@ -246,12 +245,6 @@ export class Character {
             })
             effect.PropertyEffects.forEach((property_effect) => {
                 this._property_effects.push(property_effect)
-            })
-
-            effect.for_each_effect((_effect) => {
-                _effect.Changed.Connect(() => {
-                    this._effect_changed.Fire()
-                })
             })
         })
     }

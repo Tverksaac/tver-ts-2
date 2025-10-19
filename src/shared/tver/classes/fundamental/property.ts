@@ -74,31 +74,31 @@ export class ConnectedProperty<
 	override: boolean;
 
 	constructor(
-		Name: string,
+		Name: Name,
 		Value: ConnectedInstance[Name],
 		ConnectToInstance: ConnectedInstance,
-		InstancesPropertyName: Name,
-		Override: boolean,
+		Override = true,
+		CanBeCreatedOnClient = false
 	) {
-		super(Name, Value);
+		super(tostring(Name), Value);
 
 		this.instance = ConnectToInstance;
-		this.instance[InstancesPropertyName] = this.value;
-		this.connected_to = InstancesPropertyName;
+		this.instance[Name] = this.value;
+		this.connected_to = Name;
 		this.override = Override;
 
-		if (is_client_context()) return
+		if (is_client_context() && !CanBeCreatedOnClient) return
 		this._janitor.Add(
 			this.changed.Connect((new_value: ConnectedInstance[Name]) => {
-				this.instance[InstancesPropertyName] = new_value;
+				this.instance[Name] = new_value;
 			}),
 		);
 		this._janitor.Add(
-			this.instance.GetPropertyChangedSignal<ConnectedInstance>(InstancesPropertyName).Connect(() => {
+			this.instance.GetPropertyChangedSignal<ConnectedInstance>(Name).Connect(() => {
 				if (!this.override) {
-					this.Set(this.instance[InstancesPropertyName]);
+					this.Set(this.instance[Name]);
 				} else {
-					this.instance[InstancesPropertyName] = this.Get();
+					this.instance[Name] = this.Get();
 				}
 			}),
 		);
