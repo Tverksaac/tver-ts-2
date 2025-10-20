@@ -9,7 +9,7 @@ import { Constructor } from "@flamework/core/out/utility";
 import { Timer } from "@rbxts/timer";
 import { Janitor } from "@rbxts/janitor";
 
-const LOG_KEY = "[EFFECT]"
+const LOG_KEY = "[COMP_EFFECT]"
 
 const log = get_logger(LOG_KEY)
 const dlog = get_logger(LOG_KEY, true)
@@ -19,7 +19,7 @@ export class CompoundEffectsContainer {
 
     static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
         const effect = new Effect()
-        const name = tostring(effect)
+        const name = tostring(Effect)
         if (this.RegisteredCompoundEffects.has(name)) {wlog(Effect + " Already was registred!"); return}
         this.RegisteredCompoundEffects.set(name, effect)
     }
@@ -31,17 +31,13 @@ export class CompoundEffectsContainer {
     }
 }
 
-export abstract class CompoundEffect {
-    public readonly Name: string
+export class CompoundEffect {
+    public readonly Name = tostring(getmetatable(this))
 
     public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]= []
     public readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[] = []
 
     public StartOnApply = true
-
-    constructor (_name: string) {
-        this.Name = _name
-    }
 
     protected OnStartServer() {}
     protected OnStartClient() {}
@@ -71,6 +67,8 @@ export abstract class CompoundEffect {
 
 
 export class AppliedCompoundEffect extends CompoundEffect{
+    public readonly Name: string
+
     public Duration: number;
     public StatEffects: (StrictStatEffect<never> | CustomStatEffect)[];
     public PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[];
@@ -81,13 +79,15 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
     public readonly InheritsFrom: CompoundEffect
     public readonly CarrierID: number
-    
+
     private readonly _janitor = new Janitor()
 
     constructor (from: CompoundEffect, to: Character, duration: number) {
-        super(from.Name)
+        super()
+
         this.InheritsFrom = from
         this.CarrierID = to.id
+        this.Name = tostring(getmetatable(this.InheritsFrom))
 
         this.Duration = duration
         this.StatEffects = from.StatEffects
@@ -115,7 +115,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
     public Start() {
         if (this.state.GetState() !== "Ready") {
-            warn(this + " Effect cant be started twice!")
+            warn(this.Name + " Effect cant be started twice!")
             return
         }
         
@@ -132,7 +132,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
     public Resume() {
         if (this.state.GetState() === "Ended") {
-            warn(this + " is already ended!")
+            warn(this.Name + " is already ended!")
             return
         }
 
@@ -148,7 +148,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
     public Stop() {
         if (this.state.GetState() === "Ended") {
-            warn(this + " is already ended!")
+            warn(this.Name + " is already ended!")
             return
         }
 
@@ -164,7 +164,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
     public End() {
         if (this.state.GetState() === "Ended") {
-            warn(this + " is already ended!")
             return
         }
 
@@ -181,10 +180,9 @@ export class AppliedCompoundEffect extends CompoundEffect{
         carrier?._internal_remove_effect(this.id) // remove effect from carrier
 
         is_client_context()? this.OnEndClient() : this.OnEndServer()
-
-        this.Destroy()
     }
     public Destroy() {
+        dlog.w("Destroying: " + this.Name)
         if (this.state.GetState() !== "Ended") {this.End()}
 
         this.for_each_effect((effect) => {

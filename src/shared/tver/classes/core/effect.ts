@@ -3,8 +3,15 @@ import { Timer } from "@rbxts/timer"
 import { EffectState } from "shared/tver/utility/_ts_only/types"
 import { StateMachine } from "../fundamental/state_machine"
 import { Janitor } from "@rbxts/janitor"
+import { get_logger } from "shared/tver/utility/utils"
+
+const LOG_KEY = "[EFFECT]"
+const log = get_logger(LOG_KEY)
+const dlog = get_logger(LOG_KEY, true)
 
 export abstract class Effect {
+    public readonly Name = tostring(getmetatable(this))
+
     public abstract readonly Affects: unknown
     public abstract readonly Strength: unknown
 
@@ -33,7 +40,7 @@ export abstract class Effect {
 
     public Start(duration: number) {
         if (this.IsActive()) {
-            warn(this + " already was started!")
+            log.w(this.Name + " already was started!")
             return
         }
 
@@ -44,7 +51,7 @@ export abstract class Effect {
     }
     public Resume() {
         if (!this.IsActive()) {
-            warn(this + " is not active, cant resume!")
+            log.w(this.Name + " is not active, cant resume!")
             return
         }
 
@@ -54,7 +61,7 @@ export abstract class Effect {
     }
     public Stop() {
         if (!this.IsActive()) {
-            warn(this + "is not active, cant be stopped!")
+            log.w(this.Name + "is not active, cant be stopped!")
             return
         }
 
@@ -64,7 +71,7 @@ export abstract class Effect {
     }
     public End() {
         if (!this.IsActive()) {
-            warn(this + " is not active, cant end!")
+            return
         }
 
         this.state.SetState("Ended")
