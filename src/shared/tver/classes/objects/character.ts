@@ -116,7 +116,7 @@ export class Character {
         Character.CharacterAdded.Fire(this)
     }
 
-    //PUBLIC
+    //PUBLIC: MAIN
     public GetCharacterInfo() {
         const info = {} as CharacterInfo
 
@@ -373,6 +373,9 @@ export class Character {
             const new_state = table.clone(state)
             new_state.set(this.instance, this.GetCharacterInfo())
 
+            dlog.l("Server atom was updated! \l")
+            print(new_state)
+
             return new_state
         })
     }
@@ -410,6 +413,8 @@ export class Character {
         } else {
             this.replication_done = true
         }
+
+        dlog.l("Server-Side Character was succesfully created for " + this.instance.Name)
     }
     private _client_replication() {
         if (!this.player) return
@@ -422,6 +427,8 @@ export class Character {
                 print(val, key)
             }
         )
+
+        dlog.l("Client-Side Character was succesfully created for " + this.instance.Name)
         
         ClientEvents.character_replication_done.fire()
     }
@@ -440,8 +447,6 @@ export class Character {
         this._start_replication()
         while(!this.replication_done && !is_client_context()) {task.wait()} // yield until replciation is done
         this._start_listen_to_effect_changes()
-
-        dlog.l("Character succesfully created for: " + this.instance.Name)
         return true
     }
 }

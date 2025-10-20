@@ -14,14 +14,6 @@ const LOG_KEY = "[EFFECT]"
 const log = get_logger(LOG_KEY)
 const dlog = get_logger(LOG_KEY, true)
 
-function throw_client_warn(): boolean {
-    if (is_client_context()) {
-        wlog("Cant manipulate status effect on client!")
-        return true
-    }
-    return false
-}
-
 export class CompoundEffectsContainer {
     public static readonly RegisteredCompoundEffects = new Map<string, CompoundEffect>()
 
@@ -41,12 +33,26 @@ export class CompoundEffectsContainer {
 export abstract class CompoundEffect {
     public readonly Name: string
 
-    public abstract readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]
-    public abstract readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[]
+    public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]= []
+    public readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[] = []
+
+    public StartOnApply = true
 
     constructor (_name: string) {
         this.Name = _name
     }
+
+    protected OnStartServer() {}
+    protected OnStartClient() {}
+
+    protected OnResumeServer() {}
+    protected OnResumeClient() {}
+
+    protected OnPauseServer() {}
+    protected OnPauseClient() {}
+    
+    protected OnEndServer() {}
+    protected OnEndClient() {}
 
     public ApplyTo(to: Character, duration: number) {
         return new AppliedCompoundEffect(this, to, duration)
@@ -93,9 +99,12 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
         this.init()
         this.state.SetState("Ready")
-        this.Start()
 
         to._internal_apply_effect(this)
+
+        if (this.StartOnApply) {
+            this.Start()
+        }
     }
 
     public for_each_effect(callback: (effect: Effect) => void) {
@@ -104,7 +113,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
 
     public Start() {
-        if (throw_client_warn()) return
         if (this.state.GetState() !== "Ready") {
             warn(this + " Effect cant be started twice!")
             return
@@ -118,9 +126,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.for_each_effect((effect) => {
             effect.Start(this.Duration)
         })
+
+        is_client_context() ? this.OnStartClient() : this.OnStartServer()
     }
     public Resume() {
-    if (throw_client_warn()) return
         if (this.state.GetState() === "Ended") {
             warn(this + " is already ended!")
             return
@@ -133,9 +142,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.for_each_effect((effect) => {
             effect.Resume()
         })
+
+        is_client_context() ? this.OnResumeClient() : this.OnResumeServer()
     }
     public Stop() {
-        if (throw_client_warn()) return
         if (this.state.GetState() === "Ended") {
             warn(this + " is already ended!")
             return
@@ -148,9 +158,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.for_each_effect((effect) => {
             effect.Stop()
         })
+
+        is_client_context() ? this.OnPauseClient() : this.OnPauseServer()
     }
     public End() {
-        if (throw_client_warn()) return
         if (this.state.GetState() === "Ended") {
             warn(this + " is already ended!")
             return
@@ -168,11 +179,11 @@ export class AppliedCompoundEffect extends CompoundEffect{
         const carrier = Character.GetCharacterFromId(this.CarrierID)
         carrier?._internal_remove_effect(this.id) // remove effect from carrier
 
+        is_client_context()? this.OnEndClient() : this.OnEndServer()
+
         this.Destroy()
     }
     public Destroy() {
-        if (throw_client_warn()) return
-
         if (this.state.GetState() !== "Ended") {this.End()}
 
         this.for_each_effect((effect) => {
