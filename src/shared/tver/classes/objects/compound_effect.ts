@@ -19,8 +19,9 @@ export class CompoundEffectsContainer {
 
     static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
         const effect = new Effect()
-        if (this.RegisteredCompoundEffects.has(effect.Name)) {wlog(Effect + " Already was registred!"); return}
-        this.RegisteredCompoundEffects.set(effect.Name, effect)
+        const name = tostring(effect)
+        if (this.RegisteredCompoundEffects.has(name)) {wlog(Effect + " Already was registred!"); return}
+        this.RegisteredCompoundEffects.set(name, effect)
     }
     static GetCompoundEffectFromName(name: string): CompoundEffect | undefined {
         return this.RegisteredCompoundEffects.get(name)

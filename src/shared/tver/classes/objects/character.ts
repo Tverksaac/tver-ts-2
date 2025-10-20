@@ -373,7 +373,7 @@ export class Character {
             const new_state = table.clone(state)
             new_state.set(this.instance, this.GetCharacterInfo())
 
-            dlog.l("Server atom was updated! \l")
+            dlog.l("Server atom was updated!")
             print(new_state)
 
             return new_state
