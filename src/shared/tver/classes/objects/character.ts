@@ -28,7 +28,7 @@ type _every_possible_stats_type = _possible_stats_type | _possible_custom_stats_
 type _every_possible_properties_type = _possible_properties_type | _possible_custom_properties_type
 
 export class Character {
-    private static readonly CharactersMap = new Map<Instance, Character>()
+    public static readonly CharactersMap = new Map<Instance, Character>()
 
     public static readonly CharacterAdded = new Signal<(Character: Character) => void>
     public static readonly CharacterRemoved = new Signal<(Character: Character) => void>
@@ -58,12 +58,13 @@ export class Character {
     public readonly SkillRemoved = new Signal<(RemovedSkill: unknown) => void>()
 
     static GetCharacterFromId(id: number): Character | undefined {
-        this.CharactersMap.forEach((character) => {
+        let to_return
+        this.GetAllCharactersArray().forEach((character) => {
             if (character.id === id) {
-                return character
+                to_return = character
             }
         })
-        return undefined
+        return to_return
     }
     static GetCharacterFromInstance(instance: Instance): Character | undefined {
         this.CharactersMap.forEach((character, key) => {

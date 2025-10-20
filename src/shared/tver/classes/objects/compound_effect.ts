@@ -176,13 +176,17 @@ export class AppliedCompoundEffect extends CompoundEffect{
             effect.End()
         })
 
+        print(Character.CharactersMap)
+        print(Character.GetAllCharactersMap())
         const carrier = Character.GetCharacterFromId(this.CarrierID)
+        print("CARRIER: ", carrier)
         carrier?._internal_remove_effect(this.id) // remove effect from carrier
 
         is_client_context()? this.OnEndClient() : this.OnEndServer()
     }
     public Destroy() {
         dlog.w("Destroying: " + this.Name)
+        print(Character.GetCharacterFromId(this.CarrierID))
         if (this.state.GetState() !== "Ended") {this.End()}
 
         this.for_each_effect((effect) => {
