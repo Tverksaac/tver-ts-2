@@ -440,6 +440,8 @@ export class Character {
         this._start_replication()
         while(!this.replication_done && !is_client_context()) {task.wait()} // yield until replciation is done
         this._start_listen_to_effect_changes()
+
+        dlog.l("Character succesfully created for: " + this.instance.Name)
         return true
     }
 }
