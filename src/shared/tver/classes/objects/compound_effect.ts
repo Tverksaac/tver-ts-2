@@ -17,16 +17,16 @@ const dlog = get_logger(LOG_KEY, true)
 export class CompoundEffectsContainer {
     public static readonly RegisteredCompoundEffects = new Map<string, CompoundEffect>()
 
-    static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
+    public static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
         const effect = new Effect()
         const name = tostring(Effect)
         if (this.RegisteredCompoundEffects.has(name)) {wlog(Effect + " Already was registred!"); return}
         this.RegisteredCompoundEffects.set(name, effect)
     }
-    static GetCompoundEffectFromName(name: string): CompoundEffect | undefined {
+    public static GetCompoundEffectFromName(name: string): CompoundEffect | undefined {
         return this.RegisteredCompoundEffects.get(name)
     }
-    static GetCompoundEffectFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): CompoundEffect | undefined {
+    public static GetCompoundEffectFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): CompoundEffect | undefined {
         return this.RegisteredCompoundEffects.get(tostring(Constructor))
     }
 }
@@ -176,10 +176,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             effect.End()
         })
 
-        print(Character.CharactersMap)
-        print(Character.GetAllCharactersMap())
         const carrier = Character.GetCharacterFromId(this.CarrierID)
-        print("CARRIER: ", carrier)
         carrier?._internal_remove_effect(this.id) // remove effect from carrier
 
         is_client_context()? this.OnEndClient() : this.OnEndServer()

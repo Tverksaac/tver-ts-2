@@ -151,20 +151,22 @@ export class Character {
         return map_to_array(this.GetAppliedEffectsMap())
     }
     public GetAppliedEffectFromName(name: string): AppliedCompoundEffect | undefined {
+        let to_return
         this._effects.forEach((effect) => {
             if (effect.Name === name) {
-                return effect
+                to_return = effect
             }
         })
-        return undefined
+        return to_return
     }
     public GetAppliedEffectFromId(id: number): AppliedCompoundEffect | undefined {
+        let to_return
         this._effects.forEach((effect) => {
             if (effect.id === id) {
-                return effect
+                to_return = effect
             }
         })
-        return
+        return to_return
     }
 
     public AddStat(stat: _every_possible_stats_type): boolean {
@@ -215,7 +217,6 @@ export class Character {
                 this._effects.remove(index)
             }
         })
-
         return effect
     }
     //^^^!!Dont use, even tho its public!!---^^^
