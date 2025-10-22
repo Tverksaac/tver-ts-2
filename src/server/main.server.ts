@@ -13,7 +13,6 @@ if (plr) {
     print("Unyielded!")
     if (tver_char !== undefined) {
         stun_effect?.ApplyTo(tver_char, 1)
-        task.wait(2)
-        stun_effect?.ApplyTo(tver_char, 1)
+        stun_effect?.ApplyTo(tver_char, 5)
     }
 }
