@@ -85,7 +85,8 @@ export abstract class Effect {
         this.timer.destroy()
         this.state.Destroy()
         this.Changed.Destroy()
-        this._janitor.Destroy()
+        print(this._janitor)
+        this._janitor.Cleanup()
     }
 
     private _listen_for_changes() {
