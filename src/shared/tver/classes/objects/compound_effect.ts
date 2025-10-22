@@ -204,7 +204,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.timer.secondReached.Connect((s) => print(s))
     }
     private init() {
-        print('inir')
         this._listen_for_timer()
     }
 }

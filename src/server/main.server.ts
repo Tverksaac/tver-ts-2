@@ -13,5 +13,6 @@ if (plr) {
     print("Unyielded!")
     if (tver_char !== undefined) {
         stun_effect?.ApplyTo(tver_char, 5)
+        stun_effect?.ApplyTo(tver_char, 6)
     }
 }
