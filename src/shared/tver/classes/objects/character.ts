@@ -315,7 +315,7 @@ export class Character {
         const calculated = this._calculate_stat_effects()
 
         //return stats to base values
-        const _return_to_base_value = (stat: _possible_stats_type | _possible_custom_stats_type) => {
+        const _return_to_base_value = (stat: _every_possible_stats_type) => {
             if (calculated.has(stat.name)) return
             stat.Bonus.Modifer.Set(1)
             stat.Bonus.Raw.Set(0)
@@ -338,6 +338,14 @@ export class Character {
     }
     private _update_properties() {
         const calculated = this._calculate_property_effects()
+
+        const _return_to_base_value = (property: _every_possible_properties_type) => {
+            if (calculated.has(property.name)) return
+            property.Reset()
+        }
+
+        this._properties.forEach(_return_to_base_value)
+        this._custom_properties.forEach(_return_to_base_value)
 
         calculated.forEach((prop, key) => {
             let prop_to_affect

@@ -10,9 +10,11 @@ const dlog = get_logger(LOG_KEY, true)
 export class SeparatedProperty<T> {
 	protected _janitor = new Janitor()
 
-	readonly name: string;
+	public readonly name: string;
 	protected value: T;
-	changed = new Signal<(new_value: T, prev_value: T) => void>()
+	protected readonly defualt_value: T;
+
+	public changed = new Signal<(new_value: T, prev_value: T) => void>()
 
 	Behaviours: {
 		OnTick: (this: void) => void;
@@ -23,6 +25,7 @@ export class SeparatedProperty<T> {
 	constructor(name: string, value: T) {
 		this.name = name;
 		this.value = value;
+		this.defualt_value = value
 
 		this.Behaviours = {
 			OnTick() {},
@@ -59,6 +62,10 @@ export class SeparatedProperty<T> {
 
 	Get() {
 		return this.value;
+	}
+
+	Reset() {
+		this.Set(this.defualt_value)
 	}
 
 	getType(): string {

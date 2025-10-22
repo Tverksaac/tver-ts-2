@@ -168,8 +168,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
         }
 
         this.state.SetState("Ended") // change state
-
-        if (!this.timer.stopped) this.timer.stop() // stop timer if still going
+        if (this.timer.getTimeLeft() > 0) this.timer.stop() // stop timer if still going
 
         //end all effects
         this.for_each_effect((effect) => {
@@ -183,14 +182,13 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
     public Destroy() {
         dlog.w("Destroying: " + this.Name)
-        print(Character.GetCharacterFromId(this.CarrierID))
         if (this.state.GetState() !== "Ended") {this.End()}
 
         this.for_each_effect((effect) => {
             effect.Destroy()
         })
 
-        this._janitor.Cleanup()
+        this._janitor.Destroy()
     }
     
     private _listen_for_timer() {
@@ -202,8 +200,11 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this._janitor.Add(
             () => connection.Disconnect()
         )
+
+        this.timer.secondReached.Connect((s) => print(s))
     }
     private init() {
+        print('inir')
         this._listen_for_timer()
     }
 }
