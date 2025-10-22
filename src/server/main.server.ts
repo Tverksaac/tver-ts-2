@@ -12,7 +12,8 @@ if (plr) {
     const tver_char = char? new Character(char): undefined
     print("Unyielded!")
     if (tver_char !== undefined) {
-        stun_effect?.ApplyTo(tver_char, 5)
-        stun_effect?.ApplyTo(tver_char, 6)
+        stun_effect?.ApplyTo(tver_char, 1)
+        task.wait(2)
+        stun_effect?.ApplyTo(tver_char, 1)
     }
 }

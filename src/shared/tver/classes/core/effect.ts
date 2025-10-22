@@ -82,7 +82,6 @@ export abstract class Effect {
     }
 
     public Destroy() {
-        this._janitor.Cleanup()
         this.timer.destroy()
         this.state.Destroy()
         this.Changed.Destroy()
