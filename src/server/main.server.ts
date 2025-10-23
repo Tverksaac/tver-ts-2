@@ -1,6 +1,6 @@
 import { effect } from "@rbxts/charm";
 import { Players, RunService} from "@rbxts/services";
-import { Character, CompoundEffectsContainer, CreateServer } from "shared/tver/exports";
+import { Character, CreateServer } from "shared/tver/exports";
 import { Stun } from "shared/tver/test/compound_effects_classes";
 const server = CreateServer()
 server.Start()
