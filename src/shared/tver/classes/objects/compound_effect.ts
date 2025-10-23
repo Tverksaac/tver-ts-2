@@ -90,8 +90,8 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.Name = tostring(getmetatable(this.InheritsFrom))
 
         this.Duration = duration
-        this.StatEffects = from.StatEffects
-        this.PropertyEffects = from.PropertyEffects
+        this.StatEffects = table.clone(from.StatEffects)
+        this.PropertyEffects = table.clone(from.PropertyEffects)
 
         this.ApplyTo = () => {
             wlog("Cant call :ApplyTo on AppliedStatusEffect!")
@@ -108,9 +108,11 @@ export class AppliedCompoundEffect extends CompoundEffect{
         }
     }
 
-    public for_each_effect(callback: (effect: Effect) => void) {
-        this.StatEffects.forEach(callback)
-        this.PropertyEffects.forEach(callback)
+    public ExtendDuration(to: number) {
+        this.timer.setLength(this.timer.getTimeLeft() + to)
+    }
+    public SetDuration(to: number) {
+        this.timer.setLength(to)
     }
 
     public Start() {
@@ -191,6 +193,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this._janitor.Destroy()
     }
     
+    private for_each_effect(callback: (effect: Effect) => void) {
+        this.StatEffects.forEach(callback)
+        this.PropertyEffects.forEach(callback)
+    }
     private _listen_for_timer() {
         const connection =
         this.timer.stopped.Connect(() => {

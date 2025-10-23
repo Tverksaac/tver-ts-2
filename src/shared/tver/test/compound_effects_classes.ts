@@ -3,7 +3,7 @@ import { CustomStatEffect, StrictStatEffect } from "../classes/core/stat_effect"
 import { AppliedCompoundEffect, CompoundEffect, CompoundEffectDecorator, CompoundEffectsContainer } from "../classes/objects/compound_effect";
 import { Character } from "../exports";
 import { AutoRotateEffect } from "./property_effect_classes";
-import { WalkSpeedEffect} from "./stat_effect_classes";
+import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
 
 @CompoundEffectDecorator
 export class Stun extends CompoundEffect {
@@ -12,13 +12,14 @@ export class Stun extends CompoundEffect {
         new AutoRotateEffect(false, 10)
     ]
     public StatEffects = [
-        new WalkSpeedEffect("Modifer", 0)
+        new WalkSpeedEffect("Modifer", 0),
+        new JumpHeightEffect("Modifer", 0)
     ]
 
-    protected OnServerStart(): void {
+    protected OnStartServer(): void {
         print("Stun started on server!")
     }
-    protected OnClientStart(): void {
+    protected OnStartClient(): void {
         print("Stun started on client!")
     }
 }

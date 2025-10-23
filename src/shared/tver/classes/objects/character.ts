@@ -1,10 +1,9 @@
 import Signal from "@rbxts/signal";
-import { config } from "shared/tver";
 import { CharacterInfo, CompoundEffectInfo, SkillInfo } from "shared/tver/utility/_ts_only/interfaces";
-import { dwlog, elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array, setup_humanoid, wlog } from "shared/tver/utility/utils";
+import { dwlog, elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
-import { AppliedCompoundEffect, CompoundEffect, CompoundEffectsContainer } from "./compound_effect";
+import { AppliedCompoundEffect } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
@@ -12,9 +11,8 @@ import { Server } from "../main/server";
 import { Client } from "../main/client";
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking";
 import { Players } from "@rbxts/services";
-import { observe, subscribe } from "@rbxts/charm";
+import { observe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
-import { Constructor, isConstructor } from "@flamework/components/out/utility";
 
 const LOG_KEY = "[CHARACTER]"
 const log = get_logger(LOG_KEY)
@@ -405,8 +403,8 @@ export class Character {
         })
     }
 
-    private _replicate_compound_effect(from: CompoundEffect) {
-        
+    private _replicate_compound_effect(from: string) {
+        print("Replicating: " + from)
     }
 
     private _server_replication() {
@@ -433,9 +431,7 @@ export class Character {
 
         observe(
             () => client_atom()?.compound_effects || new Map<string, CompoundEffectInfo>(),
-            (val, key) => {
-                print(val, key)
-            }
+            (_, key) => this._replicate_compound_effect(key)
         )
 
         dlog.l("Client-Side Character was succesfully created for " + this.instance.Name)
