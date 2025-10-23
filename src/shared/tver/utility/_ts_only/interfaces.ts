@@ -3,7 +3,6 @@ export interface CharacterInstance extends Instance {
 }
 
 export interface CompoundEffectInfo {
-    name: string
     id: number,
     carrier_id: number,
     

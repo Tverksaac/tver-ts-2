@@ -121,10 +121,10 @@ export class Character {
 
         const compound_effects = new Map<number, CompoundEffectInfo>()
         const skills = new Map<string, SkillInfo>()
-        
+
         this._effects.forEach((effect) => {
             compound_effects.set(effect.id, {
-                name: effect.Name,
+
                 id: effect.id,
                 carrier_id: effect.CarrierID
             })
@@ -405,7 +405,7 @@ export class Character {
         })
     }
 
-    private _replicate_compound_effect(name: string) {
+    private _replicate_compound_effect(id: number) {
     }
 
     private _server_replication() {
@@ -432,7 +432,7 @@ export class Character {
 
         observe(
             () => client_atom()?.compound_effects || new Map<number, CompoundEffectInfo>(),
-            (info, key) => this._replicate_compound_effect(info.name)
+            (info, key) => this._replicate_compound_effect(key)
         )
 
         dlog.l("Client-Side Character was succesfully created for " + this.instance.Name)

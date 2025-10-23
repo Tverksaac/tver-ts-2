@@ -43,7 +43,7 @@ export class Client extends Handler {
         ClientEvents.request_sync.fire()
 
         this.Active = true
-        log.w("Client Was Succesfully Started")
+        log.w("Succesfully Started")
     }   
 
     private start_replication() {

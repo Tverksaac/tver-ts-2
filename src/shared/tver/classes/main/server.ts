@@ -67,12 +67,11 @@ export class Server extends Handler {
                     )
                 }
             }
-
             ServerEvents.sync.fire(player, payload_to_sync)
         })
 
         this.Active = true
-        log.w("Server Was Succesfully Started")
+        log.w("Succesfully Started")
     }
 }
 
