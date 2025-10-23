@@ -14,7 +14,7 @@ const LOG_KEY = "[COMP_EFFECT]"
 const log = get_logger(LOG_KEY)
 const dlog = get_logger(LOG_KEY, true)
 
-export class CompoundEffectsContainer {
+export class CompoundEffect {
     public static readonly RegisteredCompoundEffects = new Map<string, CompoundEffect>()
 
     public static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
@@ -29,9 +29,7 @@ export class CompoundEffectsContainer {
     public static GetCompoundEffectFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): CompoundEffect | undefined {
         return this.RegisteredCompoundEffects.get(tostring(Constructor))
     }
-}
 
-export class CompoundEffect {
     public readonly Name = tostring(getmetatable(this))
 
     public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]= []
@@ -215,5 +213,5 @@ export class AppliedCompoundEffect extends CompoundEffect{
 }
 
 export function CompoundEffectDecorator<T extends CompoundEffect>(Constructor: Constructor<T>) {
-    CompoundEffectsContainer.Register(Constructor)
+    CompoundEffect.Register(Constructor)
 }

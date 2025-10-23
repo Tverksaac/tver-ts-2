@@ -1,6 +1,6 @@
 import { CustomPropertyEffect, StrictPropertyEffect } from "../classes/core/property_effect";
 import { CustomStatEffect, StrictStatEffect } from "../classes/core/stat_effect";
-import { AppliedCompoundEffect, CompoundEffect, CompoundEffectDecorator, CompoundEffectsContainer } from "../classes/objects/compound_effect";
+import { AppliedCompoundEffect, CompoundEffect, CompoundEffectDecorator } from "../classes/objects/compound_effect";
 import { Character } from "../exports";
 import { AutoRotateEffect } from "./property_effect_classes";
 import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";

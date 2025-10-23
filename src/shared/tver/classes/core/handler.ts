@@ -2,7 +2,7 @@ import { get_logger, is_client_context } from "shared/tver/utility/utils"
 
 export abstract class Handler {
     public Type = is_client_context()? "Client" : "Server"
-    public Activated = false
+    public Active = false
     public log = get_logger("[" + this.Type.upper() + "]")
 
     private readonly _registered: ModuleScript[] = []
@@ -10,7 +10,7 @@ export abstract class Handler {
     constructor () {}
 
     public Register(ToLoad: Folder | ModuleScript) {
-        if (this.Activated) {this.log.w("Cant Register after " + this.Type + " Was Activated"); return}
+        if (this.Active) {this.log.w("Cant Register after " + this.Type + " Was Active"); return}
 
         if (ToLoad.IsA("ModuleScript")) {
             this._registered.push(ToLoad)
@@ -26,7 +26,7 @@ export abstract class Handler {
     }
 
     public Load() {
-        if (this.Activated) {this.log.w(this.Type + " cant be loaded after activation!"); return}
+        if (this.Active) {this.log.w(this.Type + " cant be loaded after activation!"); return}
 
         const _failed: defined[] = []
 

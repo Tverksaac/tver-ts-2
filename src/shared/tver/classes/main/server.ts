@@ -12,7 +12,7 @@ const dlog = get_logger(LOG_KEY, true)
 let server_activated = false
 
 export class Server extends Handler {
-    public Activated = false
+    public Active = false
 
     public atom = atom<Map<Instance, CharacterInfo>>(new Map())
     private syncer = CharmSync.server(
@@ -27,7 +27,7 @@ export class Server extends Handler {
     }
 
     public Start() {
-        if (this.Activated) {
+        if (this.Active) {
             warn(this + " Cant be Started twice!")
             return
         }
@@ -71,7 +71,7 @@ export class Server extends Handler {
             ServerEvents.sync.fire(player, payload_to_sync)
         })
 
-        this.Activated = true
+        this.Active = true
         log.w("Server Was Succesfully Started")
     }
 }

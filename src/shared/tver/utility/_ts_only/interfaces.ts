@@ -3,6 +3,7 @@ export interface CharacterInstance extends Instance {
 }
 
 export interface CompoundEffectInfo {
+    name: string
     id: number,
     carrier_id: number,
     
@@ -12,6 +13,6 @@ export interface CharacterInfo {
     instance: Instance,
     id: number
 
-    skills: Map<string, SkillInfo>
-    compound_effects: Map<string, CompoundEffectInfo>
+    skills: Map<number, SkillInfo>
+    compound_effects: Map<number, CompoundEffectInfo>
 }

@@ -13,7 +13,7 @@ const dlog = get_logger(LOG_KEY, true)
 let client_activated = false
 
 export class Client extends Handler {
-    public Activated = false;
+    public Active = false;
 
     private syncer = CharmSync.client(
         {
@@ -27,7 +27,7 @@ export class Client extends Handler {
     }
 
     public Start() {
-        if (this.Activated) {
+        if (this.Active) {
             warn(this + " Cant be Started twice!")
             return
         }
@@ -42,7 +42,7 @@ export class Client extends Handler {
         
         ClientEvents.request_sync.fire()
 
-        this.Activated = true
+        this.Active = true
         log.w("Client Was Succesfully Started")
     }   
 
