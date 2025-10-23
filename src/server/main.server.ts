@@ -1,11 +1,11 @@
 import { effect } from "@rbxts/charm";
 import { Players, RunService} from "@rbxts/services";
-import { Character, CompoundEffect, CreateServer } from "shared/tver/exports";
+import { Character, CompoundEffect, Container_CompoundEffect, CreateServer, GetCompoundEffectFromConstructor } from "shared/tver/exports";
 import { Stun } from "shared/tver/test/compound_effects_classes";
 const server = CreateServer()
 server.Start()
 task.wait(3)
-const stun_effect = CompoundEffect.GetCompoundEffectFromConstructor(Stun)
+const stun_effect = GetCompoundEffectFromConstructor(Stun)
 const plr = Players.GetPlayers()[0]
 if (plr) {
     const char = plr.Character

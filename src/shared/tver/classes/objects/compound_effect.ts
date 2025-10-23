@@ -23,10 +23,10 @@ export class Container_CompoundEffect {
         if (this.RegisteredCompoundEffects.has(name)) {wlog(Effect + " Already was registred!"); return}
         this.RegisteredCompoundEffects.set(name, effect)
     }
-    public static GetCompoundEffectFromName(name: string): CompoundEffect | undefined {
+    public static GetFromName(name: string): CompoundEffect | undefined {
         return this.RegisteredCompoundEffects.get(name)
     }
-    public static GetCompoundEffectFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): CompoundEffect | undefined {
+    public static GetFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): CompoundEffect | undefined {
         return this.RegisteredCompoundEffects.get(tostring(Constructor))
     }
 }
@@ -216,4 +216,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
 export function CompoundEffectDecorator<T extends CompoundEffect>(Constructor: Constructor<T>) {
     Container_CompoundEffect.Register(Constructor)
+}
+export function GetCompoundEffectFromConstructor(Constructor: Constructor<CompoundEffect>) {
+    return Container_CompoundEffect.GetFromConstructor(Constructor)
+}
+export function GetCompoundEffectFromName(Name: string) {
+    return Container_CompoundEffect.GetFromName(Name)
 }

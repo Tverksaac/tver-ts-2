@@ -3,7 +3,7 @@ import { CharacterInfo, CompoundEffectInfo, SkillInfo } from "shared/tver/utilit
 import { dwlog, elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
-import { AppliedCompoundEffect, CompoundEffect, Container_CompoundEffect } from "./compound_effect";
+import { AppliedCompoundEffect, Container_CompoundEffect } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
@@ -405,7 +405,7 @@ export class Character {
     }
 
     private _replicate_compound_effect(name: string) {
-        print("Replicating: " + Container_CompoundEffect.GetCompoundEffectFromName(name))
+        print("Replicating: " + Container_CompoundEffect.GetFromName(name))
         print(name)
     }
 
