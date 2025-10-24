@@ -70,6 +70,8 @@ export class Server extends Handler {
                     )
                 }
             }
+            print("sending:")
+            print(payload_to_sync)
             ServerEvents.sync.fire(player, payload_to_sync)
         })
 

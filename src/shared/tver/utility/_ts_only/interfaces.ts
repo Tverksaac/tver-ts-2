@@ -12,6 +12,6 @@ export interface CharacterInfo {
     instance: Instance,
     id: number
 
-    skills: Map<number, SkillInfo>
-    compound_effects: Map<number, CompoundEffectInfo>
+    skills: Map<string, SkillInfo>
+    compound_effects: Map<string, CompoundEffectInfo>
 }

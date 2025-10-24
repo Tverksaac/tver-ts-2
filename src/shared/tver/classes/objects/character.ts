@@ -119,12 +119,11 @@ export class Character {
     public GetCharacterInfo() {
         const info = {} as CharacterInfo
 
-        const compound_effects = new Map<number, CompoundEffectInfo>()
+        const compound_effects = new Map<string, CompoundEffectInfo>()
         const skills = new Map<string, SkillInfo>()
 
         this._effects.forEach((effect) => {
-            compound_effects.set(effect.id, {
-
+            compound_effects.set(effect.Name, {
                 id: effect.id,
                 carrier_id: effect.CarrierID
             })
@@ -391,7 +390,6 @@ export class Character {
 
             return new_state
         })
-        print(server.atom())
     }
 
     private _connect_server_atom_updating() {
@@ -435,8 +433,8 @@ export class Character {
         if (!client) {log.e("Client not found! Maybe you forgot to Create it?")}
 
         observe(
-            () => client_atom()?.compound_effects || new Map<number, CompoundEffectInfo>(),
-            (info, key) => this._replicate_compound_effect(key)
+            () => client_atom()?.compound_effects || new Map<string, CompoundEffectInfo>(),
+            (info, key) => this._replicate_compound_effect(info.id)
         )
 
         dlog.l("Client-Side Character was succesfully created for " + this.instance.Name)
