@@ -1,13 +1,10 @@
-import { CustomPropertyEffect, StrictPropertyEffect } from "../classes/core/property_effect";
-import { CustomStatEffect, StrictStatEffect } from "../classes/core/stat_effect";
-import { AppliedCompoundEffect, CompoundEffect, CompoundEffectDecorator } from "../classes/objects/compound_effect";
-import { Character } from "../exports";
+import { CompoundEffect, Decorator_CompoundEffect } from "../classes/objects/compound_effect";
 import { AutoRotateEffect } from "./property_effect_classes";
 import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
 
-@CompoundEffectDecorator
+@Decorator_CompoundEffect
 export class Stun extends CompoundEffect {
-    public StartOnApply: boolean = false
+    public StartOnApply: boolean = true
     public PropertyEffects = [
         new AutoRotateEffect(false, 10)
     ]

@@ -39,7 +39,8 @@ export class CompoundEffect {
 
     public StartOnApply = true
 
-    protected OnStartServer() {}
+    protected OnStartServer() {
+    }
     protected OnStartClient() {}
 
     protected OnResumeServer() {}
@@ -212,12 +213,13 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
 }
 
-export function CompoundEffectDecorator<T extends CompoundEffect>(Constructor: Constructor<T>) {
-    Container_CompoundEffect.Register(Constructor)
-}
 export function GetCompoundEffectFromConstructor(Constructor: Constructor<CompoundEffect>) {
     return Container_CompoundEffect.GetFromConstructor(Constructor)
 }
 export function GetCompoundEffectFromName(Name: string) {
     return Container_CompoundEffect.GetFromName(Name)
+}
+
+export function Decorator_CompoundEffect<T extends CompoundEffect>(Constructor: Constructor<T>) {
+    Container_CompoundEffect.Register(Constructor)
 }

@@ -6,6 +6,7 @@ const server = CreateServer()
 server.Start()
 task.wait(3)
 const stun_effect = GetCompoundEffectFromConstructor(Stun)
+print(stun_effect)
 const plr = Players.GetPlayers()[0]
 if (plr) {
     const char = plr.Character
