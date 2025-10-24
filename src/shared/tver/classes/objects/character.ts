@@ -367,7 +367,7 @@ export class Character {
                     if (typeOf(prop.Strength) === typeOf(prop_to_affect.Get())) {
                         prop_to_affect.Set(prop.Strength as never)
                     } else {
-                        log.e(prop + " Have wrong Strength value! /n Cant assign " + typeOf(prop.Strength) + "to " + typeOf(prop_to_affect.Get()))
+                        log.e(prop + " Have wrong Strength value! /n Cant assign " + typeOf(prop.Strength) + " to " + typeOf(prop_to_affect.Get()))
                     }
                 } else {
                     log.e(prop + " Cant affect any of properties becuase theres no property with name: " + prop.Affects)
@@ -380,11 +380,14 @@ export class Character {
     private _update_server_atom() {
         const server = get_handler() as Server
         server.atom((state) => {
+            print("initial state:")
+            print(state)
             const new_state = table.clone(state)
-            new_state.set(this.instance, this.GetCharacterInfo())
-
+            const to_set = this.GetCharacterInfo()
+            print("to set:")
+            print(to_set)
+            new_state.set(this.instance, to_set)
             dlog.l("Server atom was updated!")
-            print(new_state)
 
             return new_state
         })

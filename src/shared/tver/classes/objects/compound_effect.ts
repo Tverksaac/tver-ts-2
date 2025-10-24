@@ -90,8 +90,8 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.Name = tostring(getmetatable(this.InheritsFrom))
 
         this.Duration = duration
-        this.StatEffects = table.clone(from.StatEffects)
-        this.PropertyEffects = table.clone(from.PropertyEffects)
+        this.StatEffects = from.StatEffects
+        this.PropertyEffects = from.PropertyEffects
 
         this.ApplyTo = () => {
             wlog("Cant call :ApplyTo on AppliedStatusEffect!")
@@ -206,8 +206,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this._janitor.Add(
             () => connection.Disconnect()
         )
-
-        this.timer.secondReached.Connect((s) => print(s))
     }
     private init() {
         this._listen_for_timer()
