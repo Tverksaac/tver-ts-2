@@ -391,6 +391,7 @@ export class Character {
 
             return new_state
         })
+        print(server.atom())
     }
 
     private _connect_server_atom_updating() {
