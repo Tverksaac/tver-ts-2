@@ -40,8 +40,6 @@ export class Server extends Handler {
         })
 
         this.syncer.connect((player, ...payloads) => {
-            print("got:")
-            print(...payloads)
             const payload_to_sync = [] as CharmSync.SyncPayload<{
                 atom: Charm.Atom<CharacterInfo | undefined>
             }>[]
@@ -58,7 +56,6 @@ export class Server extends Handler {
                 } else if (payload.type === "patch") {
                     const data = payload.data.atom
                     if (data === undefined) {continue}
-                    print(data)
                     const char_data = player.Character? data.get(player.Character) : undefined
                     if (char_data === undefined) {continue}
                     
@@ -70,8 +67,6 @@ export class Server extends Handler {
                     )
                 }
             }
-            print("sending:")
-            print(payload_to_sync)
             ServerEvents.sync.fire(player, payload_to_sync)
         })
 

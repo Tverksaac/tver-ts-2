@@ -379,15 +379,8 @@ export class Character {
     private _update_server_atom() {
         const server = get_handler() as Server
         server.atom((state) => {
-            print("initial state:")
-            print(state)
             const new_state = table.clone(state)
-            const to_set = this.GetCharacterInfo()
-            print("to set:")
-            print(to_set)
-            new_state.set(this.instance, to_set)
-            dlog.l("Server atom was updated!")
-
+            new_state.set(this.instance, this.GetCharacterInfo())
             return new_state
         })
     }
