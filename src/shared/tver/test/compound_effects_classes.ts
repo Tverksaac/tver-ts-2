@@ -13,10 +13,10 @@ export class Stun extends CompoundEffect {
         new JumpHeightEffect("Modifer", 0)
     ]
 
-    protected OnStartServer(): void {
+    OnStartServer(): void {
         print("Stun started on server!")
     }
-    protected OnStartClient(): void {
+    OnStartClient(): void {
         print("Stun started on client!")
     }
 }

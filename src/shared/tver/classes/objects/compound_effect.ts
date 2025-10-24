@@ -31,7 +31,7 @@ export class Container_CompoundEffect {
     }
 }
 
-export class CompoundEffect {
+export abstract class CompoundEffect {
     public readonly Name = tostring(getmetatable(this))
 
     public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]= []
@@ -39,18 +39,17 @@ export class CompoundEffect {
 
     public StartOnApply = true
 
-    protected OnStartServer() {
-    }
-    protected OnStartClient() {}
+    public OnStartServer() {}
+    public OnStartClient() {}
 
-    protected OnResumeServer() {}
-    protected OnResumeClient() {}
+    public OnResumeServer() {}
+    public OnResumeClient() {}
 
-    protected OnPauseServer() {}
-    protected OnPauseClient() {}
+    public OnPauseServer() {}
+    public OnPauseClient() {}
     
-    protected OnEndServer() {}
-    protected OnEndClient() {}
+    public OnEndServer() {}
+    public OnEndClient() {}
 
     public ApplyTo(to: Character, duration: number) {
         return new AppliedCompoundEffect(this, to, duration)
@@ -85,7 +84,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
     constructor (from: CompoundEffect, to: Character, duration: number) {
         super()
-
         this.InheritsFrom = from
         this.CarrierID = to.id
         this.Name = tostring(getmetatable(this.InheritsFrom))
@@ -107,6 +105,15 @@ export class AppliedCompoundEffect extends CompoundEffect{
         if (this.StartOnApply) {
             this.Start()
         }
+
+        this.OnStartClient = from.OnStartClient
+        this.OnStartServer = from.OnStartServer
+        this.OnPauseClient = from.OnPauseClient
+        this.OnPauseServer = from.OnPauseServer
+        this.OnResumeClient = from.OnResumeClient
+        this.OnResumeServer = from.OnResumeServer
+        this.OnEndClient = from.OnEndClient
+        this.OnEndServer = from.OnEndServer
     }
 
     public ExtendDuration(to: number) {
