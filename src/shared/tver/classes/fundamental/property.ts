@@ -1,3 +1,5 @@
+//!native
+
 import { Janitor } from "@rbxts/janitor";
 import { RunService } from "@rbxts/services";
 import Signal from "@rbxts/signal";

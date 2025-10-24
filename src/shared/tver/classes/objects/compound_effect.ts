@@ -105,15 +105,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
         if (this.StartOnApply) {
             this.Start()
         }
-
-        this.OnStartClient = from.OnStartClient
-        this.OnStartServer = from.OnStartServer
-        this.OnPauseClient = from.OnPauseClient
-        this.OnPauseServer = from.OnPauseServer
-        this.OnResumeClient = from.OnResumeClient
-        this.OnResumeServer = from.OnResumeServer
-        this.OnEndClient = from.OnEndClient
-        this.OnEndServer = from.OnEndServer
     }
 
     public ExtendDuration(to: number) {

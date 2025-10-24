@@ -1,3 +1,5 @@
+//!native
+
 import { Janitor } from "@rbxts/janitor";
 import { SeparatedProperty } from "./property";
 import { dwlog, get_logger, is_client_context } from "shared/tver/utility/utils";

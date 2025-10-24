@@ -1,3 +1,5 @@
+//!native
+
 import Signal from "@rbxts/signal"
 
 type StatesUnion<T extends string[]> = T[number]
