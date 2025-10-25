@@ -18,16 +18,15 @@ export class Container_CompoundEffect {
     public static readonly RegisteredCompoundEffects = new Map<string, CompoundEffect>()
 
     public static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
-        const effect = new Effect()
         const name = tostring(Effect)
         if (this.RegisteredCompoundEffects.has(name)) {wlog(Effect + " Already was registred!"); return}
-        this.RegisteredCompoundEffects.set(name, effect)
+        this.RegisteredCompoundEffects.set(name, new Effect())
     }
     public static GetFromName(name: string): CompoundEffect | undefined {
         return this.RegisteredCompoundEffects.get(name)
     }
-    public static GetFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): CompoundEffect | undefined {
-        return this.RegisteredCompoundEffects.get(tostring(Constructor))
+    public static GetFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): T | undefined {
+        return this.RegisteredCompoundEffects.get(tostring(Constructor)) as T
     }
 }
 
@@ -211,13 +210,12 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
 }
 
-export function GetCompoundEffectFromConstructor(Constructor: Constructor<CompoundEffect>) {
-    return Container_CompoundEffect.GetFromConstructor(Constructor)
+export function GetCompoundEffectFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): T | undefined {
+    return Container_CompoundEffect.GetFromConstructor<T>(Constructor)
 }
 export function GetCompoundEffectFromName(Name: string) {
     return Container_CompoundEffect.GetFromName(Name)
 }
-
 export function Decorator_CompoundEffect<T extends CompoundEffect>(Constructor: Constructor<T>) {
     Container_CompoundEffect.Register(Constructor)
 }

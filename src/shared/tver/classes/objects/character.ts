@@ -85,6 +85,7 @@ export class Character {
 
     //Yields!
     constructor(from_instance: Instance) {
+        elog('test', 'test', 'test')
         this.id = is_server_context()? get_id() : 1
         this.instance = from_instance
         this.humanoid = this.instance.FindFirstChildWhichIsA("Humanoid") || elog(this.instance + " Do not have Humanoid as Child!")

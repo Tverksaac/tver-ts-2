@@ -4,6 +4,8 @@ import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
 
 @Decorator_CompoundEffect
 export class Stun extends CompoundEffect {
+    public TestProperty = 21
+
     public StartOnApply: boolean = true
     public PropertyEffects = [
         new AutoRotateEffect(false, 10)
