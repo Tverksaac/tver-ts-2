@@ -65,7 +65,7 @@ export function wlog(text: unknown): true {
     return true
 }
 
-export function elog(...text: unknown[]) {
+export function elog(text: unknown) {
     return error(LOG_KEY + text + "\n" + debug.traceback())
 }
 
@@ -86,7 +86,7 @@ export function get_logger(logger_key: string, debug = false) {
     return {
         l: (text: unknown) => {!debug? log(key + text) : dlog(key + text)},
         w: (text: unknown) => {!debug? wlog(key + text) : dwlog(key + text)},
-        e: (...text: unknown[]) => {!debug? elog(key + text) : delog(key + text)},
-        r: (...text: unknown[]) => (print(key, ...text))
+        e: (text: unknown) => {!debug? elog(key + text) : delog(key + text)},
+        r: (text: unknown) => (print(key, text))
     }
 }

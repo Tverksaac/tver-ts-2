@@ -81,7 +81,7 @@ export class ConnectedStat<
 	instance: ConnectedInstance;
 	conected_to: Name;
 
-	constructor(Name: Name, Value: number, ConnectToInstance: ConnectedInstance) {
+	constructor(ConnectToInstance: ConnectedInstance, Name: Name, Value: number) {
 		super(tostring(Name), Value);
 		this.instance = ConnectToInstance;
 		this.conected_to = Name;

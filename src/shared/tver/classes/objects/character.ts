@@ -5,7 +5,7 @@ import { CharacterInfo, CompoundEffectInfo, SkillInfo } from "shared/tver/utilit
 import { elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
-import { AppliedCompoundEffect } from "./compound_effect";
+import { AppliedCompoundEffect, GetCompoundEffectFromName } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
@@ -85,7 +85,6 @@ export class Character {
 
     //Yields!
     constructor(from_instance: Instance) {
-        elog('test', 'test', 'test')
         this.id = is_server_context()? get_id() : 1
         this.instance = from_instance
         this.humanoid = this.instance.FindFirstChildWhichIsA("Humanoid") || elog(this.instance + " Do not have Humanoid as Child!")
@@ -94,13 +93,13 @@ export class Character {
         //Setup Basic Stats & Properties
         //IMPORTANT: Name of property/stat should be same as what it affects
         const _stats = [
-            new ConnectedStat<Humanoid, "MaxHealth">("MaxHealth", 100, this.humanoid),
-            new ConnectedStat<Humanoid, "Health">("Health", 100, this.humanoid),
-            new ConnectedStat<Humanoid, "WalkSpeed">("WalkSpeed", 25, this.humanoid),
-            new ConnectedStat<Humanoid, "JumpHeight">("JumpHeight", 7.2, this.humanoid)
+            new ConnectedStat<Humanoid, "MaxHealth">(this.humanoid, "MaxHealth", 100),
+            new ConnectedStat<Humanoid, "Health">(this.humanoid, "Health", 100),
+            new ConnectedStat<Humanoid, "WalkSpeed">(this.humanoid, "WalkSpeed", 16),
+            new ConnectedStat<Humanoid, "JumpHeight">(this.humanoid, "JumpHeight", 7.2),
         ]
         const _properties = [
-            new ConnectedProperty<Humanoid, "AutoRotate">("AutoRotate", true, this.humanoid)
+            new ConnectedProperty<Humanoid, "AutoRotate">(this.humanoid, "AutoRotate", true)
         ]
 
         _stats.forEach((stat) => {
@@ -403,7 +402,18 @@ export class Character {
         })
     }
 
-    private _replicate_compound_effect(id: number) {
+    private _replicate_compound_effect(name: string) {
+        const wthrow = (reason: string) => log.w(name + "CompoundEffect Replication failed. " + reason)
+
+        if (is_client_context()) {
+            wthrow("Cant Replicate CompoundEffect on Server")
+        }
+
+        const effect = GetCompoundEffectFromName(name)
+        if (!effect) {
+            wthrow("Cant find Registred CompoundEffect with name " + name)
+        }
+
     }
 
     private _server_replication() {
@@ -430,7 +440,7 @@ export class Character {
 
         observe(
             () => client_atom()?.compound_effects || new Map<string, CompoundEffectInfo>(),
-            (info, key) => this._replicate_compound_effect(info.id)
+            (info, key) => this._replicate_compound_effect(key)
         )
 
         dlog.l("Client-Side Character was succesfully created for " + this.instance.Name)

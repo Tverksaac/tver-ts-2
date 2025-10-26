@@ -88,9 +88,9 @@ export class ConnectedProperty<
 	override: boolean;
 
 	constructor(
+		ConnectToInstance: ConnectedInstance,
 		Name: Name,
 		Value: ConnectedInstance[Name],
-		ConnectToInstance: ConnectedInstance,
 		Override = true,
 		CanBeCreatedOnClient = false
 	) {

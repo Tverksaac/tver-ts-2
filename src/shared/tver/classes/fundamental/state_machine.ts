@@ -1,31 +1,32 @@
 //!native
-
 import Signal from "@rbxts/signal"
 
 type StatesUnion<T extends string[]> = T[number]
 
 export class StateMachine<States extends string[]> {
     private _state?: StatesUnion<States>
+    private _prev_state?: StatesUnion<States>
 
     public readonly StateChanged = new Signal<(new_state: StatesUnion<States>, prev_state: StatesUnion<States> | undefined) => void>();
     
-    constructor() {
-    }
-
-    public SetState(to: StatesUnion<States>) {
+    public SetState(to: StatesUnion<States>): void {
         if (this._state === to) return
 
-        const prev = this._state
+        this._prev_state = this._state
         this._state = to
 
-        this.StateChanged.Fire(this._state, prev)
+        this.StateChanged.Fire(this._state, this._prev_state)
     }
 
-    public GetState() {
+    public GetState(): StatesUnion<States> | undefined {
         return this._state
     }
 
-    public Destroy() {
+    public GetPreviousState(): StatesUnion<States> | undefined {
+        return this._prev_state
+    }
+
+    public Destroy(): void {
         this.StateChanged.Destroy()
     }
 }
