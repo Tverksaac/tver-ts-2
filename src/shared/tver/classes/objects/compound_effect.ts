@@ -218,7 +218,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
             //Effect started
             this._main_thread = task.spawn(() => {
                 is_client_context()? this.OnStartClient() : this.OnStartServer()
-                //reset on unyield
                 this._main_thread = undefined
         })
         } else if (_state === "On" && _prev_state === "Off") {
@@ -228,7 +227,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
             }
             this._msic_thread = task.spawn(() => {
                 is_client_context()? this.OnResumeClient() : this.OnResumeServer()
-                //reset on unyield
                 this._msic_thread = undefined
             })
         } else if (_state === "Off" && _prev_state !== "Off") {
@@ -238,7 +236,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
             }
             this._msic_thread = task.spawn(() => {
                 is_client_context()? this.OnPauseClient() : this.OnPauseServer()
-                //reset on unyield
                 this._msic_thread = undefined
             })
         } else if (_state === "Ended" && _prev_state !== "Ended") {
@@ -246,9 +243,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             if (this._main_thread && coroutine.status(this._main_thread) === "normal") {
                 coroutine.close(this._main_thread)
             }
-            this._main_thread = task.spawn(() => {
-                is_client_context()? this.OnEndClient() : this.OnEndServer()
-            })
+            is_client_context()? this.OnEndClient() : this.OnEndServer() // will yield!!
         } else {
             log.w("Something with " + this.Name + "'s Callbacks went wrong...")
         }
