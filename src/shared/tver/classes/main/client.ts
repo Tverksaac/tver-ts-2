@@ -1,7 +1,7 @@
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents } from "shared/tver/network/networking"
 import { client_atom } from "shared/tver/utility/shared"
-import { get_logger, is_client_context, set_handler } from "shared/tver/utility/utils"
+import { get_handler, get_logger, is_client_context, set_handler } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
 import { observe, subscribe } from "@rbxts/charm"
 import { Handler } from "../core/handler"
@@ -59,10 +59,11 @@ export class Client extends Handler {
 
 export function CreateClient() {
     if (!is_client_context()) {
-        error("Client can be only created on Client Side!")
+        log.e("Client can be only created on Client Side!")
     }
     if (client_activated) {
-        error("Client already created")
+        log.w("Client already created")
+        return get_handler() as Client
     }
 
     client_activated = true

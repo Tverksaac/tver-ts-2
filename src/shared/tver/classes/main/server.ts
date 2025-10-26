@@ -2,7 +2,7 @@ import Charm, { Atom, atom, effect, subscribe } from "@rbxts/charm"
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
-import { get_logger, is_server_context, set_handler } from "shared/tver/utility/utils"
+import { get_handler, get_logger, is_server_context, set_handler } from "shared/tver/utility/utils"
 import { Handler } from "../core/handler"
 
 const LOG_KEY = "[SERVER]"
@@ -77,10 +77,11 @@ export class Server extends Handler {
 
 export function CreateServer() {
     if (!is_server_context()) {
-        error("Server can be only created on Server Side!")
+        log.e("Server can be only created on Server Side!")
     }
     if (server_activated) {
-        error("Server cant be created twice!")
+        log.w("Server cant be created twice!")
+        return get_handler() as Server
     }
 
     server_activated = true
