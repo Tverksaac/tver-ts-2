@@ -1,11 +1,10 @@
 //!native
-
 import Signal from "@rbxts/signal";
 import { CharacterInfo, CompoundEffectInfo, SkillInfo } from "shared/tver/utility/_ts_only/interfaces";
 import { elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
-import { AppliedCompoundEffect, GetCompoundEffectFromName } from "./compound_effect";
+import { AppliedCompoundEffect } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
@@ -405,14 +404,14 @@ export class Character {
     private _replicate_compound_effect(name: string) {
         const wthrow = (reason: string) => log.w(name + "CompoundEffect Replication failed. " + reason)
 
-        if (is_client_context()) {
+        if (!is_client_context()) {
             wthrow("Cant Replicate CompoundEffect on Server")
         }
 
-        const effect = GetCompoundEffectFromName(name)
-        if (!effect) {
-            wthrow("Cant find Registred CompoundEffect with name " + name)
-        }
+      //  const effect = GetCompoundEffectFromName(name)
+     //   if (!effect) {
+      //      wthrow("Cant find Registred CompoundEffect with name " + name)
+      //  }
 
     }
 
@@ -440,7 +439,7 @@ export class Character {
 
         observe(
             () => client_atom()?.compound_effects || new Map<string, CompoundEffectInfo>(),
-            (info, key) => this._replicate_compound_effect(key)
+            (_, key) => this._replicate_compound_effect(key)
         )
 
         dlog.l("Client-Side Character was succesfully created for " + this.instance.Name)

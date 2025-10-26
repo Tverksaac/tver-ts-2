@@ -51,7 +51,7 @@ export abstract class CompoundEffect {
     public OnEndServer() {}
     public OnEndClient() {}
 
-    public ApplyTo(to: Character, duration: number) {
+    public ApplyTo(to: Character, duration: number): AppliedCompoundEffect {
         return new AppliedCompoundEffect(this, to, duration)
     }
 
@@ -249,10 +249,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
         }
     }
     private init() {
+        this.state.SetState("Ready")
         this.state.StateChanged.Connect(() => this._handle_callbacks())
 
         this._listen_for_timer()
-        this.state.SetState("Ready")
     }
 }
 

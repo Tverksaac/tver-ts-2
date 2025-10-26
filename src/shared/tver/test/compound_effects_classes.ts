@@ -26,4 +26,10 @@ export class Stun extends CompoundEffect {
     public OnEndClient(): void {
         print("Stun ended on client!")
     }
+    public OnPauseServer(): void {
+        print("paused")
+    }
+    public OnResumeServer(): void {
+        print("resumed")
+    }
 }
