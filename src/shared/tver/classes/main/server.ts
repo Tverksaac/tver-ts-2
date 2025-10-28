@@ -28,7 +28,7 @@ export class Server extends Handler {
 
     public Start() {
         if (this.Active) {
-            warn(this + " Cant be Started twice!")
+            log.w(this + " Cant be Started twice!")
             return
         }
 

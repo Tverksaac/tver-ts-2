@@ -17,6 +17,9 @@ export function is_client_context(): boolean {
 export function is_server_context(): boolean {
     return RunService.IsServer()
 }
+export function get_context_name(): "Server" | "Client" {
+    return is_client_context()? "Client" : "Server"
+}
 
 export function setup_humanoid(into: Instance): Humanoid {
     const player = Players.GetPlayerFromCharacter(into)
@@ -66,7 +69,7 @@ export function wlog(text: unknown): true {
 }
 
 export function elog(text: unknown) {
-    return error(LOG_KEY + text + "\n" + debug.traceback())
+    return error(LOG_KEY + text + "\n" + "TRACEBACK: " + debug.traceback())
 }
 
 export function dlog(text: unknown) {

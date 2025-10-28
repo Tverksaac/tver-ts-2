@@ -1,4 +1,4 @@
-export const __DEBUG__ = false
+export const __DEBUG__ = true
 
 export const config = {
     CharacterCanBeCreatedOnClient: false,

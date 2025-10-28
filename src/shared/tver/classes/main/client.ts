@@ -3,7 +3,7 @@ import { ClientEvents } from "shared/tver/network/networking"
 import { client_atom } from "shared/tver/utility/shared"
 import { get_handler, get_logger, is_client_context, set_handler } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
-import { observe, subscribe } from "@rbxts/charm"
+import { subscribe } from "@rbxts/charm"
 import { Handler } from "../core/handler"
 
 const LOG_KEY = "[CLIENT]"
@@ -28,7 +28,7 @@ export class Client extends Handler {
 
     public Start() {
         if (this.Active) {
-            warn(this + " Cant be Started twice!")
+            log.w(this + " Cant be Started twice!")
             return
         }
 

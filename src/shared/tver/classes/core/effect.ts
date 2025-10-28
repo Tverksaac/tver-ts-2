@@ -18,11 +18,6 @@ export abstract class Effect {
     public readonly timer = new Timer(1)
     public readonly state = new StateMachine<[EffectState]>
 
-    protected OnClientStart?: () => void = () => {}
-    protected OnServerStart?: () => void = () => {}
-    protected OnClientEnd?: () => void = () => {}
-    protected OnServerEnd?: () => void = () => {}
-
     public readonly Changed = new Signal<(effect: Effect, args: unknown) => void>()
 
     private readonly _janitor = new Janitor()

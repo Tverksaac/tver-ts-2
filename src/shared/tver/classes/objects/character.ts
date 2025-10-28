@@ -4,7 +4,7 @@ import { CharacterInfo, CompoundEffectInfo, SkillInfo } from "shared/tver/utilit
 import { elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
-import { AppliedCompoundEffect } from "./compound_effect";
+import { AppliedCompoundEffect, GetCompoundEffectFromName } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
@@ -126,7 +126,7 @@ export class Character {
         this._effects.forEach((effect) => {
             compound_effects.set(effect.Name, {
                 id: effect.id,
-                carrier_id: effect.CarrierID
+                carrier_id: this.id
             })
         })
         
@@ -174,7 +174,7 @@ export class Character {
             log.w(stat.name + " Stat" + " is already exists in " + this.instance.Name + "!")
             return false
         }
-        if (stat.getType() === "ConnectedStat") {
+        if (tostring(stat) === "ConnectedStat") {
             this._stats.set(stat.name, stat as _possible_stats_type)
         } else {
             this._custom_stats.set(stat.name, stat as _possible_custom_stats_type)
@@ -186,7 +186,7 @@ export class Character {
             log.w(prop.name + " is already exists in " + this.instance.Name + "!")
             return false
         }
-        if (prop.getType() === "ConnectedProperty") {
+        if (tostring(prop) === "ConnectedProperty") {
             this._properties.set(prop.name, prop as _possible_properties_type)
         } else {
             this._custom_properties.set(prop.name, prop as _possible_custom_properties_type)
@@ -204,13 +204,12 @@ export class Character {
     //STATUS EFFECTS
 
     //!!Dont use, even tho its public!!---
-    public _internal_apply_effect(applied_effect: AppliedCompoundEffect) {
+    public _compound_effect_only_apply_effect(applied_effect: AppliedCompoundEffect) {
         this._effects.push(applied_effect)
         this.EffectApplied.Fire(applied_effect)
     }
-    public _internal_remove_effect(find_from: string | number): AppliedCompoundEffect | undefined {
+    public _compound_effect_only_remove_effect(find_from: string | number): AppliedCompoundEffect | undefined {
         const effect = type(find_from) === "string"? this.GetAppliedEffectFromName(find_from as string) : this.GetAppliedEffectFromId(find_from as number)
-
         this._effects.forEach((val, index) => {
             if (val === effect) {
                 this.EffectRemoved.Fire(effect)
@@ -227,9 +226,11 @@ export class Character {
             this.EffectRemoved,
             this._effect_changed
         ]
-        listen_to.forEach(signal => signal.Connect(() => {
-            this._handle_effects()
-        }))
+        listen_to.forEach((signal) => {
+            signal.Connect(() => {
+                this._handle_effects()
+            })
+        })
     }
 
     private _update_effects_maps() {
@@ -238,7 +239,7 @@ export class Character {
         this._stat_effects.clear()
         this._property_effects.clear()
 
-        effects.forEach((effect, key) => {
+        effects.forEach((effect) => {
             if (effect.state.GetState() === "Ended") return
 
             effect.StatEffects.forEach((stat_effect) => {
@@ -258,17 +259,13 @@ export class Character {
                 return
             }
             
-            let member = calculated.get(effect.Affects)
-
-            if (member) {} else {
-                member = {
+            let member = calculated.get(effect.Affects) || {
                     Affects: effect.Affects,
                     Strength: effect.Strength,
                     Priority: effect.Priority || 1
                 }
-            }
 
-            if (effect.Priority || 1 > member.Priority) {
+            if (effect.Priority && 1 > member.Priority) {
                 member.Priority = effect.Priority || 1
                 member.Strength = effect.Strength
             }
@@ -401,18 +398,23 @@ export class Character {
         })
     }
 
+    //Should be called only on client
     private _replicate_compound_effect(name: string) {
         const wthrow = (reason: string) => log.w(name + "CompoundEffect Replication failed. " + reason)
 
         if (!is_client_context()) {
-            wthrow("Cant Replicate CompoundEffect on Server")
+            wthrow("Cant call Replication on Server!")
         }
 
-      //  const effect = GetCompoundEffectFromName(name)
-     //   if (!effect) {
-      //      wthrow("Cant find Registred CompoundEffect with name " + name)
-      //  }
+        const effect = GetCompoundEffectFromName(name)
+        if (!effect) {
+            wthrow("Cant find CompoundEffect with name " + name)
+            return
+        }
 
+        const applied_effect = effect.ApplyTo(this)
+
+        return () => {applied_effect?.End()}
     }
 
     private _server_replication() {

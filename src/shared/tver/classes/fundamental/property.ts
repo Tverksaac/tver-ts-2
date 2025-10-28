@@ -70,10 +70,6 @@ export class SeparatedProperty<T> {
 		this.Set(this.defualt_value)
 	}
 
-	getType(): string {
-		return "SeparatedProperty"
-	}
-
 	Destroy() {
 		this._janitor.Destroy();
 	}

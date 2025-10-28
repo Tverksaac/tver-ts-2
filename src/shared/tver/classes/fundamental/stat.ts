@@ -65,10 +65,6 @@ export class SeparatedStat {
 		this._janitor.Add(this.Total);
 	}
 
-	public getType() {
-		return "SeparatedStat"
-	}
-
 	public Destroy() {
 		this._janitor.Destroy();
 	}

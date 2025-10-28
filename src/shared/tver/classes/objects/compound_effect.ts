@@ -4,7 +4,7 @@ import {CustomStatEffect, StrictStatEffect } from "../core/stat_effect"
 import { Character } from "./character";
 import { EffectState } from "shared/tver/utility/_ts_only/types";
 import { StateMachine } from "../fundamental/state_machine";
-import { get_id, get_logger, is_client_context, wlog } from "shared/tver/utility/utils";
+import { get_context_name, get_id, get_logger, is_client_context, wlog } from "shared/tver/utility/utils";
 import { Constructor } from "@flamework/core/out/utility";
 import { Timer } from "@rbxts/timer";
 import { Janitor } from "@rbxts/janitor";
@@ -51,7 +51,7 @@ export abstract class CompoundEffect {
     public OnEndServer() {}
     public OnEndClient() {}
 
-    public ApplyTo(to: Character, duration: number): AppliedCompoundEffect {
+    public ApplyTo(to: Character, duration = -1): AppliedCompoundEffect {
         return new AppliedCompoundEffect(this, to, duration)
     }
 
@@ -84,7 +84,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
     public readonly id = get_id()
 
     public readonly InheritsFrom: CompoundEffect
-    public readonly CarrierID: number
+    public readonly Carrier: Character
 
     private readonly _janitor = new Janitor()
     private _main_thread: thread | undefined
@@ -93,10 +93,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
     constructor (from: CompoundEffect, to: Character, duration: number) {
         super()
         this.InheritsFrom = from
-        this.CarrierID = to.id
+        this.Carrier = to
         this.Name = tostring(getmetatable(this.InheritsFrom))
 
-        this.Duration = duration
+        this.Duration = duration < 0? math.huge : duration
         this.StatEffects = from.StatEffects
         this.PropertyEffects = from.PropertyEffects
 
@@ -116,7 +116,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
         }
 
         this.init()
-        to._internal_apply_effect(this)
+        to._compound_effect_only_apply_effect(this)
 
         if (this.StartOnApply) {
             this.Start()
@@ -132,7 +132,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
     public Start() {
         if (this.state.GetState() !== "Ready") {
-            warn(this.Name + " Effect cant be started twice!")
+            log.w(this.Name + " Effect cant be started twice!")
             return
         }
         this.timer.setLength(this.Duration) // update length
@@ -145,7 +145,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
     public Resume() {
         if (this.state.GetState() === "Ended") {
-            warn(this.Name + " is already ended!")
+            log.w(this.Name + " is already ended!")
             return
         }
         this.timer.resume()
@@ -157,7 +157,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
     public Pause() {
         if (this.state.GetState() === "Ended") {
-            warn(this.Name + " is already ended!")
+            log.w(this.Name + " is already ended!")
             return
         }
         this.timer.pause()
@@ -179,14 +179,13 @@ export class AppliedCompoundEffect extends CompoundEffect{
             effect.End()
         })
 
-        const carrier = Character.GetCharacterFromId(this.CarrierID)
-        carrier?._internal_remove_effect(this.id) // remove effect from carrier
+        this.Carrier?._compound_effect_only_remove_effect(this.id) // remove effect from carrier
 
         this.state.SetState("Ended") // change state
         this.Ended.Fire()
     }
     public Destroy() {
-        dlog.w("Destroying: " + this.Name)
+        dlog.w("Destroying: " + this.Name + " On " + get_context_name())
         this.Destroying.Fire()
         if (this.state.GetState() !== "Ended") {this.End()}
 
@@ -212,41 +211,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
         )
     }
     private _handle_callbacks() {
-        const _state = this.state.GetState()
-        const _prev_state = this.state.GetPreviousState()
-        if (_state === "On" && _prev_state === "Ready") {
-            //Effect started
-            this._main_thread = task.spawn(() => {
-                is_client_context()? this.OnStartClient() : this.OnStartServer()
-                this._main_thread = undefined
-        })
-        } else if (_state === "On" && _prev_state === "Off") {
-            //Effect Resumed
-            if (this._msic_thread && coroutine.status(this._msic_thread) === "normal") {
-                coroutine.close(this._msic_thread)
-            }
-            this._msic_thread = task.spawn(() => {
-                is_client_context()? this.OnResumeClient() : this.OnResumeServer()
-                this._msic_thread = undefined
-            })
-        } else if (_state === "Off" && _prev_state !== "Off") {
-            //Effect paused
-            if (this._msic_thread && coroutine.status(this._msic_thread) === "normal") {
-                coroutine.close(this._msic_thread)
-            }
-            this._msic_thread = task.spawn(() => {
-                is_client_context()? this.OnPauseClient() : this.OnPauseServer()
-                this._msic_thread = undefined
-            })
-        } else if (_state === "Ended" && _prev_state !== "Ended") {
-            //Effect ended
-            if (this._main_thread && coroutine.status(this._main_thread) === "normal") {
-                coroutine.close(this._main_thread)
-            }
-            is_client_context()? this.OnEndClient() : this.OnEndServer() // will yield!!
-        } else {
-            log.w("Something with " + this.Name + "'s Callbacks went wrong...")
-        }
     }
     private init() {
         this.state.SetState("Ready")
