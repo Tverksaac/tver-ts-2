@@ -17,7 +17,6 @@ function calculate_total_bonus(stat: SeparatedStat): number {
 }
 
 function update_total(stat: SeparatedStat): void {
-	dlog.w(stat.name + " updated to " + calculate_total_bonus(stat))
 	stat.Total.Set(calculate_total_bonus(stat));
 }
 
@@ -55,7 +54,6 @@ export class SeparatedStat {
 		);
 		this._janitor.Add(
 			this.Bonus.Modifer.changed.Connect(() => {
-				dlog.w("Modifer for " + this.name + " changed to " + this.Bonus.Modifer.Get())
 				update_total(this);
 			}),
 		);
@@ -103,9 +101,5 @@ export class ConnectedStat<
 				this.instance[Name] = this.Total.Get() as Indexable;
 			}),
 		);
-	}
-
-	public getType(): string {
-		return "ConnectedStat"
 	}
 }

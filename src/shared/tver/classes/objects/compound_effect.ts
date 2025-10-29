@@ -53,8 +53,12 @@ export abstract class CompoundEffect {
     public OnEndClient() {}
 
     public ApplyTo(to: Character, duration = -1): AppliedCompoundEffect {
+        log.w("Calling :ApplyTo()")
+        print(to)
         let effect = to.GetAppliedEffectFromName(this.Name)
+        print(effect, this.Name)
         if (effect) {
+            log.l("Extending duration")
             effect.SetDuration(duration < 0? math.huge : duration)
         } else {
             effect = new AppliedCompoundEffect(this, to, duration)
@@ -132,9 +136,15 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
     public ExtendDuration(to: number) {
         this.timer.setLength(this.timer.getTimeLeft() + to)
+        this.for_each_effect((effect) => {
+            effect.timer.setLength(effect.GetTimeLeft() + to)
+        })
     }
     public SetDuration(to: number) {
         this.timer.setLength(to)
+        this.for_each_effect((effect) => {
+            effect.timer.setLength(to)
+        })
     }
 
     public Start() {

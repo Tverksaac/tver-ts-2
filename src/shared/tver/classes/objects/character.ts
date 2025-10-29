@@ -14,6 +14,7 @@ import { ClientEvents, ServerEvents } from "shared/tver/network/networking";
 import { Players } from "@rbxts/services";
 import { observe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
+import { find } from "@rbxts/immut/src/table";
 
 const LOG_KEY = "[CHARACTER]"
 const log = get_logger(LOG_KEY)
@@ -95,8 +96,12 @@ export class Character {
         this.player = Players.GetPlayerFromCharacter(this.instance)
 
         this._manipulate = {
-            _apply_effect: this._compound_effect_only_apply_effect,
-            _remove_effect: this._compound_effect_only_remove_effect
+            _apply_effect: (effect: AppliedCompoundEffect) => {
+                this._compound_effect_only_apply_effect(effect)
+            },
+            _remove_effect: (find_from: string | number) => {
+                return this._compound_effect_only_remove_effect(find_from)
+            }
         }
 
         //Setup Basic Stats & Properties
