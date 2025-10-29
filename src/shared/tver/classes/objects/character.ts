@@ -4,7 +4,7 @@ import { CharacterInfo, CompoundEffectInfo, SkillInfo } from "shared/tver/utilit
 import { elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
-import { AppliedCompoundEffect, GetCompoundEffectFromName } from "./compound_effect";
+import { AppliedCompoundEffect, CompoundEffect, GetCompoundEffectFromName } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
@@ -56,6 +56,11 @@ export class Character {
     public readonly SkillAdded = new Signal<(AddedSkill: unknown) => void>()
     public readonly SkillRemoved = new Signal<(RemovedSkill: unknown) => void>()
 
+    public readonly _manipulate: {
+        _apply_effect: (effect: AppliedCompoundEffect) => void,
+        _remove_effect: (find_from: string | number) => AppliedCompoundEffect | undefined,
+    }
+
     static GetCharacterFromId(id: number): Character | undefined {
         let to_return
         this.GetAllCharactersArray().forEach((character) => {
@@ -88,6 +93,11 @@ export class Character {
         this.instance = from_instance
         this.humanoid = this.instance.FindFirstChildWhichIsA("Humanoid") || elog(this.instance + " Do not have Humanoid as Child!")
         this.player = Players.GetPlayerFromCharacter(this.instance)
+
+        this._manipulate = {
+            _apply_effect: this._compound_effect_only_apply_effect,
+            _remove_effect: this._compound_effect_only_remove_effect
+        }
 
         //Setup Basic Stats & Properties
         //IMPORTANT: Name of property/stat should be same as what it affects
@@ -204,11 +214,11 @@ export class Character {
     //STATUS EFFECTS
 
     //!!Dont use, even tho its public!!---
-    public _compound_effect_only_apply_effect(applied_effect: AppliedCompoundEffect) {
+    private _compound_effect_only_apply_effect(applied_effect: AppliedCompoundEffect) {
         this._effects.push(applied_effect)
         this.EffectApplied.Fire(applied_effect)
     }
-    public _compound_effect_only_remove_effect(find_from: string | number): AppliedCompoundEffect | undefined {
+    private _compound_effect_only_remove_effect(find_from: string | number): AppliedCompoundEffect | undefined {
         const effect = type(find_from) === "string"? this.GetAppliedEffectFromName(find_from as string) : this.GetAppliedEffectFromId(find_from as number)
         this._effects.forEach((val, index) => {
             if (val === effect) {

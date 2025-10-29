@@ -15,7 +15,7 @@ const LOG_KEY = "[COMP_EFFECT]"
 const log = get_logger(LOG_KEY)
 const dlog = get_logger(LOG_KEY, true)
 
-export class Container_CompoundEffect {
+class Container_CompoundEffect {
     public static readonly RegisteredCompoundEffects = new Map<string, CompoundEffect>()
 
     public static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
@@ -37,6 +37,7 @@ export abstract class CompoundEffect {
     public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]= []
     public readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[] = []
 
+    public Stackable = false
     public StartOnApply = true
 
     public OnStartServer() {}
@@ -52,7 +53,13 @@ export abstract class CompoundEffect {
     public OnEndClient() {}
 
     public ApplyTo(to: Character, duration = -1): AppliedCompoundEffect {
-        return new AppliedCompoundEffect(this, to, duration)
+        let effect = to.GetAppliedEffectFromName(this.Name)
+        if (effect) {
+            effect.SetDuration(duration < 0? math.huge : duration)
+        } else {
+            effect = new AppliedCompoundEffect(this, to, duration)
+        }
+        return effect
     }
 
     public Destroy() {
@@ -116,7 +123,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
         }
 
         this.init()
-        to._compound_effect_only_apply_effect(this)
+        to._manipulate._apply_effect(this)
 
         if (this.StartOnApply) {
             this.Start()
@@ -179,7 +186,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             effect.End()
         })
 
-        this.Carrier?._compound_effect_only_remove_effect(this.id) // remove effect from carrier
+        this.Carrier?._manipulate._remove_effect(this.id) // remove effect from carrier
 
         this.state.SetState("Ended") // change state
         this.Ended.Fire()
