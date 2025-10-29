@@ -189,7 +189,7 @@ export class Character {
             log.w(stat.name + " Stat" + " is already exists in " + this.instance.Name + "!")
             return false
         }
-        if (tostring(stat) === "ConnectedStat") {
+        if (tostring(getmetatable(stat)) === "ConnectedStat") {
             this._stats.set(stat.name, stat as _possible_stats_type)
         } else {
             this._custom_stats.set(stat.name, stat as _possible_custom_stats_type)
@@ -201,7 +201,7 @@ export class Character {
             log.w(prop.name + " is already exists in " + this.instance.Name + "!")
             return false
         }
-        if (tostring(prop) === "ConnectedProperty") {
+        if (tostring(getmetatable(prop)) === "ConnectedProperty") {
             this._properties.set(prop.name, prop as _possible_properties_type)
         } else {
             this._custom_properties.set(prop.name, prop as _possible_custom_properties_type)
