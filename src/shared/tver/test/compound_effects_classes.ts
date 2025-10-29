@@ -16,7 +16,6 @@ export class Stun extends CompoundEffect {
 
     public OnStartServer(): void {
         print("Stun started on server!")
-        print('yields!')
         while (task.wait(0.1)) {
             print('print')
         }

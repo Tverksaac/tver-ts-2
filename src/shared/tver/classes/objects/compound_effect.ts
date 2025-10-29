@@ -59,6 +59,7 @@ export abstract class CompoundEffect {
         } else {
             effect = new AppliedCompoundEffect(this, to, duration)
         }
+        print(to)
         return effect
     }
 
@@ -224,6 +225,43 @@ export class AppliedCompoundEffect extends CompoundEffect{
         )
     }
     private _handle_callbacks() {
+        const state = this.state.GetState()
+        const prev_state = this.state.GetPreviousState()
+        if (state === "On") {
+            if (prev_state === "Ready") {
+                //Effect Started
+                this._main_thread = coroutine.create(() => {
+                    is_client_context()? this.OnStartClient() : this.OnStartServer()
+                })
+                coroutine.resume(this._main_thread)
+            }
+            else if (prev_state === "Off") {
+                //Effect Resumed
+                this._main_thread = coroutine.create(() => {
+                    is_client_context()? this.OnStartClient() : this.OnStartServer()
+                })
+                this._msic_thread = coroutine.create(() => {
+                    is_client_context()? this.OnResumeClient() : this.OnResumeServer()
+                })
+                coroutine.resume(this._main_thread)
+                coroutine.resume(this._msic_thread)
+            }
+        }
+        else if (state === "Off") {
+            //Effect Paused
+            this._main_thread? coroutine.close(this._main_thread): undefined
+            this._msic_thread? coroutine.close(this._msic_thread): undefined
+            this._msic_thread = coroutine.create(() => {
+                is_client_context()? this.OnPauseClient() : this.OnPauseServer()
+            })
+            coroutine.resume(this._msic_thread)
+        }
+        else if (state === "Ended") {
+            //Effect ended
+            this._msic_thread? coroutine.close(this._msic_thread): undefined
+            this._main_thread? coroutine.close(this._main_thread): undefined
+            is_client_context()? this.OnEndClient() : this.OnEndServer() // Yields!
+        }
     }
     private init() {
         this.state.SetState("Ready")
