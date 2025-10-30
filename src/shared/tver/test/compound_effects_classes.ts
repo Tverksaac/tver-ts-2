@@ -10,7 +10,7 @@ export class Stun extends CompoundEffect {
         new AutoRotateEffect(false, 10)
     ]
     public StatEffects = [
-        new WalkSpeedEffect("Modifer", 0),
-        new JumpHeightEffect("Modifer", 0)
+        new WalkSpeedEffect("Modifier", 0),
+        new JumpHeightEffect("Modifier", 0)
     ]
 }

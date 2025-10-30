@@ -1,27 +1,21 @@
 import { Effect } from "./effect"
+import { EffectType } from "shared/tver/utility/_ts_only/types"
 
 /** Instance property names of numeric stats for a connected instance. */
 type AffectType<ConnectedInstance extends Instance> = ExtractKeys<WritableInstanceProperties<ConnectedInstance>, number>
-/** How a stat effect applies: add raw value or multiply as modifier. */
-type EffectType = "Raw" | "Modifier"
+// EffectType is imported from shared types
 
 /** Base for effects that influence numeric stats. */
-abstract class StatEffect extends Effect {
-}
+abstract class StatEffect extends Effect {}
 
 /**
  * Stat effect targeting a concrete instance stat.
  */
 export abstract class StrictStatEffect<ConnectedInstance extends Instance> extends StatEffect{
-    public readonly Affects: AffectType<ConnectedInstance>
+    public readonly Affects!: AffectType<ConnectedInstance>
 
     public abstract readonly Strength: number
     public abstract readonly EffectType: EffectType
-
-    constructor (_affects: AffectType<ConnectedInstance>) {
-        super()
-        this.Affects = _affects
-    }
 }
 
 /**

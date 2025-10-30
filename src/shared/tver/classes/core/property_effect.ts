@@ -17,15 +17,10 @@ abstract class PropertyEffect extends Effect {
  * Property effect that targets a concrete instance property by name.
  */
 export abstract class StrictPropertyEffect<ConnectedInstance extends Instance, Name extends Affects<ConnectedInstance>> extends PropertyEffect {
-    public readonly Affects: Affects<ConnectedInstance>
+    public readonly Affects!: Affects<ConnectedInstance>
 
     public abstract readonly Strength: Strength<ConnectedInstance, Name>
     public readonly Priority?: number
-
-    constructor (affects: Affects<ConnectedInstance>) {
-        super()
-        this.Affects = affects
-    }
 }
 
 /**
