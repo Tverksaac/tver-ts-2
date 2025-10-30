@@ -11,9 +11,9 @@ const dlog = get_logger(LOG_KEY, true)
 function calculate_total_bonus(stat: SeparatedStat): number {
 	const base = stat.Base.Get();
 	const bonus_raw = stat.Bonus.Raw.Get();
-	const bonus_modifer = stat.Bonus.Modifer.Get();
+	const bonus_modifier = stat.Bonus.Modifier.Get();
 
-	return (base + bonus_raw) * bonus_modifer;
+	return (base + bonus_raw) * bonus_modifier;
 }
 
 function update_total(stat: SeparatedStat): void {
@@ -31,7 +31,7 @@ export class SeparatedStat {
 	Base: SeparatedProperty<number>;
 	Bonus: {
 		Raw: SeparatedProperty<number>;
-		Modifer: SeparatedProperty<number>;
+		Modifier: SeparatedProperty<number>;
 	};
 	Total: SeparatedProperty<number>;
 
@@ -41,7 +41,7 @@ export class SeparatedStat {
 		this.Base = new SeparatedProperty(Name + "_Base", Value);
 		this.Bonus = {
 			Raw: new SeparatedProperty(Name + "_Bonus_Raw", 0),
-			Modifer: new SeparatedProperty(Name + "_Bonus_Modifer", 1),
+			Modifier: new SeparatedProperty(Name + "_Bonus_Modifier", 1),
 		};
 		this.Total = new SeparatedProperty(Name + "_Total", Value);
 
@@ -56,12 +56,12 @@ export class SeparatedStat {
 			}),
 		);
 		this.janitor.Add(
-			this.Bonus.Modifer.changed.Connect(() => {
+			this.Bonus.Modifier.changed.Connect(() => {
 				update_total(this);
 			}),
 		);
 		this.janitor.Add(this.Base);
-		this.janitor.Add(this.Bonus.Modifer);
+		this.janitor.Add(this.Bonus.Modifier);
 		this.janitor.Add(this.Bonus.Raw);
 		this.janitor.Add(this.Total);
 	}

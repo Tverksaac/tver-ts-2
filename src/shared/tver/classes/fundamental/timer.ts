@@ -48,9 +48,10 @@ export class Timer {
     /** Start or restart the timer from its length. */
     public Start(): void {
         this._time_left = this._length
+        this._state.SetState("Running")
         this._run_thread = coroutine.create(() => {
             this.janitor.Add(this._run_connection = RunService.Heartbeat.Connect((dt) => {
-                if (this._state.GetState() === "Paused") return
+                if (this._state.GetState() !== "Running") return
                 this._time_left -= dt
                 if (this._time_left <= 0) {
                     this.End()
@@ -79,6 +80,8 @@ export class Timer {
     public End(): void {
         this._run_connection?.Disconnect()
         this._run_thread? coroutine.close(this._run_thread): undefined
+        this._time_left = 0
+        this._state.SetState("Paused")
         this.Ended.Fire()
     }
 

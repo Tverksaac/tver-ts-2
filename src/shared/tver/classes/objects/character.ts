@@ -33,6 +33,10 @@ export class Character {
      * Global registry of all live `Character` instances keyed by their Roblox `Instance`.
      */
     public static readonly CharactersMap = new Map<Instance, Character>()
+    /**
+     * O(1) lookup map for characters by numeric id.
+     */
+    public static readonly CharactersById = new Map<number, Character>()
 
     /**
      * Fires when a `Character` is constructed and registered.
@@ -67,6 +71,10 @@ export class Character {
     public readonly EffectRemoved = new Signal<(RemovedEffect: AppliedCompoundEffect) => void>()
     public readonly SkillAdded = new Signal<(AddedSkill: unknown) => void>()
     public readonly SkillRemoved = new Signal<(RemovedSkill: unknown) => void>()
+    /**
+     * Fires once when replication is confirmed for this character.
+     */
+    public readonly ReplicationReady = new Signal()
 
     public readonly _manipulate: {
         _apply_effect: (effect: AppliedCompoundEffect) => void,
@@ -77,13 +85,7 @@ export class Character {
      * Look up a `Character` by its internal numeric id.
      */
     static GetCharacterFromId(id: number): Character | undefined {
-        let to_return
-        this.GetAllCharactersArray().forEach((character) => {
-            if (character.id === id) {
-                to_return = character
-            }
-        })
-        return to_return
+        return this.CharactersById.get(id)
     }
     /**
      * Look up a `Character` by its Roblox `Instance`.
@@ -149,6 +151,7 @@ export class Character {
         // init
 
         Character.CharactersMap.set(this.instance, this)
+        Character.CharactersById.set(this.id, this)
         Character.CharacterAdded.Fire(this)
     }
 
@@ -171,6 +174,7 @@ export class Character {
         
         info.instance = this.instance
         info.compound_effects = compound_effects
+        info.skills = skills
         info.id = this.id
         
         return info
@@ -193,31 +197,25 @@ export class Character {
      * Get an array of currently applied compound effects.
      */
     public GetAppliedEffectsArray(): Array<AppliedCompoundEffect> {
-        return map_to_array(this.GetAppliedEffectsMap())
+        return [...this._effects]
     }
     /**
      * Find an applied effect by name.
      */
     public GetAppliedEffectFromName(name: string): AppliedCompoundEffect | undefined {
-        let to_return
-        this._effects.forEach((effect) => {
-            if (effect.Name === name) {
-                to_return = effect
-            }
-        })
-        return to_return
+        for (const effect of this._effects) {
+            if (effect.Name === name) return effect
+        }
+        return undefined
     }
     /**
      * Find an applied effect by id.
      */
     public GetAppliedEffectFromId(id: number): AppliedCompoundEffect | undefined {
-        let to_return
-        this._effects.forEach((effect) => {
-            if (effect.id === id) {
-                to_return = effect
-            }
-        })
-        return to_return
+        for (const effect of this._effects) {
+            if (effect.id === id) return effect
+        }
+        return undefined
     }
 
     /**
@@ -251,6 +249,48 @@ export class Character {
         return true
     }
 
+    /** Whether this character has a stat by name (connected or custom). */
+    public HasStat(name: string): boolean {
+        return this._stats.has(name) || this._custom_stats.has(name)
+    }
+    /** Whether this character has a property by name (connected or custom). */
+    public HasProperty(name: string): boolean {
+        return this._properties.has(name) || this._custom_properties.has(name)
+    }
+    /** Get a stat by name (connected or custom). */
+    public GetStat(name: string): _every_possible_stats_type | undefined {
+        return this._stats.get(name) || this._custom_stats.get(name)
+    }
+    /** Get a property by name (connected or custom). */
+    public GetProperty(name: string): _every_possible_properties_type | undefined {
+        return this._properties.get(name) || this._custom_properties.get(name)
+    }
+    /** List all stat names (connected and custom). */
+    public ListStatNames(): string[] {
+        const names = [] as string[]
+        this._stats.forEach((_, key) => names.push(key))
+        this._custom_stats.forEach((_, key) => names.push(key))
+        return names
+    }
+    /** List all property names (connected and custom). */
+    public ListPropertyNames(): string[] {
+        const names = [] as string[]
+        this._properties.forEach((_, key) => names.push(key))
+        this._custom_properties.forEach((_, key) => names.push(key))
+        return names
+    }
+
+    /**
+     * Non-blocking replication readiness hook. If already ready, callback is called deferred.
+     */
+    public onReplicationReady(callback: () => void): void {
+        if (this.replication_done) {
+            task.defer(callback)
+            return
+        }
+        this.janitor.Add(this.ReplicationReady.Connect(callback))
+    }
+
     // PUBLIC: DESTROY
     /**
      * Dispose this character and unregister from global map.
@@ -258,6 +298,7 @@ export class Character {
     public Destroy(): void {
         Character.CharacterRemoved.Fire(this)
         Character.CharactersMap.delete(this.instance)
+        Character.CharactersById.delete(this.id)
     }
     
     // @internal //
@@ -352,7 +393,7 @@ export class Character {
      * Accumulate stat effects into raw and modifier components per affected stat.
      */
     private _calculate_stat_effects() {
-        const calculated = new Map<string, {Affects: string, Raw: number, Modifer: number}>()
+        const calculated = new Map<string, {Affects: string, Raw: number, Modifier: number}>()
 
         this._stat_effects.forEach((effect) => {
             if (effect.state.GetState() !== "On") {
@@ -366,16 +407,16 @@ export class Character {
                 member = {
                     Affects: effect.Affects,
                     Raw: 0,
-                    Modifer: 1
+                    Modifier: 1
                 }
             }
 
-            if (effect_type === "Modifer") {
-                member.Modifer = member.Modifer * effect.Strength
+            if (effect_type === "Modifier") {
+                member.Modifier = member.Modifier * effect.Strength
             } else if (effect_type === "Raw") {
                 member.Raw = member.Raw + effect.Strength
             } else {
-                 log.e(effect + " have wrong effect type property! /n Should be 'Raw' or 'Modifer' but have value of: " + effect.EffectType)
+                 log.e(effect + " have wrong effect type property! /n Should be 'Raw' or 'Modifier' but have value of: " + effect.EffectType)
             }
 
             calculated.set(member.Affects, member)
@@ -393,7 +434,7 @@ export class Character {
         //return stats to base values
         const _return_to_base_value = (stat: _every_possible_stats_type) => {
             if (calculated.has(stat.name)) return
-            stat.Bonus.Modifer.Set(1)
+            stat.Bonus.Modifier.Set(1)
             stat.Bonus.Raw.Set(0)
 
         }
@@ -405,7 +446,7 @@ export class Character {
             stat_to_affect = this._stats.get(stat.Affects) || this._custom_stats.get(stat.Affects)
             if (stat_to_affect) {
                 //stat to affect is innate stat
-                stat_to_affect.Bonus.Modifer.Set(stat.Modifer)
+                stat_to_affect.Bonus.Modifier.Set(stat.Modifier)
                  stat_to_affect.Bonus.Raw.Set(stat.Raw)               
             } else {
                 log.e(stat + " Cant affect any of stats becuase theres no stat with name: " + stat.Affects)
@@ -521,9 +562,11 @@ export class Character {
         if (this.player) {
             this.janitor.Add(ServerEvents.character_replication_done.connect(() => {
                 this.replication_done = true
+                this.ReplicationReady.Fire()
             }))
         } else {
             this.replication_done = true
+            this.ReplicationReady.Fire()
         }
 
         dlog.l("Server-Side Character was successfully created for " + this.instance.Name)
@@ -544,6 +587,9 @@ export class Character {
         dlog.l("Client-Side Character was successfully created for " + this.instance.Name)
         
         ClientEvents.character_replication_done.fire()
+        // On client, replication is effectively ready immediately for local character
+        this.replication_done = true
+        this.ReplicationReady.Fire()
     }
     private _start_replication(): void {
         is_client_context()? this._client_replication() : this._server_replication()
@@ -564,7 +610,6 @@ export class Character {
      */
     private init(): boolean {
         this._start_replication()
-        while(!this.replication_done && !is_client_context()) {task.wait()} // yield until replciation is done
         this._start_listen_to_effect_changes()
         return true
     }
