@@ -10,7 +10,7 @@ const CONNECTED_TAG = "[TVER]" + LOG_KEY + " Connected to "
 const dlog = get_logger(LOG_KEY, true)
 
 export class SeparatedProperty<T> {
-	protected _janitor = new Janitor()
+	protected janitor = new Janitor()
 
 	public readonly name: string;
 	protected value: T;
@@ -37,12 +37,12 @@ export class SeparatedProperty<T> {
 			},
 		};
 
-		this._janitor.Add(
+		this.janitor.Add(
 			this.changed.Connect((new_value, old_value) => {
 				this.Behaviours.OnChanged(new_value, old_value);
 			}),
 		);
-		this._janitor.Add(
+		this.janitor.Add(
 			RunService.Heartbeat.Connect(() => {
 				this.Behaviours.OnTick();
 			}),
@@ -71,7 +71,7 @@ export class SeparatedProperty<T> {
 	}
 
 	Destroy() {
-		this._janitor.Destroy();
+		this.janitor.Destroy();
 	}
 }
 
@@ -104,12 +104,12 @@ export class ConnectedProperty<
 		}
 
 		if (is_client_context() && !CanBeCreatedOnClient) return
-		this._janitor.Add(
+		this.janitor.Add(
 			this.changed.Connect((new_value: ConnectedInstance[Name]) => {
 				this.instance[Name] = new_value;
 			}),
 		);
-		this._janitor.Add(
+		this.janitor.Add(
 			this.instance.GetPropertyChangedSignal<ConnectedInstance>(Name).Connect(() => {
 				if (!this.override) {
 					this.Set(this.instance[Name]);

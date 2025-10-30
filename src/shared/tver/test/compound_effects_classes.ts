@@ -13,26 +13,4 @@ export class Stun extends CompoundEffect {
         new WalkSpeedEffect("Modifer", 0),
         new JumpHeightEffect("Modifer", 0)
     ]
-
-    public OnStartServer(): void {
-        print("Stun started on server!")
-        while (task.wait(0.1)) {
-            print('print')
-        }
-    }
-    public OnStartClient(): void {
-        print("Stun started on client!")
-    }
-    public OnEndServer(): void {
-        print("Stun ended on server!")
-    }
-    public OnEndClient(): void {
-        print("Stun ended on client!")
-    }
-    public OnPauseServer(): void {
-        print("paused")
-    }
-    public OnResumeServer(): void {
-        print("resumed")
-    }
 }

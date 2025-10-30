@@ -21,7 +21,7 @@ function update_total(stat: SeparatedStat): void {
 }
 
 export class SeparatedStat {
-	protected _janitor = new Janitor();
+	protected janitor = new Janitor();
 
 	readonly name: string;
 
@@ -42,29 +42,29 @@ export class SeparatedStat {
 		};
 		this.Total = new SeparatedProperty(Name + "_Total", Value);
 
-		this._janitor.Add(
+		this.janitor.Add(
 			this.Base.changed.Connect(() => {
 				update_total(this);
 			}),
 		);
-		this._janitor.Add(
+		this.janitor.Add(
 			this.Bonus.Raw.changed.Connect(() => {
 				update_total(this);
 			}),
 		);
-		this._janitor.Add(
+		this.janitor.Add(
 			this.Bonus.Modifer.changed.Connect(() => {
 				update_total(this);
 			}),
 		);
-		this._janitor.Add(this.Base);
-		this._janitor.Add(this.Bonus.Modifer);
-		this._janitor.Add(this.Bonus.Raw);
-		this._janitor.Add(this.Total);
+		this.janitor.Add(this.Base);
+		this.janitor.Add(this.Bonus.Modifer);
+		this.janitor.Add(this.Bonus.Raw);
+		this.janitor.Add(this.Total);
 	}
 
 	public Destroy() {
-		this._janitor.Destroy();
+		this.janitor.Destroy();
 	}
 }
 
@@ -91,12 +91,12 @@ export class ConnectedStat<
 		this.instance[Name] = this.Total.Get() as Indexable;
 
 		if (is_client_context()) return
-		this._janitor.Add(
+		this.janitor.Add(
 			this.Total.changed.Connect(() => {
 				this.instance[Name] = this.Total.Get() as Indexable;
 			}),
 		);
-		this._janitor.Add(
+		this.janitor.Add(
 			this.instance.GetPropertyChangedSignal(Name).Connect(() => {
 				this.instance[Name] = this.Total.Get() as Indexable;
 			}),

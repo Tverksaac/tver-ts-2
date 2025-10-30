@@ -6,9 +6,9 @@ import { EffectState } from "shared/tver/utility/_ts_only/types";
 import { StateMachine } from "../fundamental/state_machine";
 import { get_context_name, get_id, get_logger, is_client_context, wlog } from "shared/tver/utility/utils";
 import { Constructor } from "@flamework/core/out/utility";
-import { Timer } from "@rbxts/timer";
 import { Janitor } from "@rbxts/janitor";
 import Signal from "@rbxts/signal";
+import { Timer } from "../fundamental/timer";
 
 const LOG_KEY = "[COMP_EFFECT]"
 
@@ -88,13 +88,13 @@ export class AppliedCompoundEffect extends CompoundEffect{
     public Destroying = new Signal()
 
     public readonly state = new StateMachine<[EffectState]>()
-    public readonly timer = new Timer(1)
+    public readonly timer = new Timer()
     public readonly id = get_id()
 
     public readonly InheritsFrom: CompoundEffect
     public readonly Carrier: Character
+    public readonly janitor = new Janitor()
 
-    private readonly _janitor = new Janitor()
     private _main_thread: thread | undefined
     private _msic_thread: thread | undefined
 
@@ -132,15 +132,15 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
 
     public ExtendDuration(to: number) {
-        this.timer.setLength(this.timer.getTimeLeft() + to)
+        this.timer.SetLength(this.timer.GetTimeLeft() + to)
         this.for_each_effect((effect) => {
-            effect.timer.setLength(effect.GetTimeLeft() + to)
+            effect.timer.SetLength(effect.GetTimeLeft() + to)
         })
     }
     public SetDuration(to: number) {
-        this.timer.setLength(to)
+        this.timer.SetLength(to)
         this.for_each_effect((effect) => {
-            effect.timer.setLength(to)
+            effect.timer.SetLength(to)
         })
     }
 
@@ -149,12 +149,16 @@ export class AppliedCompoundEffect extends CompoundEffect{
             log.w(this.Name + " Effect cant be started twice!")
             return
         }
-        this.timer.setLength(this.Duration) // update length
-        this.timer.start()
+        this.timer.SetLength(this.Duration) // update length
+        this.timer.Start()
         this.for_each_effect((effect) => {
             effect.Start(this.Duration)
         })
-        this.state.SetState("On")
+        
+        this.for_each_effect_included((effect) => {
+            effect.state.SetState("On")
+        })
+
         this.Started.Fire()
     }
     public Resume() {
@@ -162,11 +166,15 @@ export class AppliedCompoundEffect extends CompoundEffect{
             log.w(this.Name + " is already ended!")
             return
         }
-        this.timer.resume()
+        this.timer.Resume()
         this.for_each_effect((effect) => {
             effect.Resume()
         })
-        this.state.SetState("On")
+        
+        this.for_each_effect_included((effect) => {
+            effect.state.SetState("On")
+        })
+
         this.Resumed.Fire()
     }
     public Pause() {
@@ -174,11 +182,15 @@ export class AppliedCompoundEffect extends CompoundEffect{
             log.w(this.Name + " is already ended!")
             return
         }
-        this.timer.pause()
+        this.timer.Pause()
         this.for_each_effect((effect) => {
             effect.Stop()
         })
-        this.state.SetState("Off")
+        
+        this.for_each_effect_included((effect) => {
+            effect.state.SetState("Off")
+        })
+
         this.Paused.Fire()
     }
     public End() {
@@ -186,7 +198,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             return
         }
 
-        if (this.timer.getTimeLeft() > 0) this.timer.stop() // stop timer if still going
+        if (this.timer.GetTimeLeft() > 0) this.timer.End() // stop timer if still going
 
         //end all effects
         this.for_each_effect((effect) => {
@@ -195,7 +207,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
         this.Carrier?._manipulate._remove_effect(this.id) // remove effect from carrier
 
-        this.state.SetState("Ended") // change state
+        this.for_each_effect_included((effect) => {
+            effect.state.SetState("Ended")
+        })
+        
         this.Ended.Fire()
     }
     public Destroy() {
@@ -207,20 +222,24 @@ export class AppliedCompoundEffect extends CompoundEffect{
             effect.Destroy()
         })
 
-        this._janitor.Destroy()
+        this.janitor.Destroy()
     }
     
     private for_each_effect(callback: (effect: Effect) => void) {
         this.StatEffects.forEach(callback)
         this.PropertyEffects.forEach(callback)
     }
+    private for_each_effect_included(callback: (effect: Effect | AppliedCompoundEffect) => void) {
+        this.for_each_effect(callback)
+        callback(this)
+    }
     private _listen_for_timer() {
         const connection =
-        this.timer.stopped.Connect(() => {
+        this.janitor.Add(this.timer.Ended.Connect(() => {
             this.Destroy()
-        })
+        }))
 
-        this._janitor.Add(
+        this.janitor.Add(
             () => connection.Disconnect()
         )
     }
@@ -264,8 +283,11 @@ export class AppliedCompoundEffect extends CompoundEffect{
         }
     }
     private init() {
-        this.state.SetState("Ready")
-        this.state.StateChanged.Connect(() => this._handle_callbacks())
+        this.for_each_effect_included((effect) => {
+            effect.state.SetState("Ready")
+        })
+
+        this.janitor.Add(this.state.StateChanged.Connect(() => this._handle_callbacks()))
 
         this._listen_for_timer()
     }

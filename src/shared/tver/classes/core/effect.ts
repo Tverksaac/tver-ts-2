@@ -1,5 +1,5 @@
 import Signal from "@rbxts/signal"
-import { Timer } from "@rbxts/timer"
+import { Timer } from "../fundamental/timer"
 import { EffectState } from "shared/tver/utility/_ts_only/types"
 import { StateMachine } from "../fundamental/state_machine"
 import { Janitor } from "@rbxts/janitor"
@@ -15,19 +15,19 @@ export abstract class Effect {
     public abstract readonly Affects: unknown
     public abstract readonly Strength: unknown
 
-    public readonly timer = new Timer(1)
+    public readonly timer = new Timer()
     public readonly state = new StateMachine<[EffectState]>
 
     public readonly Changed = new Signal<(effect: Effect, args: unknown) => void>()
 
-    private readonly _janitor = new Janitor()
+    private readonly janitor = new Janitor()
 
     constructor () {
         this.init()
     }
 
     public GetTimeLeft() {
-        return this.timer.getTimeLeft()
+        return this.timer.GetTimeLeft()
     }
     public IsActive() {
         return this.state.GetState() !== "Ended" && this.state.GetState() !== "Ready"
@@ -41,8 +41,8 @@ export abstract class Effect {
 
         this.state.SetState("On")
 
-        this.timer.setLength(duration)
-        this.timer.start()
+        this.timer.SetLength(duration)
+        this.timer.Start()
     }
     public Resume() {
         if (!this.IsActive()) {
@@ -52,7 +52,7 @@ export abstract class Effect {
 
         this.state.SetState("On")
         
-        this.timer.resume()
+        this.timer.Resume()
     }
     public Stop() {
         if (!this.IsActive()) {
@@ -62,7 +62,7 @@ export abstract class Effect {
 
         this.state.SetState("Off")
 
-        this.timer.pause()
+        this.timer.Pause()
     }
     public End() {
         if (!this.IsActive()) {
@@ -71,14 +71,14 @@ export abstract class Effect {
 
         this.state.SetState("Ended")
 
-        if (this.timer.getTimeLeft() > 0) {
-            this.timer.stop()
+        if (this.timer.GetTimeLeft() > 0) {
+            this.timer.End()
         }
     }
 
     public Destroy() {
-        this._janitor.Cleanup()
-        this.timer.destroy()
+        this.janitor.Cleanup()
+        this.timer.Destroy()
         this.state.Destroy()
         this.Changed.Destroy()
     }
@@ -88,7 +88,7 @@ export abstract class Effect {
             this.state.StateChanged,
         ]
         listen_for.forEach((signal) => {
-            this._janitor.Add(
+            this.janitor.Add(
                 signal.Connect((...args) => {
                     this.Changed.Fire(this, args)
                 })
@@ -96,13 +96,9 @@ export abstract class Effect {
         })
     }
     private _listen_for_timer() {
-        const connection = 
-        this.timer.completed.Connect(() => {
+        this.janitor.Add(this.timer.Ended.Connect(() => {
             this.End()
-        })
-        this._janitor.Add(
-            () => connection.Disconnect()
-        )
+        }))
     }
 
     private init() {

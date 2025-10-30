@@ -15,6 +15,7 @@ import { Players } from "@rbxts/services";
 import { observe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
 import { find } from "@rbxts/immut/src/table";
+import { Janitor } from "@rbxts/janitor";
 
 const LOG_KEY = "[CHARACTER]"
 const log = get_logger(LOG_KEY)
@@ -51,6 +52,7 @@ export class Character {
     private readonly _stat_effects = [] as (StrictStatEffect<Humanoid> | CustomStatEffect)[]
 
     private readonly _effect_changed = new Signal()
+    private readonly janitor = new Janitor()
 
     public readonly EffectApplied = new Signal<(AppliedEffect: AppliedCompoundEffect) => void>()
     public readonly EffectRemoved = new Signal<(RemovedEffect: AppliedCompoundEffect) => void>()
@@ -222,6 +224,10 @@ export class Character {
     private _compound_effect_only_apply_effect(applied_effect: AppliedCompoundEffect) {
         this._effects.push(applied_effect)
         this.EffectApplied.Fire(applied_effect)
+
+        applied_effect.janitor.Add(applied_effect.state.StateChanged.Connect(() => {
+            this._handle_effects()
+        }))
     }
     private _compound_effect_only_remove_effect(find_from: string | number): AppliedCompoundEffect | undefined {
         const effect = type(find_from) === "string"? this.GetAppliedEffectFromName(find_from as string) : this.GetAppliedEffectFromId(find_from as number)
@@ -242,9 +248,9 @@ export class Character {
             this._effect_changed
         ]
         listen_to.forEach((signal) => {
-            signal.Connect(() => {
+            this.janitor.Add(signal.Connect(() => {
                 this._handle_effects()
-            })
+            }))
         })
     }
 
@@ -407,9 +413,9 @@ export class Character {
         ]
 
         signals.forEach((signal) => {
-            signal.Connect(() => {
+            this.janitor.Add(signal.Connect(() => {
                 this._update_server_atom()
-            })
+            }))
         })
     }
 
@@ -440,9 +446,9 @@ export class Character {
         this._update_server_atom()
 
         if (this.player) {
-            ServerEvents.character_replication_done.connect(() => {
+            this.janitor.Add(ServerEvents.character_replication_done.connect(() => {
                 this.replication_done = true
-            })
+            }))
         } else {
             this.replication_done = true
         }
