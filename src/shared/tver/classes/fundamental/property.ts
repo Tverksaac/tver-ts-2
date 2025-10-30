@@ -9,6 +9,9 @@ const LOG_KEY = "[PROPERTY]"
 const CONNECTED_TAG = "[TVER]" + LOG_KEY + " Connected to "
 const dlog = get_logger(LOG_KEY, true)
 
+/**
+ * Property that maintains its own value and change notifications (not bound to an Instance).
+ */
 export class SeparatedProperty<T> {
 	protected janitor = new Janitor()
 
@@ -49,7 +52,8 @@ export class SeparatedProperty<T> {
 		);
 	}
 
-	Set(set_to: T, silent = false) {
+	/** Set the property value. Returns true if value changed or was set. */
+	Set(set_to: T, silent = false): boolean {
 		if (this.Behaviours.CanSet()) {
 			if (this.value === set_to) {
 				return true;
@@ -62,19 +66,25 @@ export class SeparatedProperty<T> {
 		}
 	}
 
-	Get() {
+	/** Get the current property value. */
+	Get(): T {
 		return this.value;
 	}
 
-	Reset() {
+	/** Reset the property back to its default value. */
+	Reset(): void {
 		this.Set(this.defualt_value)
 	}
 
-	Destroy() {
+	/** Cleanup any connections/resources. */
+	Destroy(): void {
 		this.janitor.Destroy();
 	}
 }
 
+/**
+ * Property bound to an Instance's property with optional override behavior.
+ */
 export class ConnectedProperty<
 	ConnectedInstance extends Instance,
 	Name extends keyof WritableInstanceProperties<ConnectedInstance>,

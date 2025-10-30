@@ -29,9 +29,18 @@ type _every_possible_stats_type = _possible_stats_type | _possible_custom_stats_
 type _every_possible_properties_type = _possible_properties_type | _possible_custom_properties_type
 
 export class Character {
+    /**
+     * Global registry of all live `Character` instances keyed by their Roblox `Instance`.
+     */
     public static readonly CharactersMap = new Map<Instance, Character>()
 
+    /**
+     * Fires when a `Character` is constructed and registered.
+     */
     public static readonly CharacterAdded = new Signal<(Character: Character) => void>
+    /**
+     * Fires when a `Character` is destroyed and unregistered.
+     */
     public static readonly CharacterRemoved = new Signal<(Character: Character) => void>
 
     public readonly player?: Player | undefined
@@ -64,6 +73,9 @@ export class Character {
         _remove_effect: (find_from: string | number) => AppliedCompoundEffect | undefined,
     }
 
+    /**
+     * Look up a `Character` by its internal numeric id.
+     */
     static GetCharacterFromId(id: number): Character | undefined {
         let to_return
         this.GetAllCharactersArray().forEach((character) => {
@@ -73,24 +85,31 @@ export class Character {
         })
         return to_return
     }
+    /**
+     * Look up a `Character` by its Roblox `Instance`.
+     */
     static GetCharacterFromInstance(instance: Instance): Character | undefined {
-        this.CharactersMap.forEach((character, key) => {
-            if (key === instance) {
-                return character
-            }
-        })
-        return undefined
+        return this.CharactersMap.get(instance)
     }
 
+    /**
+     * Get a map view of all characters keyed by instance.
+     */
     static GetAllCharactersMap(): Map<Instance, Character> {
         return this.CharactersMap
     }
 
+    /**
+     * Get an array view of all characters.
+     */
     static GetAllCharactersArray(): Character[] {
         return map_to_array(this.GetAllCharactersMap())
     }
 
-    //Yields!
+    /**
+     * Construct a `Character` from a Roblox `Instance` (expects a `Humanoid` child).
+     * Yields on server until replication completes.
+     */
     constructor(from_instance: Instance) {
         this.id = is_server_context()? get_id() : 1
         this.instance = from_instance
@@ -106,8 +125,8 @@ export class Character {
             }
         }
 
-        //Setup Basic Stats & Properties
-        //IMPORTANT: Name of property/stat should be same as what it affects
+        // Setup basic Stats & Properties
+        // IMPORTANT: Name of property/stat should match the thing it affects
         const _stats = [
             new ConnectedStat<Humanoid, "MaxHealth">(this.humanoid, "MaxHealth", 100),
             new ConnectedStat<Humanoid, "Health">(this.humanoid, "Health", 100),
@@ -125,16 +144,19 @@ export class Character {
             this.AddProperty(prop)
         })
 
-        //init
+        // init
         this.init() // should be here, then everything else, so character fully loads
-        //init
+        // init
 
         Character.CharactersMap.set(this.instance, this)
         Character.CharacterAdded.Fire(this)
     }
 
-    //PUBLIC: MAIN
-    public GetCharacterInfo() {
+    // PUBLIC: MAIN
+    /**
+     * Snapshot of this character for replication/state.
+     */
+    public GetCharacterInfo(): CharacterInfo {
         const info = {} as CharacterInfo
 
         const compound_effects = new Map<string, CompoundEffectInfo>()
@@ -154,7 +176,10 @@ export class Character {
         return info
     }
 
-    //PUBLIC: STATUS EFFECTS
+    // PUBLIC: STATUS EFFECTS
+    /**
+     * Get a map of currently applied compound effects keyed by effect name.
+     */
     public GetAppliedEffectsMap(): Map<string, AppliedCompoundEffect> {
        const map = new Map<string, AppliedCompoundEffect>()
 
@@ -164,9 +189,15 @@ export class Character {
 
        return map
     }
+    /**
+     * Get an array of currently applied compound effects.
+     */
     public GetAppliedEffectsArray(): Array<AppliedCompoundEffect> {
         return map_to_array(this.GetAppliedEffectsMap())
     }
+    /**
+     * Find an applied effect by name.
+     */
     public GetAppliedEffectFromName(name: string): AppliedCompoundEffect | undefined {
         let to_return
         this._effects.forEach((effect) => {
@@ -176,6 +207,9 @@ export class Character {
         })
         return to_return
     }
+    /**
+     * Find an applied effect by id.
+     */
     public GetAppliedEffectFromId(id: number): AppliedCompoundEffect | undefined {
         let to_return
         this._effects.forEach((effect) => {
@@ -186,6 +220,9 @@ export class Character {
         return to_return
     }
 
+    /**
+     * Register a stat (connected or custom). Returns false if name already exists.
+     */
     public AddStat(stat: _every_possible_stats_type): boolean {
         if (this._stats.get(stat.name) || this._custom_stats.get(stat.name)) {
             log.w(stat.name + " Stat" + " is already exists in " + this.instance.Name + "!")
@@ -198,6 +235,9 @@ export class Character {
         }
         return true
     }
+    /**
+     * Register a property (connected or custom). Returns false if name already exists.
+     */
     public AddProperty(prop: _every_possible_properties_type): boolean {
         if (this._properties.get(prop.name) || this._custom_properties.get(prop.name)) {
             log.w(prop.name + " is already exists in " + this.instance.Name + "!")
@@ -211,8 +251,11 @@ export class Character {
         return true
     }
 
-    //PUBLIC: DESTROY
-    public Destroy() {
+    // PUBLIC: DESTROY
+    /**
+     * Dispose this character and unregister from global map.
+     */
+    public Destroy(): void {
         Character.CharacterRemoved.Fire(this)
         Character.CharactersMap.delete(this.instance)
     }
@@ -220,7 +263,7 @@ export class Character {
     // @internal //
     //STATUS EFFECTS
 
-    //!!Dont use, even tho its public!!---
+    // !! Dont use directly (internal) !! ---
     private _compound_effect_only_apply_effect(applied_effect: AppliedCompoundEffect) {
         this._effects.push(applied_effect)
         this.EffectApplied.Fire(applied_effect)
@@ -239,9 +282,12 @@ export class Character {
         })
         return effect
     }
-    //^^^!!Dont use, even tho its public!!---^^^
+    // ^^^ Dont use directly (internal) ^^^
 
-    private _start_listen_to_effect_changes() {
+    /**
+     * Subscribe to all signals that may affect effects, and recompute on change.
+     */
+    private _start_listen_to_effect_changes(): void {
         const listen_to: Signal[] = [
             this.EffectApplied,
             this.EffectRemoved,
@@ -254,7 +300,10 @@ export class Character {
         })
     }
 
-    private _update_effects_maps() {
+    /**
+     * Rebuild flat effect lists from currently applied compound effects.
+     */
+    private _update_effects_maps(): void {
         const effects = this.GetAppliedEffectsMap()
 
         this._stat_effects.clear()
@@ -272,6 +321,9 @@ export class Character {
         })
     }
 
+    /**
+     * Combine property effects by highest priority per affected property.
+     */
     private _calculate_property_effects() {
         const calculated = new Map<string, {Affects: string, Strength: unknown, Priority: number}>()
 
@@ -296,6 +348,9 @@ export class Character {
 
         return calculated as Map<string, {Affects: string, Strength: unknown, Priority: number}>
     }
+    /**
+     * Accumulate stat effects into raw and modifier components per affected stat.
+     */
     private _calculate_stat_effects() {
         const calculated = new Map<string, {Affects: string, Raw: number, Modifer: number}>()
 
@@ -329,7 +384,10 @@ export class Character {
         return calculated
     }
 
-    private _update_stats() {
+    /**
+     * Apply calculated stat effects to both connected and custom stats.
+     */
+    private _update_stats(): void {
         const calculated = this._calculate_stat_effects()
 
         //return stats to base values
@@ -354,7 +412,10 @@ export class Character {
             } 
         })
     }
-    private _update_properties() {
+    /**
+     * Apply calculated property effects to both connected and custom properties.
+     */
+    private _update_properties(): void {
         const calculated = this._calculate_property_effects()
 
         const _return_to_base_value = (property: _every_possible_properties_type) => {
@@ -395,7 +456,10 @@ export class Character {
     }
 
     //REPLICATION
-    private _update_server_atom() {
+    /**
+     * Push this character's replicated info into the server-side atom.
+     */
+    private _update_server_atom(): void {
         const server = get_handler() as Server
         server.atom((state) => {
             const new_state = table.clone(state)
@@ -404,7 +468,10 @@ export class Character {
         })
     }
 
-    private _connect_server_atom_updating() {
+    /**
+     * Re-publish server atom whenever character-related signals change.
+     */
+    private _connect_server_atom_updating(): void {
         const signals = [
             this.EffectApplied,
             this.EffectRemoved,
@@ -420,6 +487,9 @@ export class Character {
     }
 
     //Should be called only on client
+    /**
+     * Client-only helper to mirror a compound effect by name, returns disposer.
+     */
     private _replicate_compound_effect(name: string) {
         const wthrow = (reason: string) => log.w(name + "CompoundEffect Replication failed. " + reason)
 
@@ -438,7 +508,10 @@ export class Character {
         return () => {applied_effect?.End()}
     }
 
-    private _server_replication() {
+    /**
+     * Initialize server-side replication and mark when client acknowledges.
+     */
+    private _server_replication(): void {
         const server = get_handler() as Server
         if (!server) log.e("Server not found! Maybe you forgot to Create it?")
         
@@ -453,9 +526,12 @@ export class Character {
             this.replication_done = true
         }
 
-        dlog.l("Server-Side Character was succesfully created for " + this.instance.Name)
+        dlog.l("Server-Side Character was successfully created for " + this.instance.Name)
     }
-    private _client_replication() {
+    /**
+     * Initialize client-side replication observers for this character.
+     */
+    private _client_replication(): void {
         if (!this.player) return
         const client = get_handler() as Client
         if (!client) {log.e("Client not found! Maybe you forgot to Create it?")}
@@ -465,22 +541,28 @@ export class Character {
             (_, key) => this._replicate_compound_effect(key)
         )
 
-        dlog.l("Client-Side Character was succesfully created for " + this.instance.Name)
+        dlog.l("Client-Side Character was successfully created for " + this.instance.Name)
         
         ClientEvents.character_replication_done.fire()
     }
-    private _start_replication() {
+    private _start_replication(): void {
         is_client_context()? this._client_replication() : this._server_replication()
     }
 
     //MAIN
-    private _handle_effects() {
+    /**
+     * Recompute effect-derived state and push to stats/properties.
+     */
+    private _handle_effects(): void {
         this._update_effects_maps()
         this._update_stats()
         this._update_properties()
     }
 
-    private init() {
+    /**
+     * Lifecycle bootstrap for replication and effect observers.
+     */
+    private init(): boolean {
         this._start_replication()
         while(!this.replication_done && !is_client_context()) {task.wait()} // yield until replciation is done
         this._start_listen_to_effect_changes()

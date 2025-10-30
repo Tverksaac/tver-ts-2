@@ -11,6 +11,9 @@ const dlog = get_logger(LOG_KEY, true)
 
 let server_activated = false
 
+/**
+ * Server-side handler responsible for syncing character atoms to clients.
+ */
 export class Server extends Handler {
     public Active = false
 
@@ -26,7 +29,8 @@ export class Server extends Handler {
         set_handler(this)
     }
 
-    public Start() {
+    /** Start the server handler and set up syncing. */
+    public Start(): void {
         if (this.Active) {
             log.w(this + " Cant be Started twice!")
             return
@@ -71,11 +75,11 @@ export class Server extends Handler {
         })
 
         this.Active = true
-        log.w("Succesfully Started")
+        log.w("Successfully Started")
     }
 }
 
-export function CreateServer() {
+export function CreateServer(): Server {
     if (!is_server_context()) {
         log.e("Server can be only created on Server Side!")
     }

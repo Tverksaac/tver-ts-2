@@ -20,6 +20,9 @@ function update_total(stat: SeparatedStat): void {
 	stat.Total.Set(calculate_total_bonus(stat));
 }
 
+/**
+ * Numeric stat with base, bonus (raw/modifier), and total calculated value.
+ */
 export class SeparatedStat {
 	protected janitor = new Janitor();
 
@@ -63,11 +66,15 @@ export class SeparatedStat {
 		this.janitor.Add(this.Total);
 	}
 
-	public Destroy() {
+	/** Cleanup owned properties and connections. */
+	public Destroy(): void {
 		this.janitor.Destroy();
 	}
 }
 
+/**
+ * Stat bound to an Instance numeric property; updates the instance when total changes.
+ */
 export class ConnectedStat<
 	ConnectedInstance extends Instance,
 	Name extends ExtractKeys<WritableInstanceProperties<ConnectedInstance>, number>,

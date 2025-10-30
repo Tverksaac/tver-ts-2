@@ -3,4 +3,4 @@ import { Stun } from "shared/tver/test/compound_effects_classes";
 
 const client = CreateClient()
 client.Start()
-print(Stun)
+new Stun().Destroy()

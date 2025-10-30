@@ -2,6 +2,7 @@ import { Players, RunService } from "@rbxts/services"
 import { Client, Server } from "../exports"
 import { __DEBUG__ } from ".."
 
+/** Convert a Map's values to an array. */
 export function map_to_array<K extends defined, V extends defined>(map: Map<K, V>): V[] {
     const array : V[] = []
 
@@ -11,16 +12,22 @@ export function map_to_array<K extends defined, V extends defined>(map: Map<K, V
 
     return array
 }
+/** True if running on client. */
 export function is_client_context(): boolean {
     return RunService.IsClient()
 }
+/** True if running on server. */
 export function is_server_context(): boolean {
     return RunService.IsServer()
 }
+/** Convenience label for current context. */
 export function get_context_name(): "Server" | "Client" {
     return is_client_context()? "Client" : "Server"
 }
 
+/**
+ * Create and parent a Humanoid/Animator into the instance; optionally applies player description.
+ */
 export function setup_humanoid(into: Instance): Humanoid {
     const player = Players.GetPlayerFromCharacter(into)
     const humanoid = new Instance("Humanoid")
@@ -39,16 +46,16 @@ export function setup_humanoid(into: Instance): Humanoid {
     return humanoid
 }
 
-//id generator
+// id generator
 let id = 0
-export function get_id() {
+export function get_id(): number {
     id++
     return id
 }
 
-//Handler getter
+// Handler getter
 let handler: Server | Client
-export function set_handler(new_handler: Server | Client) {
+export function set_handler(new_handler: Server | Client): void {
     handler = new_handler
 }
 export function get_handler(): Server | Client | undefined {

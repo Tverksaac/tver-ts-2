@@ -3,11 +3,13 @@ import type { SyncPayload } from "@rbxts/charm-sync";
 import { CharacterInfo } from "../utility/_ts_only/interfaces";
 import CharmSync from "@rbxts/charm-sync";
 
+/** Events that clients may fire to the server. */
 interface ClientToServerEvents {
 	request_sync(): void,
 	character_replication_done(): void
 }
 
+/** Events that the server may fire to clients. */
 interface ServerToClientEvents {
 	sync(
 		payloads: CharmSync.SyncPayload<

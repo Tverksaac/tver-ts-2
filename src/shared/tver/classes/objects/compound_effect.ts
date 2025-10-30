@@ -15,22 +15,37 @@ const LOG_KEY = "[COMP_EFFECT]"
 const log = get_logger(LOG_KEY)
 const dlog = get_logger(LOG_KEY, true)
 
+/**
+ * Global registry for `CompoundEffect` classes and instances.
+ */
 class Container_CompoundEffect {
     public static readonly RegisteredCompoundEffects = new Map<string, CompoundEffect>()
 
+    /**
+     * Register a `CompoundEffect` class by constructor.
+     */
     public static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
         const name = tostring(Effect)
-        if (this.RegisteredCompoundEffects.has(name)) {wlog(Effect + " Already was registred!"); return}
+        if (this.RegisteredCompoundEffects.has(name)) {wlog(Effect + " already registered"); return}
         this.RegisteredCompoundEffects.set(name, new Effect())
     }
+    /**
+     * Get a registered effect instance by its name.
+     */
     public static GetFromName(name: string): CompoundEffect | undefined {
         return this.RegisteredCompoundEffects.get(name)
     }
+    /**
+     * Get a registered effect instance by its constructor.
+     */
     public static GetFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): T | undefined {
         return this.RegisteredCompoundEffects.get(tostring(Constructor)) as T
     }
 }
 
+/**
+ * Base class for a set of stat/property effects that act together.
+ */
 export abstract class CompoundEffect {
     public readonly Name = tostring(getmetatable(this))
 
@@ -52,6 +67,9 @@ export abstract class CompoundEffect {
     public OnEndServer() {}
     public OnEndClient() {}
 
+    /**
+     * Apply this effect to a `Character` with optional duration (<=0 means infinite).
+     */
     public ApplyTo(to: Character, duration = -1): AppliedCompoundEffect {
         let effect = to.GetAppliedEffectFromName(this.Name)
         if (effect) {
@@ -59,11 +77,13 @@ export abstract class CompoundEffect {
         } else {
             effect = new AppliedCompoundEffect(this, to, duration)
         }
-        print(to)
         return effect
     }
 
-    public Destroy() {
+    /**
+     * Cleanup child effects.
+     */
+    public Destroy(): void {
         this.StatEffects.forEach((val) => {
             val.Destroy()
         })
@@ -74,6 +94,9 @@ export abstract class CompoundEffect {
 }
 
 
+/**
+ * A live instance of a `CompoundEffect` applied to a carrier character.
+ */
 export class AppliedCompoundEffect extends CompoundEffect{
     public readonly Name: string
 
@@ -108,7 +131,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.StatEffects = from.StatEffects
         this.PropertyEffects = from.PropertyEffects
 
-        //Maybe find another way to do it later
+        // Copy callbacks from the source instance (delegation)
         this.OnStartServer = from.OnStartServer
         this.OnEndServer = from.OnEndServer
         this.OnStartClient = from.OnStartClient
@@ -131,20 +154,29 @@ export class AppliedCompoundEffect extends CompoundEffect{
         }
     }
 
-    public ExtendDuration(to: number) {
+    /**
+     * Increase remaining duration by the provided amount.
+     */
+    public ExtendDuration(to: number): void {
         this.timer.SetLength(this.timer.GetTimeLeft() + to)
         this.for_each_effect((effect) => {
             effect.timer.SetLength(effect.GetTimeLeft() + to)
         })
     }
-    public SetDuration(to: number) {
+    /**
+     * Set a new absolute duration for the effect and children.
+     */
+    public SetDuration(to: number): void {
         this.timer.SetLength(to)
         this.for_each_effect((effect) => {
             effect.timer.SetLength(to)
         })
     }
 
-    public Start() {
+    /**
+     * Start the effect; transitions state to On and starts timers.
+     */
+    public Start(): void {
         if (this.state.GetState() !== "Ready") {
             log.w(this.Name + " Effect cant be started twice!")
             return
@@ -161,7 +193,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
         this.Started.Fire()
     }
-    public Resume() {
+    /**
+     * Resume a paused effect.
+     */
+    public Resume(): void {
         if (this.state.GetState() === "Ended") {
             log.w(this.Name + " is already ended!")
             return
@@ -177,7 +212,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
         this.Resumed.Fire()
     }
-    public Pause() {
+    /**
+     * Pause the running effect.
+     */
+    public Pause(): void {
         if (this.state.GetState() === "Ended") {
             log.w(this.Name + " is already ended!")
             return
@@ -193,7 +231,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
         this.Paused.Fire()
     }
-    public End() {
+    /**
+     * End the effect and clean up child effects.
+     */
+    public End(): void {
         if (this.state.GetState() === "Ended") {
             return
         }
@@ -213,7 +254,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
         
         this.Ended.Fire()
     }
-    public Destroy() {
+    /**
+     * Destroy this instance and release resources.
+     */
+    public Destroy(): void {
         dlog.w("Destroying: " + this.Name + " On " + get_context_name())
         this.Destroying.Fire()
         if (this.state.GetState() !== "Ended") {this.End()}
@@ -225,15 +269,15 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.janitor.Destroy()
     }
     
-    private for_each_effect(callback: (effect: Effect) => void) {
+    private for_each_effect(callback: (effect: Effect) => void): void {
         this.StatEffects.forEach(callback)
         this.PropertyEffects.forEach(callback)
     }
-    private for_each_effect_included(callback: (effect: Effect | AppliedCompoundEffect) => void) {
+    private for_each_effect_included(callback: (effect: Effect | AppliedCompoundEffect) => void): void {
         this.for_each_effect(callback)
         callback(this)
     }
-    private _listen_for_timer() {
+    private _listen_for_timer(): void {
         const connection =
         this.janitor.Add(this.timer.Ended.Connect(() => {
             this.Destroy()
@@ -243,7 +287,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             () => connection.Disconnect()
         )
     }
-    private _handle_callbacks() {
+    private _handle_callbacks(): void {
         const state = this.state.GetState()
         const prev_state = this.state.GetPreviousState()
         if (state === "On") {
@@ -282,7 +326,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             is_client_context()? this.OnEndClient() : this.OnEndServer() // Yields!
         }
     }
-    private init() {
+    private init(): void {
         this.for_each_effect_included((effect) => {
             effect.state.SetState("Ready")
         })
@@ -296,9 +340,9 @@ export class AppliedCompoundEffect extends CompoundEffect{
 export function GetCompoundEffectFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): T | undefined {
     return Container_CompoundEffect.GetFromConstructor<T>(Constructor)
 }
-export function GetCompoundEffectFromName(Name: string) {
+export function GetCompoundEffectFromName(Name: string): CompoundEffect | undefined {
     return Container_CompoundEffect.GetFromName(Name)
 }
-export function Decorator_CompoundEffect<T extends CompoundEffect>(Constructor: Constructor<T>) {
+export function Decorator_CompoundEffect<T extends CompoundEffect>(Constructor: Constructor<T>): void {
     Container_CompoundEffect.Register(Constructor)
 }

@@ -9,6 +9,9 @@ const LOG_KEY = "[EFFECT]"
 const log = get_logger(LOG_KEY)
 const dlog = get_logger(LOG_KEY, true)
 
+/**
+ * Base effect unit with lifecycle, timer, and state machine.
+ */
 export abstract class Effect {
     public readonly Name = tostring(getmetatable(this))
 
@@ -26,14 +29,17 @@ export abstract class Effect {
         this.init()
     }
 
-    public GetTimeLeft() {
+    /** Get remaining time on the effect's timer. */
+    public GetTimeLeft(): number {
         return this.timer.GetTimeLeft()
     }
-    public IsActive() {
+    /** Whether the effect is currently On or Off (not Ready/Ended). */
+    public IsActive(): boolean {
         return this.state.GetState() !== "Ended" && this.state.GetState() !== "Ready"
     }
 
-    public Start(duration: number) {
+    /** Start the effect for a given duration. */
+    public Start(duration: number): void {
         if (this.IsActive()) {
             log.w(this.Name + " already was started!")
             return
@@ -44,7 +50,8 @@ export abstract class Effect {
         this.timer.SetLength(duration)
         this.timer.Start()
     }
-    public Resume() {
+    /** Resume a paused effect. */
+    public Resume(): void {
         if (!this.IsActive()) {
             log.w(this.Name + " is not active, cant resume!")
             return
@@ -54,9 +61,10 @@ export abstract class Effect {
         
         this.timer.Resume()
     }
-    public Stop() {
+    /** Pause the effect (state Off). */
+    public Stop(): void {
         if (!this.IsActive()) {
-            log.w(this.Name + "is not active, cant be stopped!")
+            log.w(this.Name + " is not active, cant be stopped!")
             return
         }
 
@@ -64,7 +72,8 @@ export abstract class Effect {
 
         this.timer.Pause()
     }
-    public End() {
+    /** End the effect and stop timer. */
+    public End(): void {
         if (!this.IsActive()) {
             return
         }
@@ -76,14 +85,15 @@ export abstract class Effect {
         }
     }
 
-    public Destroy() {
+    /** Destroy resources and signals. */
+    public Destroy(): void {
         this.janitor.Cleanup()
         this.timer.Destroy()
         this.state.Destroy()
         this.Changed.Destroy()
     }
 
-    private _listen_for_changes() {
+    private _listen_for_changes(): void {
         const listen_for = [
             this.state.StateChanged,
         ]
@@ -95,13 +105,13 @@ export abstract class Effect {
             )
         })
     }
-    private _listen_for_timer() {
+    private _listen_for_timer(): void {
         this.janitor.Add(this.timer.Ended.Connect(() => {
             this.End()
         }))
     }
 
-    private init() {
+    private init(): void {
         this.state.SetState("Ready")
         
         this._listen_for_changes()

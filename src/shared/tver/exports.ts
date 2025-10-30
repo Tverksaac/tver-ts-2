@@ -1,3 +1,4 @@
+// Re-export public API surface for consumers
 export * from "./classes/main/server"
 export * from "./classes/main/client"
 export * from "./classes/objects/character"

@@ -4,6 +4,9 @@ import Signal from "@rbxts/signal";
 import { TimerState } from "shared/tver/utility/_ts_only/types";
 import { RunService } from "@rbxts/services";
 
+/**
+ * Simple heartbeat-driven timer with pause/resume and second ticks.
+ */
 export class Timer {
     public Started = new Signal()
     public Paused = new Signal()
@@ -22,23 +25,28 @@ export class Timer {
 
     constructor () {}
 
-    public GetLength() {
+    /** Get configured length in seconds. */
+    public GetLength(): number {
         return this._length
     }
-    public SetLength(to: number) {
+    /** Set the timer length (also resets time left). */
+    public SetLength(to: number): void {
         this._length = to
         this._time_left = to
     }
     public GetState(): TimerState | undefined {
         return this._state.GetState()
     }
+    /** Current remaining time in seconds. */
     public GetTimeLeft(): number {
         return this._time_left
     }
+    /** Unix timestamp at which the timer will end, based on current time left. */
     public GetEndTimestamp(): number {
         return DateTime.now().UnixTimestamp + this._time_left
     }
-    public Start() {
+    /** Start or restart the timer from its length. */
+    public Start(): void {
         this._time_left = this._length
         this._run_thread = coroutine.create(() => {
             this.janitor.Add(this._run_connection = RunService.Heartbeat.Connect((dt) => {
@@ -57,22 +65,25 @@ export class Timer {
         coroutine.resume(this._run_thread)
         this.Started.Fire()
     }
-    public Pause() {
+    /** Pause the timer without clearing remaining time. */
+    public Pause(): void {
         this._state.SetState("Paused")
         this.Paused.Fire()
     }
-    public Resume() {
+    /** Resume the timer if paused. */
+    public Resume(): void {
         this._state.SetState("Running")
         this.Resumed.Fire()
     }
-    public End() {
-        print('ending')
+    /** Force-end the timer; disconnects heartbeat and fires Ended. */
+    public End(): void {
         this._run_connection?.Disconnect()
         this._run_thread? coroutine.close(this._run_thread): undefined
         this.Ended.Fire()
     }
 
-    public Destroy() {
+    /** Cleanup timer resources. */
+    public Destroy(): void {
         this.janitor.Destroy()
     }
 }

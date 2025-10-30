@@ -12,6 +12,9 @@ const dlog = get_logger(LOG_KEY, true)
 
 let client_activated = false
 
+/**
+ * Client-side handler that mirrors server atom and spawns local `Character`.
+ */
 export class Client extends Handler {
     public Active = false;
 
@@ -26,7 +29,8 @@ export class Client extends Handler {
         set_handler(this)
     }
 
-    public Start() {
+    /** Start the client handler and set up syncing/replication. */
+    public Start(): void {
         if (this.Active) {
             log.w(this + " Cant be Started twice!")
             return
@@ -43,10 +47,10 @@ export class Client extends Handler {
         ClientEvents.request_sync.fire()
 
         this.Active = true
-        log.w("Succesfully Started")
+        log.w("Successfully Started")
     }   
 
-    private start_replication() {
+    private start_replication(): void {
         let character: Character | undefined
 
         subscribe(client_atom, (state) => {
@@ -57,7 +61,7 @@ export class Client extends Handler {
     }
 }
 
-export function CreateClient() {
+export function CreateClient(): Client {
     if (!is_client_context()) {
         log.e("Client can be only created on Client Side!")
     }

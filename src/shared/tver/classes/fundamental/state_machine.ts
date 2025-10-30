@@ -1,8 +1,12 @@
 //!native
 import Signal from "@rbxts/signal"
 
+/** Helper union of valid states from provided tuple. */
 type StatesUnion<T extends string[]> = T[number]
 
+/**
+ * Minimal state machine with previous-state tracking and signal emission.
+ */
 export class StateMachine<States extends string[]> {
     private _state?: StatesUnion<States>
     private _prev_state?: StatesUnion<States>
