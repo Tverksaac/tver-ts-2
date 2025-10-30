@@ -11,8 +11,6 @@ if (plr) {
     const char = plr.Character
     const tver_char = char? new Character(char): undefined
     if (tver_char !== undefined && stun_effect) {
-        while (task.wait(0.1)) {
-            stun_effect.ApplyTo(tver_char, 0.05)
-        }
+        stun_effect.ApplyTo(tver_char, 3)
     }
 }

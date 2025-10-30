@@ -39,6 +39,7 @@ export class Timer {
         return DateTime.now().UnixTimestamp + this._time_left
     }
     public Start() {
+        this._time_left = this._length
         this._run_thread = coroutine.create(() => {
             this.janitor.Add(this._run_connection = RunService.Heartbeat.Connect((dt) => {
                 if (this._state.GetState() === "Paused") return
@@ -53,6 +54,8 @@ export class Timer {
                 }
             }))
         })
+        coroutine.resume(this._run_thread)
+        this.Started.Fire()
     }
     public Pause() {
         this._state.SetState("Paused")
@@ -63,8 +66,10 @@ export class Timer {
         this.Resumed.Fire()
     }
     public End() {
+        print('ending')
         this._run_connection?.Disconnect()
         this._run_thread? coroutine.close(this._run_thread): undefined
+        this.Ended.Fire()
     }
 
     public Destroy() {

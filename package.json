@@ -35,7 +35,6 @@
     "@rbxts/immut": "^0.4.4-ts.0",
     "@rbxts/janitor": "^1.18.3-ts.0",
     "@rbxts/services": "^1.5.5",
-    "@rbxts/signal": "^1.1.1",
-    "@rbxts/timer": "^0.0.9"
+    "@rbxts/signal": "^1.1.1"
   }
 }
