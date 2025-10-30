@@ -1,5 +1,3 @@
-import { SoundService } from "@rbxts/services"
-import { Timer } from "@rbxts/timer"
 import { Affects, Strength } from "shared/tver/utility/_ts_only/types"
 import { Effect } from "./effect"
 
