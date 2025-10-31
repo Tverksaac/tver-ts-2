@@ -81,7 +81,7 @@ export class Timer {
         this._run_connection?.Disconnect()
         this._run_thread? coroutine.close(this._run_thread): undefined
         this._time_left = 0
-        this._state.SetState("Paused")
+        this._state.SetState("Ready")
         this.Ended.Fire()
     }
 

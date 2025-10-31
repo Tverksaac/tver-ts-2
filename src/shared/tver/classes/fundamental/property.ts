@@ -3,7 +3,7 @@
 import { Janitor } from "@rbxts/janitor";
 import { RunService } from "@rbxts/services";
 import Signal from "@rbxts/signal";
-import { get_logger, is_client_context } from "shared/tver/utility/utils";
+import { get_context_name, get_logger, is_client_context } from "shared/tver/utility/utils";
 
 const LOG_KEY = "[PROPERTY]"
 const CONNECTED_TAG = "[TVER]" + LOG_KEY + " Connected to "
@@ -114,6 +114,7 @@ export class ConnectedProperty<
 		}
 
 		if (is_client_context() && !CanBeCreatedOnClient) return
+		print(is_client_context())
 		this.janitor.Add(
 			this.changed.Connect((new_value: ConnectedInstance[Name]) => {
 				this.instance[Name] = new_value;

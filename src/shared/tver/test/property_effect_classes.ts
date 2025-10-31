@@ -1,4 +1,4 @@
-import { StrictPropertyEffect } from "../classes/core/property_effect";
+import { CustomPropertyEffect, StrictPropertyEffect } from "../classes/core/property_effect";
 
 export class AutoRotateEffect extends StrictPropertyEffect<Humanoid, "AutoRotate"> {
     public readonly Affects = "AutoRotate" as const
@@ -10,5 +10,15 @@ export class AutoRotateEffect extends StrictPropertyEffect<Humanoid, "AutoRotate
 
         this.Strength = _str
         this.Priority = pr
+    }
+}
+
+export class Test extends CustomPropertyEffect {
+    public Affects: string = "Test" as const
+    public Strength: boolean = true
+    public Priority?: number | undefined = 1
+
+    constructor () {
+        super()
     }
 }

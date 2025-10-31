@@ -22,13 +22,8 @@ export abstract class StrictStatEffect<ConnectedInstance extends Instance> exten
  * Stat effect targeting a custom stat identified by string key.
  */
 export abstract class CustomStatEffect extends StatEffect {
-    public readonly Affects: string
+    public readonly Affects!: string
 
     public abstract readonly Strength: number
     public abstract readonly EffectType: EffectType
-
-    constructor (_affects: string) {
-        super()
-        this.Affects = _affects
-    }
 }

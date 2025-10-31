@@ -27,13 +27,8 @@ export abstract class StrictPropertyEffect<ConnectedInstance extends Instance, N
  * Property effect that targets a custom property identified by string key.
  */
 export abstract class CustomPropertyEffect extends PropertyEffect{
-    public readonly Affects: string
+    public readonly Affects!: string
     
     public abstract readonly Strength: defined;
     public abstract readonly Priority?: number
-
-    constructor (affects: string) {
-        super()
-        this.Affects = affects
-    }
 }
