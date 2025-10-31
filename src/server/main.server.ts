@@ -11,6 +11,9 @@ if (plr) {
     const char = plr.Character
     const tver_char = char? new Character(char): undefined
     if (tver_char !== undefined && stun_effect) {
-        stun_effect.ApplyTo(tver_char, 10)
+        tver_char.onReplicationReady(() => {
+            stun_effect.ApplyTo(tver_char, 1)
+            stun_effect.ApplyTo(tver_char, 2)
+        })
     }
 }

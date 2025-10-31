@@ -461,7 +461,6 @@ export class Character {
 
         const _return_to_base_value = (property: _every_possible_properties_type) => {
             if (calculated.has(property.name)) return
-            print('reseting  ' + property.name)
             property.Reset()
         }
 
@@ -471,11 +470,9 @@ export class Character {
         calculated.forEach((prop) => {
             let prop_to_affect
             prop_to_affect = this._properties.get(prop.Affects)
-            print('to affect:', prop_to_affect)
             if (prop_to_affect) {
                 //property to affect is innate property
                 if (typeOf(prop.Strength) === typeOf(prop_to_affect.Get())) {
-                    print("AFFECTING FINALLY")
                     prop_to_affect.Set(prop.Strength as never)
                 } else {
                     log.e(prop + " Have wrong Strength value! /n Cant assign " + typeOf(prop.Strength) + "to " + typeOf(prop_to_affect.Get()))
@@ -590,7 +587,6 @@ export class Character {
         
         ClientEvents.character_replication_done.fire()
         // On client, replication is effectively ready immediately for local character
-        this.replication_done = true
         this.ReplicationReady.Fire()
     }
     private _start_replication(): void {
@@ -612,7 +608,7 @@ export class Character {
      */
     private init(): boolean {
         this._start_replication()
-        while (!this.replication_done && is_client_context()) {task.wait()} // yield until character is created
+         while(!this.replication_done && !is_client_context()) {task.wait()} // yield until replciation is done
         this._start_listen_to_effect_changes()
         return true
     }
