@@ -4,4 +4,5 @@ FIXED-- исправить то что не работают OnStart OnServer к
 Доработать все случаи статус эффектов. К примеру если наложить статус два раза, то они будут себя странно вести
 сделать _handle_callback ф-цию
 сделать Passive Class
+damage and damage middleware
 предусмотреть смерть класса character

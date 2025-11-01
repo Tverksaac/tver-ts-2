@@ -10,7 +10,10 @@ export abstract class Handler {
     constructor () {}
 
     public Register(ToLoad: Folder | ModuleScript) {
-        if (this.Active) {this.log.w("Cant Register after " + this.Type + " Was Active"); return}
+        if (this.Active) {
+            this.log.w(`Cannot register after ${this.Type} was activated`)
+            return
+        }
 
         if (ToLoad.IsA("ModuleScript")) {
             this._registered.push(ToLoad)
@@ -21,22 +24,30 @@ export abstract class Handler {
                 }
             })
         } else {
-            this.log.w("Cant Register " + ToLoad)
+            this.log.w(`Cannot register ${ToLoad}: invalid type`)
         }
     }
 
     public Load() {
-        if (this.Active) {this.log.w(this.Type + " cant be loaded after activation!"); return}
+        if (this.Active) {
+            this.log.w(`${this.Type} cannot be loaded after activation!`)
+            return
+        }
 
-        const _failed: defined[] = []
+        const failed: ModuleScript[] = []
 
         this._registered.forEach((module) => {
-            let _, result = pcall(() => {
+            const [success, result] = pcall(() => {
                 require(module)
             })
-            if (!result[0]) {
-                this.log.e(module.Name + " Expirienced error while loading!")
+            if (!success) {
+                this.log.e(`${module.Name} experienced error while loading: ${tostring(result)}`)
+                failed.push(module)
             }
         })
+
+        if (failed.size() > 0) {
+            this.log.w(`${failed.size()} module(s) failed to load`)
+        }
     }
 }

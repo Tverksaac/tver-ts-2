@@ -32,7 +32,7 @@ export class Client extends Handler {
     /** Start the client handler and set up syncing/replication. */
     public Start(): void {
         if (this.Active) {
-            log.w(this + " Cant be Started twice!")
+            log.w(`${this} cannot be started twice!`)
             return
         }
 

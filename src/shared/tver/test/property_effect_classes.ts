@@ -13,12 +13,8 @@ export class AutoRotateEffect extends StrictPropertyEffect<Humanoid, "AutoRotate
     }
 }
 
-export class Test extends CustomPropertyEffect {
-    public Affects: string = "Test" as const
-    public Strength: boolean = true
+export class TestEffect extends CustomPropertyEffect {
+    public Affects: string = "Test"
+    public Strength = 1
     public Priority?: number | undefined = 1
-
-    constructor () {
-        super()
-    }
 }

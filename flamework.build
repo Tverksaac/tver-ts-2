@@ -29,7 +29,9 @@
 		"tver-ts-2:out/shared/tver/classes/core/handler@Handler": "shared/tver/classes/core/handler@Handler",
 		"tver-ts-2:out/shared/tver/classes/objects/compound_effect@Container_CompoundEffect": "shared/tver/classes/objects/compound_effect@Container_CompoundEffect",
 		"tver-ts-2:out/shared/tver/classes/fundamental/timer@Timer": "shared/tver/classes/fundamental/timer@Timer",
-		"tver-ts-2:out/shared/tver/test/property_effect_classes@Test": "shared/tver/test/property_effect_classes@Test"
+		"tver-ts-2:out/shared/tver/test/property_effect_classes@Test": "shared/tver/test/property_effect_classes@Test",
+		"tver-ts-2:out/shared/tver/test/property_effect_classes@TestEffect": "shared/tver/test/property_effect_classes@TestEffect",
+		"tver-ts-2:out/shared/tver/classes/objects/compound_effect@stack_effect.stacked_effect": "shared/tver/classes/objects/compound_effect@stack_effect.stacked_effect"
 	},
 	"metadata": {}
 }

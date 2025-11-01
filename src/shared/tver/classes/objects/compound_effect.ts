@@ -52,7 +52,7 @@ export abstract class CompoundEffect {
     public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]= []
     public readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[] = []
 
-    public Stackable = false
+    public readonly Stackable = false
     public StartOnApply = true
 
     public OnStartServer() {}

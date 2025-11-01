@@ -17,7 +17,7 @@ export class SeparatedProperty<T> {
 
 	public readonly name: string;
 	protected value: T;
-	protected readonly defualt_value: T;
+	protected readonly default_value: T;
 
 	public changed = new Signal<(new_value: T, prev_value: T) => void>()
 
@@ -30,7 +30,7 @@ export class SeparatedProperty<T> {
 	constructor(name: string, value: T) {
 		this.name = name;
 		this.value = value;
-		this.defualt_value = value
+		this.default_value = value
 
 		this.Behaviours = {
 			OnTick() {},
@@ -54,16 +54,18 @@ export class SeparatedProperty<T> {
 
 	/** Set the property value. Returns true if value changed or was set. */
 	Set(set_to: T, silent = false): boolean {
-		if (this.Behaviours.CanSet()) {
-			if (this.value === set_to) {
-				return true;
-			}
-			this.value = set_to;
-			if (!silent) this.changed.Fire(set_to, this.value);
-			return true;
-		} else {
+		if (!this.Behaviours.CanSet()) {
 			return false;
 		}
+		if (this.value === set_to) {
+			return true;
+		}
+		const old_value = this.value;
+		this.value = set_to;
+		if (!silent) {
+			this.changed.Fire(set_to, old_value);
+		}
+		return true;
 	}
 
 	/** Get the current property value. */
@@ -73,7 +75,7 @@ export class SeparatedProperty<T> {
 
 	/** Reset the property back to its default value. */
 	Reset(): void {
-		this.Set(this.defualt_value)
+		this.Set(this.default_value)
 	}
 
 	/** Cleanup any connections/resources. */
@@ -114,7 +116,6 @@ export class ConnectedProperty<
 		}
 
 		if (is_client_context() && !CanBeCreatedOnClient) return
-		print(is_client_context())
 		this.janitor.Add(
 			this.changed.Connect((new_value: ConnectedInstance[Name]) => {
 				this.instance[Name] = new_value;

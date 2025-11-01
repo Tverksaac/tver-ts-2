@@ -53,7 +53,7 @@ export abstract class Effect {
     /** Resume a paused effect. */
     public Resume(): void {
         if (!this.IsActive()) {
-            log.w(this.Name + " is not active, cant resume!")
+            log.w(`${this.Name} is not active, cannot resume!`)
             return
         }
 
@@ -64,7 +64,7 @@ export abstract class Effect {
     /** Pause the effect (state Off). */
     public Stop(): void {
         if (!this.IsActive()) {
-            log.w(this.Name + " is not active, cant be stopped!")
+            log.w(`${this.Name} is not active, cannot be stopped!`)
             return
         }
 

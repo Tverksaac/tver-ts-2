@@ -14,7 +14,6 @@ import { ClientEvents, ServerEvents } from "shared/tver/network/networking";
 import { Players } from "@rbxts/services";
 import { observe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
-import { find } from "@rbxts/immut/src/table";
 import { Janitor } from "@rbxts/janitor";
 
 const LOG_KEY = "[CHARACTER]"
@@ -539,12 +538,13 @@ export class Character {
 
         const effect = GetCompoundEffectFromName(name)
         if (!effect) {
-            wthrow("Cant find CompoundEffect with name " + name)
+            wthrow(`Cannot find CompoundEffect with name "${name}"`)
             return
         }
 
         const applied_effect = effect.ApplyTo(this)
 
+        //On End on Server
         return () => {applied_effect?.End()}
     }
 

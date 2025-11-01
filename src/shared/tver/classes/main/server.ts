@@ -32,7 +32,7 @@ export class Server extends Handler {
     /** Start the server handler and set up syncing. */
     public Start(): void {
         if (this.Active) {
-            log.w(this + " Cant be Started twice!")
+            log.w(`${this} cannot be started twice!`)
             return
         }
 
@@ -84,7 +84,7 @@ export function CreateServer(): Server {
         log.e("Server can be only created on Server Side!")
     }
     if (server_activated) {
-        log.w("Server cant be created twice!")
+        log.w("Server cannot be created twice!")
         return get_handler() as Server
     }
 
