@@ -56,6 +56,10 @@ export class Client extends Handler {
         subscribe(client_atom, (state) => {
             if (!character && state) {
                 character = new Character(state.instance)
+            } else if (!state) {
+                character?.Destroy()
+            } else {
+                log.w("um what")
             }
         })
     }

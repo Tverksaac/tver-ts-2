@@ -2,7 +2,7 @@ import { Effect } from "../core/effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect"
 import {CustomStatEffect, StrictStatEffect } from "../core/stat_effect"
 import { Character } from "./character";
-import { EffectState } from "shared/tver/utility/_ts_only/types";
+import { EffectState, StatusEffectGenericParams, MergedStatusEffectParams } from "shared/tver/utility/_ts_only/types";
 import { StateMachine } from "../fundamental/state_machine";
 import { get_context_name, get_id, get_logger, is_client_context, wlog } from "shared/tver/utility/utils";
 import { Constructor } from "@flamework/core/out/utility";
@@ -18,7 +18,7 @@ const dlog = get_logger(LOG_KEY, true)
 /**
  * Global registry for `CompoundEffect` classes and instances.
  */
-class Container_CompoundEffect {
+export class Container_CompoundEffect {
     public static readonly RegisteredCompoundEffects = new Map<string, CompoundEffect>()
 
     /**
@@ -26,7 +26,7 @@ class Container_CompoundEffect {
      */
     public static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
         const name = tostring(Effect)
-        if (this.RegisteredCompoundEffects.has(name)) {wlog(Effect + " already registered"); return}
+        if (this.RegisteredCompoundEffects.has(name)) {log.w(Effect + " already registered"); return}
         this.RegisteredCompoundEffects.set(name, new Effect())
     }
     /**
@@ -46,7 +46,7 @@ class Container_CompoundEffect {
 /**
  * Base class for a set of stat/property effects that act together.
  */
-export abstract class CompoundEffect {
+export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericParams> = {}> {
     public readonly Name = tostring(getmetatable(this))
 
     public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]= []
@@ -55,17 +55,23 @@ export abstract class CompoundEffect {
     public readonly Stackable = false
     public StartOnApply = true
 
-    public OnStartServer() {}
-    public OnStartClient() {}
+    public OnApplyingServer(...params: MergedStatusEffectParams<Params>['OnApply']) {}
+    public OnApplyingClient(...params: MergedStatusEffectParams<Params>['OnApply']) {}
 
-    public OnResumeServer() {}
-    public OnResumeClient() {}
+    public OnStartServer(...params: MergedStatusEffectParams<Params>['OnStart']) {}
+    public OnStartClient(...params: MergedStatusEffectParams<Params>['OnStart']) {}
 
-    public OnPauseServer() {}
-    public OnPauseClient() {}
+    public OnResumeServer(...params: MergedStatusEffectParams<Params>['OnResume']) {}
+    public OnResumeClient(...params: MergedStatusEffectParams<Params>['OnResume']) {}
+
+    public OnPauseServer(...params: MergedStatusEffectParams<Params>['OnPause']) {}
+    public OnPauseClient(...params: MergedStatusEffectParams<Params>['OnPause']) {}
     
-    public OnEndServer() {}
-    public OnEndClient() {}
+    public OnEndServer(...params: MergedStatusEffectParams<Params>['OnEnd']) {}
+    public OnEndClient(...params: MergedStatusEffectParams<Params>['OnEnd']) {}
+
+    public OnRemovingServer(...params: MergedStatusEffectParams<Params>['OnRemove']) {}
+    public OnRemovingClient(...params: MergedStatusEffectParams<Params>['OnRemove']) {}
 
     /**
      * Apply this effect to a `Character` with optional duration (<=0 means infinite).
@@ -148,6 +154,8 @@ export class AppliedCompoundEffect extends CompoundEffect{
 
         this.init()
         to._manipulate._apply_effect(this)
+
+        is_client_context()? this.OnApplyingClient() : this.OnApplyingServer()
 
         if (this.StartOnApply) {
             this.Start()
@@ -266,6 +274,8 @@ export class AppliedCompoundEffect extends CompoundEffect{
             effect.Destroy()
         })
 
+        is_client_context()? this.OnRemovingClient() : this.OnRemovingServer()
+
         this.janitor.Destroy()
     }
     
@@ -337,12 +347,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
 }
 
-export function GetCompoundEffectFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): T | undefined {
-    return Container_CompoundEffect.GetFromConstructor<T>(Constructor)
-}
-export function GetCompoundEffectFromName(Name: string): CompoundEffect | undefined {
-    return Container_CompoundEffect.GetFromName(Name)
-}
-export function Decorator_CompoundEffect<T extends CompoundEffect>(Constructor: Constructor<T>): void {
+export function Decorator_CompoundEffect<T extends CompoundEffect<Partial<StatusEffectGenericParams>>>(Constructor: Constructor<T>): void {
     Container_CompoundEffect.Register(Constructor)
 }

@@ -50,7 +50,7 @@ export class Server extends Handler {
 
             for (const payload of payloads) {
                 if (payload.type === "init") {
-                    const data = player.Character? payload.data.atom?.get(player.Character) : undefined
+                    const data = player.Character? payload.data.atom?.get(player.Character): undefined
                     payload_to_sync.push(
                          {
                              type: "init",
@@ -60,7 +60,7 @@ export class Server extends Handler {
                 } else if (payload.type === "patch") {
                     const data = payload.data.atom
                     if (data === undefined) {continue}
-                    const char_data = player.Character? data.get(player.Character) : undefined
+                    const char_data = player.Character? data.get(player.Character): undefined
                     if (char_data === undefined) {continue}
                     
                     payload_to_sync.push(

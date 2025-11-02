@@ -3,12 +3,16 @@ import { AutoRotateEffect, TestEffect } from "./property_effect_classes";
 import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
 
 @Decorator_CompoundEffect
-export class Stun extends CompoundEffect {
+export class Stun extends CompoundEffect<
+    {
+        OnApply: [],
+    }
+> {
 
-    public StartOnApply: boolean = true
-
+    public StartOnApply: boolean = false
     public PropertyEffects = [
         new AutoRotateEffect(false, 10),
+        new TestEffect()
     ]
     public StatEffects = [
         new WalkSpeedEffect("Modifier", 0),
