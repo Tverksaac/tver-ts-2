@@ -39,7 +39,7 @@ export class Container_CompoundEffect {
      * Get a registered effect instance by its constructor.
      */
     public static GetFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): T | undefined {
-        return this.RegisteredCompoundEffects.get(tostring(Constructor)) as T
+        return this.RegisteredCompoundEffects.get(tostring(Constructor)) as T | undefined
     }
 }
 
@@ -55,23 +55,23 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
     public readonly Stackable = false
     public StartOnApply = true
 
-    public OnApplyingServer(...params: MergedStatusEffectParams<Params>['OnApply']) {}
-    public OnApplyingClient(...params: MergedStatusEffectParams<Params>['OnApply']) {}
+    public OnApplyingServer() {}
+    public OnApplyingClient() {}
 
-    public OnStartServer(...params: MergedStatusEffectParams<Params>['OnStart']) {}
-    public OnStartClient(...params: MergedStatusEffectParams<Params>['OnStart']) {}
+    public OnStartServer(...params: Params['OnStart']) {}
+    public OnStartClient() {}
 
-    public OnResumeServer(...params: MergedStatusEffectParams<Params>['OnResume']) {}
-    public OnResumeClient(...params: MergedStatusEffectParams<Params>['OnResume']) {}
+    public OnResumeServer() {}
+    public OnResumeClient() {}
 
-    public OnPauseServer(...params: MergedStatusEffectParams<Params>['OnPause']) {}
-    public OnPauseClient(...params: MergedStatusEffectParams<Params>['OnPause']) {}
+    public OnPauseServer() {}
+    public OnPauseClient() {}
     
-    public OnEndServer(...params: MergedStatusEffectParams<Params>['OnEnd']) {}
-    public OnEndClient(...params: MergedStatusEffectParams<Params>['OnEnd']) {}
+    public OnEndServer() {}
+    public OnEndClient() {}
 
-    public OnRemovingServer(...params: MergedStatusEffectParams<Params>['OnRemove']) {}
-    public OnRemovingClient(...params: MergedStatusEffectParams<Params>['OnRemove']) {}
+    public OnRemovingServer() {}
+    public OnRemovingClient() {}
 
     /**
      * Apply this effect to a `Character` with optional duration (<=0 means infinite).

@@ -6,6 +6,7 @@ import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
 export class Stun extends CompoundEffect<
     {
         OnApply: [boolean, true],
+        OnStart: [number, number, number, number],
     }
 > {
 
@@ -18,4 +19,8 @@ export class Stun extends CompoundEffect<
         new WalkSpeedEffect("Modifier", 0),
         new JumpHeightEffect("Modifier", 0),
     ]
+
+    public OnStartServer(param?: number | undefined): void {
+        
+    }
 }

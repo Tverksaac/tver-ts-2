@@ -5,7 +5,7 @@ import { Stun } from "shared/tver/test/compound_effects_classes";
 const server = CreateServer()
 server.Start()
 task.wait(3)
-const stun_effect = Container_CompoundEffect.GetFromConstructor(Stun)
+const stun_effect = Container_CompoundEffect.GetFromName("Stun")
 const plr = Players.GetPlayers()[0]
 if (plr) {
     const char = plr.Character

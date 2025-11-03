@@ -31,7 +31,11 @@
 		"tver-ts-2:out/shared/tver/classes/fundamental/timer@Timer": "shared/tver/classes/fundamental/timer@Timer",
 		"tver-ts-2:out/shared/tver/test/property_effect_classes@Test": "shared/tver/test/property_effect_classes@Test",
 		"tver-ts-2:out/shared/tver/test/property_effect_classes@TestEffect": "shared/tver/test/property_effect_classes@TestEffect",
-		"tver-ts-2:out/shared/tver/classes/objects/compound_effect@stack_effect.stacked_effect": "shared/tver/classes/objects/compound_effect@stack_effect.stacked_effect"
+		"tver-ts-2:out/shared/tver/classes/objects/compound_effect@stack_effect.stacked_effect": "shared/tver/classes/objects/compound_effect@stack_effect.stacked_effect",
+		"tver-ts-2:out/shared/tver/classes/objects/skill@Container_Skill": "shared/tver/classes/objects/skill@Container_Skill",
+		"tver-ts-2:out/shared/tver/classes/objects/skill@Skill": "shared/tver/classes/objects/skill@Skill",
+		"tver-ts-2:out/shared/tver/classes/objects/skill@AppliedSkill": "shared/tver/classes/objects/skill@AppliedSkill",
+		"tver-ts-2:out/shared/tver/test/skills_classes@Punch": "shared/tver/test/skills_classes@Punch"
 	},
 	"metadata": {}
 }

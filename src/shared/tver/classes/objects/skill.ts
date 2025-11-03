@@ -71,7 +71,7 @@ export class AppliedSkill extends Skill {
 
     }
 
-    public init() {
+    private init() {
 
     }
 }
