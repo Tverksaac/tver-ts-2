@@ -5,7 +5,7 @@ import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
 @Decorator_CompoundEffect
 export class Stun extends CompoundEffect<
     {
-        OnApply: [],
+        OnApply: [boolean, true],
     }
 > {
 
@@ -18,11 +18,4 @@ export class Stun extends CompoundEffect<
         new WalkSpeedEffect("Modifier", 0),
         new JumpHeightEffect("Modifier", 0),
     ]
-
-    public OnStartServer(): void {
-        print("started on server")
-    }
-    public OnStartClient(): void {
-        print('started on client')
-    }
 }

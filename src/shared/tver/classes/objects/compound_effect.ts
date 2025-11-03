@@ -347,6 +347,8 @@ export class AppliedCompoundEffect extends CompoundEffect{
     }
 }
 
-export function Decorator_CompoundEffect<T extends CompoundEffect<Partial<StatusEffectGenericParams>>>(Constructor: Constructor<T>): void {
-    Container_CompoundEffect.Register(Constructor)
+export function Decorator_CompoundEffect(
+    Constructor: Constructor<any>
+): void {
+    Container_CompoundEffect.Register(Constructor as Constructor<CompoundEffect>)
 }
