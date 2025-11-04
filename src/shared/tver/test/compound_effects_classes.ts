@@ -24,7 +24,9 @@ export class Stun extends CompoundEffect<
         this.applied_effect = applied
     }
     public OnStartServer(ignore: boolean): void {
-        this.applied_effect.ExtendDuration(10)
-        print('extended by 10')
+        print(ignore)
+    }
+    public OnEndServer(): void {
+        print('sigma sigma')
     }
 }

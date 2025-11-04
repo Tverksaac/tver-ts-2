@@ -54,7 +54,6 @@ export class Client extends Handler {
         let character: Character | undefined
 
         subscribe(client_atom, (state) => {
-            print(character, state)
             if (!character && state) {
                 character = new Character(state.instance)
             } else if (!state && character) {

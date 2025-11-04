@@ -51,7 +51,6 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
     OnStart: unknown[],
     OnResume: unknown[],
     OnPause: unknown[],
-    OnEnd: unknown[],
     OnRemove: unknown[]
 }> {
     public readonly Name = tostring(getmetatable(this))
@@ -178,6 +177,9 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         this.for_each_effect((effect) => {
             effect.timer.SetLength(effect.GetTimeLeft() + to)
         })
+        this.timer.SecondReached.Connect((s) => {
+            print(s)
+        })
     }
     /**
      * Set a new absolute duration for the effect and children.
@@ -201,6 +203,12 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         this.timer.Start()
         this.for_each_effect((effect) => {
             effect.Start(this.Duration)
+        })
+
+        this.for_each_effect((effect) => {
+            effect.timer.SecondReached.Connect((s) => {
+                print(s)
+            })
         })
         
         this.for_each_effect_included((effect) => {
@@ -277,7 +285,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     /**
      * End the effect and clean up child effects.
      */
-    public End(...params: GetParamType<Params, 'OnEnd'>): void {
+    public End(): void {
         if (this.state.GetState() === "Ended") {
             return
         }
@@ -297,27 +305,27 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
 
         this._msic_thread? coroutine.close(this._msic_thread): undefined
         this._main_thread? coroutine.close(this._main_thread): undefined
-        is_client_context()? this.OnEndClient(...params) : this.OnEndServer(...params) // Yields!
+        is_client_context()? this.OnEndClient() : this.OnEndServer() // Yields!
         
         this.Ended.Fire()
+
+        this._remove()
     }
     /**
      * Destroy this instance and release resources.
      */
-    public Remove(...params: GetParamType<Params, "OnRemove">): void {
+    private _remove(): void {
         dlog.w("Destroying: " + this.Name + " On " + get_context_name())
-        this.Destroying.Fire()
-        if (this.state.GetState() !== "Ended") {log.w("Cant remove ongoing effect!"); return}
 
-        is_client_context()? this.OnRemovingClient(...params) : this.OnRemovingServer(...params)
+        if (this.state.GetState() !== "Ended") {dlog.w("Cant remove ongoing effect!"); return}
 
         this.for_each_effect((effect) => {
             effect.Destroy()
         })
 
         this.janitor.Destroy()
+        this.Destroy()
     }
-    
     private for_each_effect(callback: (effect: Effect) => void): void {
         this.StatEffects.forEach(callback)
         this.PropertyEffects.forEach(callback)
@@ -329,49 +337,10 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     private _listen_for_timer(): void {
         const connection =
         this.janitor.Add(this.timer.Ended.Connect(() => {
-            this.Destroy()
+            this.End()
         }))
 
         this.janitor.Add(() => connection.Disconnect())
-    }
-    private _handle_callbacks(): void {
-        const state = this.state.GetState()
-        const prev_state = this.state.GetPreviousState()
-        if (state === "On") {
-            if (prev_state === "Ready") {
-                //Effect Started
-                this._main_thread = coroutine.create(() => {
-                    is_client_context()? this.OnStartClient() : this.OnStartServer()
-                })
-                coroutine.resume(this._main_thread)
-            }
-            else if (prev_state === "Off") {
-                //Effect Resumed
-                this._main_thread = coroutine.create(() => {
-                    is_client_context()? this.OnStartClient() : this.OnStartServer()
-                })
-                this._msic_thread = coroutine.create(() => {
-                    is_client_context()? this.OnResumeClient() : this.OnResumeServer()
-                })
-                coroutine.resume(this._main_thread)
-                coroutine.resume(this._msic_thread)
-            }
-        }
-        else if (state === "Off") {
-            //Effect Paused
-            this._main_thread? coroutine.close(this._main_thread): undefined
-            this._msic_thread? coroutine.close(this._msic_thread): undefined
-            this._msic_thread = coroutine.create(() => {
-                is_client_context()? this.OnPauseClient() : this.OnPauseServer()
-            })
-            coroutine.resume(this._msic_thread)
-        }
-        else if (state === "Ended") {
-            //Effect ended
-            this._msic_thread? coroutine.close(this._msic_thread): undefined
-            this._main_thread? coroutine.close(this._main_thread): undefined
-            is_client_context()? this.OnEndClient() : this.OnEndServer() // Yields!
-        }
     }
     private init(): void {
         this.for_each_effect_included((effect) => {
