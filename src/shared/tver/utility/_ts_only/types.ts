@@ -12,7 +12,6 @@ export type EffectState = "Ready" | "On" | "Off" | "Ended"
 export type TimerState = "Ready" | "Running" | "Paused"
 
 export type StatusEffectGenericParams = {
-    OnApply:  defined[],
     OnStart: defined[],
     OnResume: defined[],
     OnPause: defined[],
@@ -20,7 +19,6 @@ export type StatusEffectGenericParams = {
     OnRemove: defined[]
 }
 export type SkillGenericParams = {
-    OnRecieve: defined[],
     OnStart: defined[],
     OnAbort: defined[],
     OnEnd: defined[],

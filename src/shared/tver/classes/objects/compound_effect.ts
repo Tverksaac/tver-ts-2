@@ -48,7 +48,6 @@ export class Container_CompoundEffect {
  * Base class for a set of stat/property effects that act together.
  */
 export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericParams> = {
-    OnApply: defined[],
     OnStart: defined[],
     OnResume: defined[],
     OnPause: defined[],
@@ -60,12 +59,10 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
     public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[] = []
     public readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[] = []
 
-    public OnApplyParams?: defined[]
-
     public readonly Stackable = false
 
-    public OnApplyingServer(...params: GetParamType<Params, 'OnApply'>) {}
-    public OnApplyingClient(...params: GetParamType<Params, 'OnApply'>) {}
+    public OnApplyingServer(applied: AppliedCompoundEffect<Params>) {}
+    public OnApplyingClient(applied: AppliedCompoundEffect<Params>) {}
 
     public OnStartServer(...params: GetParamType<Params, 'OnStart'>) {}
     public OnStartClient(...params: GetParamType<Params, 'OnStart'>) {}
@@ -170,7 +167,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         this.init()
         to._manipulate._apply_effect(this)
 
-        is_client_context()? this.OnApplyingClient(this.OnApplyParams? this.OnApplyParams: []) : this.OnApplyingServer(this.OnApplyParams? this.OnApplyParams: [])
+        is_client_context()? this.OnApplyingClient(this) : this.OnApplyingServer(this)
     }
 
     /**
