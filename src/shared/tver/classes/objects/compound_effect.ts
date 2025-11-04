@@ -177,9 +177,6 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         this.for_each_effect((effect) => {
             effect.timer.SetLength(effect.GetTimeLeft() + to)
         })
-        this.timer.SecondReached.Connect((s) => {
-            print(s)
-        })
     }
     /**
      * Set a new absolute duration for the effect and children.
@@ -203,12 +200,6 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         this.timer.Start()
         this.for_each_effect((effect) => {
             effect.Start(this.Duration)
-        })
-
-        this.for_each_effect((effect) => {
-            effect.timer.SecondReached.Connect((s) => {
-                print(s)
-            })
         })
         
         this.for_each_effect_included((effect) => {
@@ -318,10 +309,6 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         dlog.w("Destroying: " + this.Name + " On " + get_context_name())
 
         if (this.state.GetState() !== "Ended") {dlog.w("Cant remove ongoing effect!"); return}
-
-        this.for_each_effect((effect) => {
-            effect.Destroy()
-        })
 
         this.janitor.Destroy()
         this.Destroy()
