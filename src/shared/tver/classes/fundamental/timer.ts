@@ -34,6 +34,9 @@ export class Timer {
         this._length = to
         this._time_left = to
     }
+    public ExtendDuration(to: number): void {
+        this._time_left = this._time_left + to
+    }
     public GetState(): TimerState | undefined {
         return this._state.GetState()
     }
@@ -47,12 +50,13 @@ export class Timer {
     }
     /** Start or restart the timer from its length. */
     public Start(): void {
+        if (this._state.GetState() === "Running") return
         this._time_left = this._length
         this._state.SetState("Running")
         this._run_thread = coroutine.create(() => {
             this.janitor.Add(this._run_connection = RunService.Heartbeat.Connect((dt) => {
                 if (this._state.GetState() !== "Running") return
-                this._time_left -= dt
+                this._time_left = this._time_left - dt
                 if (this._time_left <= 0) {
                     this.End()
                 }
@@ -68,11 +72,13 @@ export class Timer {
     }
     /** Pause the timer without clearing remaining time. */
     public Pause(): void {
+        if (this._state.GetState() !== "Running") return
         this._state.SetState("Paused")
         this.Paused.Fire()
     }
     /** Resume the timer if paused. */
     public Resume(): void {
+        if (this._state.GetState() !== "Paused") return
         this._state.SetState("Running")
         this.Resumed.Fire()
     }
@@ -87,6 +93,8 @@ export class Timer {
 
     /** Cleanup timer resources. */
     public Destroy(): void {
+        this._run_connection?.Disconnect()
+        this._run_thread? coroutine.close(this._run_thread): undefined
         this.janitor.Destroy()
     }
 }

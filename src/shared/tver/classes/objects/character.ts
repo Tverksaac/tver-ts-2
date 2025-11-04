@@ -54,7 +54,7 @@ export class Character {
     private replication_done: boolean
     = is_client_context()
 
-    private readonly _stats = new Map<string, _possible_stats_type>()
+    private readonly _stats = new Map<(string), _possible_stats_type>()
     private readonly _properties = new Map<string, _possible_properties_type>()
     private readonly _custom_stats = new Map<string, _possible_custom_stats_type>()
     private readonly _custom_properties = new Map<string, _possible_custom_properties_type>()
@@ -135,7 +135,7 @@ export class Character {
             new ConnectedStat<Humanoid, "JumpHeight">(this.humanoid, "JumpHeight", 7.2),
         ]
         const _properties = [
-            new ConnectedProperty<Humanoid, "AutoRotate">(this.humanoid, "AutoRotate", true)
+            new ConnectedProperty<Humanoid, "AutoRotate">(this.humanoid, "AutoRotate", true),
         ]
 
         _stats.forEach((stat) => {
@@ -145,9 +145,9 @@ export class Character {
             this.AddProperty(prop)
         })
 
-        // init
+        // YIELDS
         this.init() // should be here, then everything else, so character fully loads
-        // init
+        // YIELDS
 
         Character.CharactersMap.set(this.instance, this)
         Character.CharactersById.set(this.id, this)
@@ -378,8 +378,8 @@ export class Character {
                     Priority: effect.Priority || 1
                 }
 
-            if (effect.Priority && 1 > member.Priority) {
-                member.Priority = effect.Priority || 1
+            if (effect.Priority && effect.Priority > member.Priority) {
+                member.Priority = effect.Priority
                 member.Strength = effect.Strength
             }
 
@@ -474,7 +474,7 @@ export class Character {
                 if (typeOf(prop.Strength) === typeOf(prop_to_affect.Get())) {
                     prop_to_affect.Set(prop.Strength as never)
                 } else {
-                    log.e(prop + " Have wrong Strength value! /n Cant assign " + typeOf(prop.Strength) + "to " + typeOf(prop_to_affect.Get()))
+                    log.e(prop + " has wrong Strength value!\nCannot assign " + typeOf(prop.Strength) + " to " + typeOf(prop_to_affect.Get()))
                 }
                 
             } else {
@@ -485,10 +485,10 @@ export class Character {
                     if (typeOf(prop.Strength) === typeOf(prop_to_affect.Get())) {
                         prop_to_affect.Set(prop.Strength as never)
                     } else {
-                        log.e(prop + " Have wrong Strength value! /n Cant assign " + typeOf(prop.Strength) + " to " + typeOf(prop_to_affect.Get()))
+                        log.e(prop + " has wrong Strength value!\nCannot assign " + typeOf(prop.Strength) + " to " + typeOf(prop_to_affect.Get()))
                     }
                 } else {
-                    log.e(prop + " Cant affect any of properties becuase theres no property with name: " + prop.Affects)
+                    log.e(prop + " cannot affect properties because no property exists with name: " + prop.Affects)
                 }
             }
         })

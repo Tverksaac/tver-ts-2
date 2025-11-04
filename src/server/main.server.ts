@@ -12,6 +12,6 @@ if (plr) {
     const tver_char = char? new Character(char): undefined
     if (tver_char !== undefined && stun_effect) {
         stun_effect.ApplyTo(tver_char, 2).Start(true)
-        print(3)
+        stun_effect.ApplyTo(tver_char, 10).Start(true)
     }
 }

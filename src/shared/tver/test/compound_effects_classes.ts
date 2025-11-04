@@ -23,10 +23,7 @@ export class Stun extends CompoundEffect<
     public OnApplyingServer(applied: AppliedCompoundEffect<{ OnStart: [ignore: boolean]; }>): void {
         this.applied_effect = applied
     }
-    public OnStartServer(ignore: boolean): void {
-        print(ignore)
-    }
     public OnEndServer(): void {
-        print('sigma sigma')
+        print(this.applied_effect)
     }
 }

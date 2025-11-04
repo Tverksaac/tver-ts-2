@@ -9,7 +9,7 @@ import { Constructor } from "@flamework/core/out/utility";
 import { Janitor } from "@rbxts/janitor";
 import Signal from "@rbxts/signal";
 import { Timer } from "../fundamental/timer";
-import { effect } from "@rbxts/charm";
+ 
 
 const LOG_KEY = "[COMP_EFFECT]"
 
@@ -108,7 +108,7 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
 /**
  * A live instance of a `CompoundEffect` applied to a carrier character.
  */
-export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericParams> = {}> extends CompoundEffect{
+export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericParams> = {}> extends CompoundEffect<Params>{
     public readonly Name: string
 
     public Duration: number;
@@ -132,7 +132,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     private _main_thread: thread | undefined
     private _msic_thread: thread | undefined
 
-    private _last_start_params: unknown[] = []
+    private _last_start_params: GetParamType<Params, 'OnStart'> = [] as unknown as GetParamType<Params, 'OnStart'>
 
     constructor (from: CompoundEffect, to: Character, duration: number) {
         super()
@@ -155,7 +155,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         this.OnPauseServer = from.OnPauseServer
         this.OnResumeClient = from.OnResumeClient
         this.OnResumeServer = from.OnResumeServer
-        this.OnRemovingServer = from.OnRemovingClient
+        this.OnRemovingServer = from.OnRemovingServer
         this.OnRemovingClient = from.OnRemovingClient
 
         this.ApplyTo = () => {
@@ -173,9 +173,8 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
      * Increase remaining duration by the provided amount.
      */
     public ExtendDuration(to: number): void {
-        this.timer.SetLength(this.timer.GetTimeLeft() + to)
-        this.for_each_effect((effect) => {
-            effect.timer.SetLength(effect.GetTimeLeft() + to)
+        this.for_each_effect_included((effect) => {
+            effect.timer.ExtendDuration(to)
         })
     }
     /**
@@ -237,7 +236,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         })
 
         this._main_thread = coroutine.create(() => {
-            is_client_context()? this.OnStartClient(this._last_start_params) : this.OnStartServer(this._last_start_params)
+            is_client_context()? this.OnStartClient(...this._last_start_params) : this.OnStartServer(...this._last_start_params)
         })
         this._msic_thread = coroutine.create(() => {
             is_client_context()? this.OnResumeClient(...params) : this.OnResumeServer(...params)

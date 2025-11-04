@@ -26,7 +26,7 @@ export type SkillGenericParams = {
 }
 export type GetParamType<T, K extends (keyof StatusEffectGenericParams | keyof SkillGenericParams)> = 
     T extends { [P in K]: infer U } 
-        ? U extends any[]
+        ? U extends unknown[]
             ? U 
             : []
         : []
