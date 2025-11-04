@@ -5,8 +5,7 @@ import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
 @Decorator_CompoundEffect
 export class Stun extends CompoundEffect<
     {
-        OnApply: [boolean, true],
-        OnStart: [number, number, number, number],
+        OnStart: [ignore: boolean]
     }
 > {
 
@@ -20,7 +19,5 @@ export class Stun extends CompoundEffect<
         new JumpHeightEffect("Modifier", 0),
     ]
 
-    public OnStartServer(param?: number | undefined): void {
-        
-    }
+    public OnStartServer(ignore: boolean): void {}
 }

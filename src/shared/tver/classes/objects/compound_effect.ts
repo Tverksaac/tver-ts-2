@@ -2,7 +2,7 @@ import { Effect } from "../core/effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect"
 import {CustomStatEffect, StrictStatEffect } from "../core/stat_effect"
 import { Character } from "./character";
-import { EffectState, StatusEffectGenericParams, MergedStatusEffectParams } from "shared/tver/utility/_ts_only/types";
+import { EffectState, GetParamType, StatusEffectGenericParams } from "shared/tver/utility/_ts_only/types";
 import { StateMachine } from "../fundamental/state_machine";
 import { get_context_name, get_id, get_logger, is_client_context, wlog } from "shared/tver/utility/utils";
 import { Constructor } from "@flamework/core/out/utility";
@@ -46,7 +46,14 @@ export class Container_CompoundEffect {
 /**
  * Base class for a set of stat/property effects that act together.
  */
-export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericParams> = {}> {
+export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericParams> = {
+    OnApply: [],
+    OnStart: [],
+    OnResume: [],
+    OnPause: [],
+    OnEnd: [],
+    OnRemove: []
+}> {
     public readonly Name = tostring(getmetatable(this))
 
     public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]= []
@@ -55,23 +62,23 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
     public readonly Stackable = false
     public StartOnApply = true
 
-    public OnApplyingServer() {}
-    public OnApplyingClient() {}
+    public OnApplyingServer(...params: GetParamType<Params, 'OnApply'>) {}
+    public OnApplyingClient(...params: GetParamType<Params, 'OnApply'>) {}
 
-    public OnStartServer(...params: Params['OnStart']) {}
-    public OnStartClient() {}
+    public OnStartServer(...params: GetParamType<Params, 'OnStart'>) {}
+    public OnStartClient(...params: GetParamType<Params, 'OnStart'>) {}
 
-    public OnResumeServer() {}
-    public OnResumeClient() {}
+    public OnResumeServer(...params: GetParamType<Params, 'OnResume'>) {}
+    public OnResumeClient(...params: GetParamType<Params, 'OnResume'>) {}
 
-    public OnPauseServer() {}
-    public OnPauseClient() {}
+    public OnPauseServer(...params: GetParamType<Params, 'OnPause'>) {}
+    public OnPauseClient(...params: GetParamType<Params, 'OnPause'>) {}
     
-    public OnEndServer() {}
-    public OnEndClient() {}
+    public OnEndServer(...params: GetParamType<Params, 'OnEnd'>) {}
+    public OnEndClient(...params: GetParamType<Params, 'OnEnd'>) {}
 
-    public OnRemovingServer() {}
-    public OnRemovingClient() {}
+    public OnRemovingServer(...params: GetParamType<Params, 'OnRemove'>) {}
+    public OnRemovingClient(...params: GetParamType<Params, 'OnRemove'>) {}
 
     /**
      * Apply this effect to a `Character` with optional duration (<=0 means infinite).
