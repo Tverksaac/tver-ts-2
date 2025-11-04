@@ -8,8 +8,7 @@ export class Stun extends CompoundEffect<
         OnStart: [ignore: boolean]
     }
 > {
-
-    public StartOnApply: boolean = false
+    
     public PropertyEffects = [
         new AutoRotateEffect(false, 10),
         new TestEffect()

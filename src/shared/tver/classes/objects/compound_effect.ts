@@ -9,6 +9,7 @@ import { Constructor } from "@flamework/core/out/utility";
 import { Janitor } from "@rbxts/janitor";
 import Signal from "@rbxts/signal";
 import { Timer } from "../fundamental/timer";
+import { effect } from "@rbxts/charm";
 
 const LOG_KEY = "[COMP_EFFECT]"
 
@@ -47,20 +48,21 @@ export class Container_CompoundEffect {
  * Base class for a set of stat/property effects that act together.
  */
 export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericParams> = {
-    OnApply: [],
-    OnStart: [],
-    OnResume: [],
-    OnPause: [],
-    OnEnd: [],
-    OnRemove: []
+    OnApply: defined[],
+    OnStart: defined[],
+    OnResume: defined[],
+    OnPause: defined[],
+    OnEnd: defined[],
+    OnRemove: defined[]
 }> {
     public readonly Name = tostring(getmetatable(this))
 
-    public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]= []
+    public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[] = []
     public readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[] = []
 
+    public OnApplyParams?: defined[]
+
     public readonly Stackable = false
-    public StartOnApply = true
 
     public OnApplyingServer(...params: GetParamType<Params, 'OnApply'>) {}
     public OnApplyingClient(...params: GetParamType<Params, 'OnApply'>) {}
@@ -74,8 +76,8 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
     public OnPauseServer(...params: GetParamType<Params, 'OnPause'>) {}
     public OnPauseClient(...params: GetParamType<Params, 'OnPause'>) {}
     
-    public OnEndServer(...params: GetParamType<Params, 'OnEnd'>) {}
-    public OnEndClient(...params: GetParamType<Params, 'OnEnd'>) {}
+    public OnEndServer(...params: GetParamType<Params, 'OnEnd'> | []) {}
+    public OnEndClient(...params: GetParamType<Params, 'OnEnd'> | []) {}
 
     public OnRemovingServer(...params: GetParamType<Params, 'OnRemove'>) {}
     public OnRemovingClient(...params: GetParamType<Params, 'OnRemove'>) {}
@@ -83,7 +85,7 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
     /**
      * Apply this effect to a `Character` with optional duration (<=0 means infinite).
      */
-    public ApplyTo(to: Character, duration = -1): AppliedCompoundEffect {
+    public ApplyTo(to: Character, duration = -1): AppliedCompoundEffect<Params> {
         let effect = to.GetAppliedEffectFromName(this.Name)
         if (effect) {
             effect.SetDuration(duration < 0? math.huge : duration)
@@ -110,7 +112,7 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
 /**
  * A live instance of a `CompoundEffect` applied to a carrier character.
  */
-export class AppliedCompoundEffect extends CompoundEffect{
+export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericParams> = {}> extends CompoundEffect{
     public readonly Name: string
 
     public Duration: number;
@@ -134,6 +136,8 @@ export class AppliedCompoundEffect extends CompoundEffect{
     private _main_thread: thread | undefined
     private _msic_thread: thread | undefined
 
+    private _last_start_params: defined[] = []
+
     constructor (from: CompoundEffect, to: Character, duration: number) {
         super()
         this.InheritsFrom = from
@@ -144,7 +148,9 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.StatEffects = from.StatEffects
         this.PropertyEffects = from.PropertyEffects
 
-        // Copy callbacks from the source instance (delegation)
+        // Copy callbacks from the source instance maybe try to find another way to do it later
+        this.OnApplyingServer = from.OnApplyingServer
+        this.OnApplyingClient = from.OnApplyingClient
         this.OnStartServer = from.OnStartServer
         this.OnEndServer = from.OnEndServer
         this.OnStartClient = from.OnStartClient
@@ -153,6 +159,8 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.OnPauseServer = from.OnPauseServer
         this.OnResumeClient = from.OnResumeClient
         this.OnResumeServer = from.OnResumeServer
+        this.OnRemovingServer = from.OnRemovingClient
+        this.OnRemovingClient = from.OnRemovingClient
 
         this.ApplyTo = () => {
             wlog("Cant call :ApplyTo on AppliedStatusEffect!")
@@ -162,11 +170,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.init()
         to._manipulate._apply_effect(this)
 
-        is_client_context()? this.OnApplyingClient() : this.OnApplyingServer()
-
-        if (this.StartOnApply) {
-            this.Start()
-        }
+        is_client_context()? this.OnApplyingClient(this.OnApplyParams? this.OnApplyParams: []) : this.OnApplyingServer(this.OnApplyParams? this.OnApplyParams: [])
     }
 
     /**
@@ -191,10 +195,10 @@ export class AppliedCompoundEffect extends CompoundEffect{
     /**
      * Start the effect; transitions state to On and starts timers.
      */
-    public Start(): void {
+    public Start(...params: GetParamType<Params, 'OnStart'>): AppliedCompoundEffect<Params> {
         if (this.state.GetState() !== "Ready") {
             log.w(this.Name + " Effect cant be started twice!")
-            return
+            return this
         }
         this.timer.SetLength(this.Duration) // update length
         this.timer.Start()
@@ -206,12 +210,23 @@ export class AppliedCompoundEffect extends CompoundEffect{
             effect.state.SetState("On")
         })
 
+        //Start coroutine
+        this._main_thread = coroutine.create(() => {
+            is_client_context()? this.OnStartClient(...params) : this.OnStartServer(...params)
+        })
+        coroutine.resume(this._main_thread)
+
+        this._last_start_params = params
+        //
+
         this.Started.Fire()
+
+        return this
     }
     /**
      * Resume a paused effect.
      */
-    public Resume(): void {
+    public Resume(...params: GetParamType<Params, 'OnResume'>): void {
         if (this.state.GetState() === "Ended") {
             log.w(this.Name + " is already ended!")
             return
@@ -225,12 +240,21 @@ export class AppliedCompoundEffect extends CompoundEffect{
             effect.state.SetState("On")
         })
 
+        this._main_thread = coroutine.create(() => {
+            is_client_context()? this.OnStartClient(this._last_start_params) : this.OnStartServer(this._last_start_params)
+        })
+        this._msic_thread = coroutine.create(() => {
+            is_client_context()? this.OnResumeClient(...params) : this.OnResumeServer(...params)
+        })
+        coroutine.resume(this._main_thread)
+        coroutine.resume(this._msic_thread)
+
         this.Resumed.Fire()
     }
     /**
      * Pause the running effect.
      */
-    public Pause(): void {
+    public Pause(...params: GetParamType<Params, 'OnPause'>): void {
         if (this.state.GetState() === "Ended") {
             log.w(this.Name + " is already ended!")
             return
@@ -244,12 +268,19 @@ export class AppliedCompoundEffect extends CompoundEffect{
             effect.state.SetState("Off")
         })
 
+        this._main_thread? coroutine.close(this._main_thread): undefined
+        this._msic_thread? coroutine.close(this._msic_thread): undefined
+        this._msic_thread = coroutine.create(() => {
+            is_client_context()? this.OnPauseClient(...params) : this.OnPauseServer(...params)
+        })
+        coroutine.resume(this._msic_thread)
+
         this.Paused.Fire()
     }
     /**
      * End the effect and clean up child effects.
      */
-    public End(): void {
+    public End(...params: GetParamType<Params, 'OnEnd'>): void {
         if (this.state.GetState() === "Ended") {
             return
         }
@@ -266,22 +297,26 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.for_each_effect_included((effect) => {
             effect.state.SetState("Ended")
         })
+
+        this._msic_thread? coroutine.close(this._msic_thread): undefined
+        this._main_thread? coroutine.close(this._main_thread): undefined
+        is_client_context()? this.OnEndClient(...params) : this.OnEndServer(...params) // Yields!
         
         this.Ended.Fire()
     }
     /**
      * Destroy this instance and release resources.
      */
-    public Destroy(): void {
+    public Remove(...params: GetParamType<Params, "OnRemove">): void {
         dlog.w("Destroying: " + this.Name + " On " + get_context_name())
         this.Destroying.Fire()
-        if (this.state.GetState() !== "Ended") {this.End()}
+        if (this.state.GetState() !== "Ended") {log.w("Cant remove ongoing effect!"); return}
+
+        is_client_context()? this.OnRemovingClient(...params) : this.OnRemovingServer(...params)
 
         this.for_each_effect((effect) => {
             effect.Destroy()
         })
-
-        is_client_context()? this.OnRemovingClient() : this.OnRemovingServer()
 
         this.janitor.Destroy()
     }
@@ -300,9 +335,7 @@ export class AppliedCompoundEffect extends CompoundEffect{
             this.Destroy()
         }))
 
-        this.janitor.Add(
-            () => connection.Disconnect()
-        )
+        this.janitor.Add(() => connection.Disconnect())
     }
     private _handle_callbacks(): void {
         const state = this.state.GetState()
@@ -347,8 +380,6 @@ export class AppliedCompoundEffect extends CompoundEffect{
         this.for_each_effect_included((effect) => {
             effect.state.SetState("Ready")
         })
-
-        this.janitor.Add(this.state.StateChanged.Connect(() => this._handle_callbacks()))
 
         this._listen_for_timer()
     }
