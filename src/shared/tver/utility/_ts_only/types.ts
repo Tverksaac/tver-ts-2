@@ -12,17 +12,17 @@ export type EffectState = "Ready" | "On" | "Off" | "Ended"
 export type TimerState = "Ready" | "Running" | "Paused"
 
 export type StatusEffectGenericParams = {
-    OnStart: defined[],
-    OnResume: defined[],
-    OnPause: defined[],
-    OnEnd: defined[],
-    OnRemove: defined[]
+    OnStart: unknown[],
+    OnResume: unknown[],
+    OnPause: unknown[],
+    OnEnd: unknown[],
+    OnRemove: unknown[]
 }
 export type SkillGenericParams = {
-    OnStart: defined[],
-    OnAbort: defined[],
-    OnEnd: defined[],
-    OnRemove: defined[]
+    OnStart: unknown[],
+    OnAbort: unknown[],
+    OnEnd: unknown[],
+    OnRemove: unknown[]
 }
 export type GetParamType<T, K extends (keyof StatusEffectGenericParams | keyof SkillGenericParams)> = 
     T extends { [P in K]: infer U } 

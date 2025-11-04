@@ -6,7 +6,7 @@ import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
 @Decorator_CompoundEffect
 export class Stun extends CompoundEffect<
     {
-        OnStart: [ignore: boolean]
+        OnStart: [ignore: boolean | undefined]
     }
 > {
 

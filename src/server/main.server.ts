@@ -4,16 +4,13 @@ import { Character, Container_CompoundEffect, CreateServer } from "shared/tver/e
 import { Stun } from "shared/tver/test/compound_effects_classes";
 const server = CreateServer()
 server.Start()
-task.wait(3)
+task.wait(2)
 const stun_effect = Container_CompoundEffect.GetFromConstructor(Stun)
 const plr = Players.GetPlayers()[0]
 if (plr) {
     const char = plr.Character
     const tver_char = char? new Character(char): undefined
     if (tver_char !== undefined && stun_effect) {
-        tver_char.onReplicationReady(() => {
-            stun_effect.ApplyTo(tver_char, 1)
-            stun_effect.ApplyTo(tver_char, 2)
-        })
+        stun_effect.ApplyTo(tver_char, 2).Start(undefined)
     }
 }

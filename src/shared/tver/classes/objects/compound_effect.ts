@@ -48,11 +48,11 @@ export class Container_CompoundEffect {
  * Base class for a set of stat/property effects that act together.
  */
 export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericParams> = {
-    OnStart: defined[],
-    OnResume: defined[],
-    OnPause: defined[],
-    OnEnd: defined[],
-    OnRemove: defined[]
+    OnStart: unknown[],
+    OnResume: unknown[],
+    OnPause: unknown[],
+    OnEnd: unknown[],
+    OnRemove: unknown[]
 }> {
     public readonly Name = tostring(getmetatable(this))
 
@@ -133,7 +133,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     private _main_thread: thread | undefined
     private _msic_thread: thread | undefined
 
-    private _last_start_params: defined[] = []
+    private _last_start_params: unknown[] = []
 
     constructor (from: CompoundEffect, to: Character, duration: number) {
         super()
