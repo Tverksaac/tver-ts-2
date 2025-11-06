@@ -45,10 +45,10 @@ export abstract class Effect {
             return
         }
 
-        this.state.SetState("On")
-
         this.timer.SetLength(duration)
         this.timer.Start()
+
+        this.state.SetState("On")
     }
     /** Resume a paused effect. */
     public Resume(): void {

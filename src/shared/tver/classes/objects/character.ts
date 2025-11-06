@@ -46,7 +46,7 @@ export class Character {
      */
     public static readonly CharacterRemoved = new Signal<(Character: Character) => void>
 
-    public readonly player?: Player | undefined
+    public readonly player?: Player
     public readonly instance: Instance
     public readonly humanoid: Humanoid
     public readonly id: number
@@ -542,7 +542,7 @@ export class Character {
             return
         }
 
-        const applied_effect = effect.ApplyTo(this)
+        const applied_effect = new effect().ApplyTo(this)
 
         //On End on Server
         return () => {applied_effect?.End()}

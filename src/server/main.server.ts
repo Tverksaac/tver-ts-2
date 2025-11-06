@@ -1,17 +1,16 @@
 import { effect } from "@rbxts/charm";
 import { Players } from "@rbxts/services";
 import { Character, Container_CompoundEffect, CreateServer } from "shared/tver/exports";
-import { Stun } from "shared/tver/test/compound_effects_classes";
+import { SpeedBoost, Stun } from "shared/tver/test/compound_effects_classes";
 const server = CreateServer()
 server.Start()
 task.wait(2)
-const stun_effect = Container_CompoundEffect.GetFromConstructor(Stun)
 const plr = Players.GetPlayers()[0]
 if (plr) {
     const char = plr.Character
     const tver_char = char? new Character(char): undefined
-    if (tver_char !== undefined && stun_effect) {
-        stun_effect.ApplyTo(tver_char, 2).Start(true)
-        stun_effect.ApplyTo(tver_char, 10).Start(true)
+    if (tver_char !== undefined) {
+        new SpeedBoost(2).ApplyTo(tver_char, 10).Start()
     }
+    
 }

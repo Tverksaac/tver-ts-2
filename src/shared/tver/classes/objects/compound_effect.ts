@@ -20,7 +20,7 @@ const dlog = get_logger(LOG_KEY, true)
  * Global registry for `CompoundEffect` classes and instances.
  */
 export class Container_CompoundEffect {
-    public static readonly RegisteredCompoundEffects = new Map<string, CompoundEffect>()
+    public static readonly RegisteredCompoundEffects = new Map<string, Constructor<CompoundEffect>>()
 
     /**
      * Register a `CompoundEffect` class by constructor.
@@ -28,12 +28,12 @@ export class Container_CompoundEffect {
     public static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
         const name = tostring(Effect)
         if (this.RegisteredCompoundEffects.has(name)) {log.w(Effect + " already registered"); return}
-        this.RegisteredCompoundEffects.set(name, new Effect())
+        this.RegisteredCompoundEffects.set(name, Effect)
     }
     /**
      * Get a registered effect instance by its name.
      */
-    public static GetFromName(name: string): CompoundEffect | undefined {
+    public static GetFromName(name: string): Constructor<CompoundEffect> | undefined {
         return this.RegisteredCompoundEffects.get(name)
     }
     /**
@@ -48,6 +48,7 @@ export class Container_CompoundEffect {
  * Base class for a set of stat/property effects that act together.
  */
 export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericParams> = {
+    ConstructorParams: unknown[]
     OnStart: unknown[],
     OnResume: unknown[],
     OnPause: unknown[],
@@ -57,6 +58,8 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
 
     public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[] = []
     public readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[] = []
+
+    public readonly ConstructorParams: GetParamType<Params, "ConstructorParams">
 
     public readonly Stackable = false
 
@@ -72,21 +75,26 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
     public OnPauseServer(...params: GetParamType<Params, 'OnPause'>) {}
     public OnPauseClient(...params: GetParamType<Params, 'OnPause'>) {}
     
-    public OnEndServer(...params: GetParamType<Params, 'OnEnd'> | []) {}
-    public OnEndClient(...params: GetParamType<Params, 'OnEnd'> | []) {}
+    public OnEndServer() {}
+    public OnEndClient() {}
 
-    public OnRemovingServer(...params: GetParamType<Params, 'OnRemove'>) {}
-    public OnRemovingClient(...params: GetParamType<Params, 'OnRemove'>) {}
+    public OnRemovingServer() {}
+    public OnRemovingClient() {}
 
     /**
      * Apply this effect to a `Character` with optional duration (<=0 means infinite).
      */
+
+    constructor (params: GetParamType<Params, "ConstructorParams">) {
+        this.ConstructorParams = params
+    }
+    
     public ApplyTo(to: Character, duration = -1): AppliedCompoundEffect<Params> {
         let effect = to.GetAppliedEffectFromName(this.Name)
         if (effect) {
             effect.SetDuration(duration < 0? math.huge : duration)
         } else {
-            effect = new AppliedCompoundEffect(this, to, duration)
+            effect = new AppliedCompoundEffect<Params>(this, to, duration)
         }
         return effect
     }
@@ -125,7 +133,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     public readonly timer = new Timer()
     public readonly id = get_id()
 
-    public readonly InheritsFrom: CompoundEffect
+    public readonly InheritsFrom: CompoundEffect<Params>
     public readonly Carrier: Character
     public readonly janitor = new Janitor()
 
@@ -134,8 +142,8 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
 
     private _last_start_params: GetParamType<Params, 'OnStart'> = [] as unknown as GetParamType<Params, 'OnStart'>
 
-    constructor (from: CompoundEffect, to: Character, duration: number) {
-        super()
+    constructor (from: CompoundEffect<Params>, to: Character, duration: number) {
+        super(from.ConstructorParams)
         this.InheritsFrom = from
         this.Carrier = to
         this.Name = tostring(getmetatable(this.InheritsFrom))
@@ -309,6 +317,8 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
 
         if (this.state.GetState() !== "Ended") {dlog.w("Cant remove ongoing effect!"); return}
 
+        is_client_context()? this.OnRemovingClient() : this.OnRemovingServer()
+
         this.janitor.Destroy()
         this.Destroy()
     }
@@ -316,7 +326,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         this.StatEffects.forEach(callback)
         this.PropertyEffects.forEach(callback)
     }
-    private for_each_effect_included(callback: (effect: Effect | AppliedCompoundEffect) => void): void {
+    private for_each_effect_included(callback: (effect: Effect | AppliedCompoundEffect<Params>) => void): void {
         this.for_each_effect(callback)
         callback(this)
     }
