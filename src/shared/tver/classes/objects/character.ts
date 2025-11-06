@@ -538,7 +538,7 @@ export class Character {
 
         const effect = Container_CompoundEffect.GetFromName(name)
         if (!effect) {
-            wthrow(`Cannot find CompoundEffect with name "${name}"`)
+            wthrow(`Cannot find CompoundEffect with name "${name}". Possible reason: No applied decorator to desired class. Apply it by using @Decorator_CompoundEffect`)
             return
         }
 

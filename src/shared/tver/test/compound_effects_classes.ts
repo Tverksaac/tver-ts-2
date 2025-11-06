@@ -1,5 +1,5 @@
 import { Workspace } from "@rbxts/services";
-import { AppliedCompoundEffect, CompoundEffect, Decorator_CompoundEffect } from "../classes/objects/compound_effect";
+import { AppliedCompoundEffect, CompoundEffect, Container_CompoundEffect, Decorator_CompoundEffect } from "../classes/objects/compound_effect";
 import { AutoRotateEffect, TestEffect } from "./property_effect_classes";
 import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
 import { StrictPropertyEffect, CustomPropertyEffect, CustomStatEffect, StrictStatEffect } from "../exports";
@@ -7,10 +7,11 @@ import { StrictPropertyEffect, CustomPropertyEffect, CustomStatEffect, StrictSta
 @Decorator_CompoundEffect
 export class Stun extends CompoundEffect<
     {
-        OnStart: [ignore: boolean | undefined],
-        OnResume: [time: number]
+        ConstructorParams: undefined
     }
 > {
+    
+
     public PropertyEffects = [
         new AutoRotateEffect(false, 10),
     ]
@@ -18,22 +19,31 @@ export class Stun extends CompoundEffect<
         new WalkSpeedEffect("Modifier", 0),
         new JumpHeightEffect("Modifier", 0),
     ]
-
-    private applied_effect!: AppliedCompoundEffect
-
-    public OnApplyingServer(applied: AppliedCompoundEffect<{ OnStart: [ignore: boolean]; }>): void {
-        this.applied_effect = applied
-    }
 }
+
+@Decorator_CompoundEffect
 export class SpeedBoost extends CompoundEffect<{
     ConstructorParams: [strength: number]
 }> {
     public StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]
+
+    private _applied!: AppliedCompoundEffect
 
     constructor (strength: number) {
         super([strength])
         this.StatEffects = [
             new WalkSpeedEffect("Modifier", strength)
         ]
+    }
+
+    public OnApplyingServer(applied: AppliedCompoundEffect<{ ConstructorParams: [strength: number]; }>): void {
+        this._applied = applied
+    }
+
+    public OnEndServer(): void {
+        const constructor = Container_CompoundEffect.GetFromConstructor(Stun)
+        const effect = constructor? new constructor([]): undefined
+
+        effect?.ApplyTo(this._applied.Carrier, 3).Start()
     }
 }

@@ -10,7 +10,7 @@ if (plr) {
     const char = plr.Character
     const tver_char = char? new Character(char): undefined
     if (tver_char !== undefined) {
-        new SpeedBoost(2).ApplyTo(tver_char, 10).Start()
+        new SpeedBoost(2).ApplyTo(tver_char, 3).Start()
     }
     
 }

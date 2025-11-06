@@ -17,7 +17,7 @@ export class SeparatedProperty<T> {
 
 	public readonly name: string;
 	protected value: T;
-	protected readonly default_value: T;
+	protected default_value: T;
 
 	public changed = new Signal<(new_value: T, prev_value: T) => void>()
 
@@ -66,6 +66,10 @@ export class SeparatedProperty<T> {
 			this.changed.Fire(set_to, old_value);
 		}
 		return true;
+	}
+
+	SetDefault(set_to: T) {
+		this.default_value = set_to
 	}
 
 	/** Get the current property value. */

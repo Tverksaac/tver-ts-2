@@ -25,7 +25,7 @@ export class Container_CompoundEffect {
     /**
      * Register a `CompoundEffect` class by constructor.
      */
-    public static Register<T extends CompoundEffect>(Effect: Constructor<T>) {
+    public static Register<T extends CompoundEffect>(Effect: Constructor<T>): void {
         const name = tostring(Effect)
         if (this.RegisteredCompoundEffects.has(name)) {log.w(Effect + " already registered"); return}
         this.RegisteredCompoundEffects.set(name, Effect)
@@ -39,8 +39,8 @@ export class Container_CompoundEffect {
     /**
      * Get a registered effect instance by its constructor.
      */
-    public static GetFromConstructor<T extends CompoundEffect>(Constructor: Constructor<T>): T | undefined {
-        return this.RegisteredCompoundEffects.get(tostring(Constructor)) as T | undefined
+    public static GetFromConstructor<T extends Constructor<CompoundEffect>>(Constructor: T): T | undefined {
+        return this.RegisteredCompoundEffects.get(tostring(Constructor)) as T| undefined
     }
 }
 
@@ -81,14 +81,13 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
     public OnRemovingServer() {}
     public OnRemovingClient() {}
 
-    /**
-     * Apply this effect to a `Character` with optional duration (<=0 means infinite).
-     */
-
     constructor (params: GetParamType<Params, "ConstructorParams">) {
         this.ConstructorParams = params
     }
     
+    /**
+     * Apply this effect to a `Character` with optional duration (<=0 means infinite).
+     */
     public ApplyTo(to: Character, duration = -1): AppliedCompoundEffect<Params> {
         let effect = to.GetAppliedEffectFromName(this.Name)
         if (effect) {
