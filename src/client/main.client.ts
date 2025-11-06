@@ -1,6 +1,6 @@
 import { CreateClient } from "shared/tver/exports";
-import { Stun } from "shared/tver/test/compound_effects_classes";
+import { SpeedBoost, Stun } from "shared/tver/test/compound_effects_classes";
 
 const client = CreateClient()
 client.Start()
-new Stun().Destroy()
+new SpeedBoost(2).Destroy()
