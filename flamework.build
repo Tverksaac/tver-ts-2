@@ -36,7 +36,8 @@
 		"tver-ts-2:out/shared/tver/classes/objects/skill@Skill": "shared/tver/classes/objects/skill@Skill",
 		"tver-ts-2:out/shared/tver/classes/objects/skill@AppliedSkill": "shared/tver/classes/objects/skill@AppliedSkill",
 		"tver-ts-2:out/shared/tver/test/skills_classes@Punch": "shared/tver/test/skills_classes@Punch",
-		"tver-ts-2:out/shared/tver/test/compound_effects_classes@SpeedBoost": "shared/tver/test/compound_effects_classes@SpeedBoost"
+		"tver-ts-2:out/shared/tver/test/compound_effects_classes@SpeedBoost": "shared/tver/test/compound_effects_classes@SpeedBoost",
+		"tver-ts-2:out/shared/tver/test/compound_effects_classes@JumpBoost": "shared/tver/test/compound_effects_classes@JumpBoost"
 	},
 	"metadata": {}
 }

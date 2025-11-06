@@ -10,8 +10,6 @@ export class Stun extends CompoundEffect<
         ConstructorParams: undefined
     }
 > {
-    
-
     public PropertyEffects = [
         new AutoRotateEffect(false, 10),
     ]
@@ -19,31 +17,25 @@ export class Stun extends CompoundEffect<
         new WalkSpeedEffect("Modifier", 0),
         new JumpHeightEffect("Modifier", 0),
     ]
+
+    public OnApplyingServer(applied: AppliedCompoundEffect<{ ConstructorParams: undefined; }>): void {
+        
+    }
 }
 
 @Decorator_CompoundEffect
-export class SpeedBoost extends CompoundEffect<{
-    ConstructorParams: [strength: number]
-}> {
-    public StatEffects: (StrictStatEffect<never> | CustomStatEffect)[]
-
-    private _applied!: AppliedCompoundEffect
+export class JumpBoost extends CompoundEffect<
+    {
+        ConstructorParams: [strength: number]
+    }
+> {
+    public StatEffects: (StrictStatEffect<never> | CustomStatEffect)[];
+    
 
     constructor (strength: number) {
         super([strength])
         this.StatEffects = [
-            new WalkSpeedEffect("Modifier", strength)
+            new JumpHeightEffect("Raw", strength)
         ]
-    }
-
-    public OnApplyingServer(applied: AppliedCompoundEffect<{ ConstructorParams: [strength: number]; }>): void {
-        this._applied = applied
-    }
-
-    public OnEndServer(): void {
-        const constructor = Container_CompoundEffect.GetFromConstructor(Stun)
-        const effect = constructor? new constructor([]): undefined
-
-        effect?.ApplyTo(this._applied.Carrier, 3).Start()
     }
 }
