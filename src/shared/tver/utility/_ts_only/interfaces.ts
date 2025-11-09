@@ -7,6 +7,7 @@ export interface CharacterInstance extends Instance {
 export interface CompoundEffectInfo {
     id: number,
     carrier_id: number,
+    constructor_params: unknown[]
     
 }
 export interface SkillInfo {}

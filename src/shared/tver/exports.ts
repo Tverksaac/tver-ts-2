@@ -1,4 +1,3 @@
-// Re-export public API surface for consumers
 export * from "./classes/main/server"
 export * from "./classes/main/client"
 export * from "./classes/objects/character"
@@ -6,6 +5,5 @@ export * from "./classes/objects/compound_effect"
 export * from "./classes/objects/skill"
 export * from "./classes/objects/damage"
 export * from "./classes/objects/pasive"
-export * from "./classes/core/effect"
 export * from "./classes/core/stat_effect"
 export * from "./classes/core/property_effect"

@@ -1,8 +1,8 @@
-import { Workspace } from "@rbxts/services";
-import { AppliedCompoundEffect, CompoundEffect, Container_CompoundEffect, Decorator_CompoundEffect } from "../classes/objects/compound_effect";
-import { AutoRotateEffect, TestEffect } from "./property_effect_classes";
+
+import { AppliedCompoundEffect, CompoundEffect, Decorator_CompoundEffect } from "../classes/objects/compound_effect";
+import { AutoRotateEffect } from "./property_effect_classes";
 import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
-import { StrictPropertyEffect, CustomPropertyEffect, CustomStatEffect, StrictStatEffect } from "../exports";
+import { CustomStatEffect, StrictStatEffect } from "../exports";
 
 @Decorator_CompoundEffect
 export class Stun extends CompoundEffect<
@@ -31,7 +31,6 @@ export class JumpBoost extends CompoundEffect<
 > {
     public StatEffects: (StrictStatEffect<never> | CustomStatEffect)[];
     
-
     constructor (strength: number) {
         super([strength])
         this.StatEffects = [

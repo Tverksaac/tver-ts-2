@@ -165,10 +165,7 @@ export class Character {
         const skills = new Map<string, SkillInfo>()
 
         this._effects.forEach((effect) => {
-            compound_effects.set(effect.Name, {
-                id: effect.id,
-                carrier_id: this.id
-            })
+            compound_effects.set(effect.Name, effect.GetInfo())
         })
         
         info.instance = this.instance
@@ -529,7 +526,7 @@ export class Character {
     /**
      * Client-only helper to mirror a compound effect by name, returns disposer.
      */
-    private _replicate_compound_effect(name: string) {
+    private _replicate_compound_effect(name: string, info: CompoundEffectInfo) {
         const wthrow = (reason: string) => log.w(name + "CompoundEffect Replication failed. " + reason)
 
         if (!is_client_context()) {
@@ -542,7 +539,7 @@ export class Character {
             return
         }
 
-        const applied_effect = new effect().ApplyTo(this)
+        const applied_effect = new effect(...info.constructor_params as never[]).ApplyTo(this)
 
         //On End on Server
         return () => {applied_effect?.End()}
@@ -580,7 +577,7 @@ export class Character {
 
         observe(
             () => client_atom()?.compound_effects || new Map<string, CompoundEffectInfo>(),
-            (_, key) => this._replicate_compound_effect(key)
+            (info, key) => this._replicate_compound_effect(key, info)
         )
 
         dlog.l("Client-Side Character was successfully created for " + this.instance.Name)

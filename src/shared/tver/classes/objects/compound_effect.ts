@@ -9,9 +9,11 @@ import { Constructor } from "@flamework/core/out/utility";
 import { Janitor } from "@rbxts/janitor";
 import Signal from "@rbxts/signal";
 import { Timer } from "../fundamental/timer";
+import { effect } from "@rbxts/charm";
+import { CompoundEffectInfo } from "shared/tver/utility/_ts_only/interfaces";
  
 
-const LOG_KEY = "[COMP_EFFECT]"
+const LOG_KEY = "[CEFFECT]"
 
 const log = get_logger(LOG_KEY)
 const dlog = get_logger(LOG_KEY, true)
@@ -25,8 +27,9 @@ export class Container_CompoundEffect {
     /**
      * Register a `CompoundEffect` class by constructor.
      */
-    public static Register<T extends CompoundEffect>(Effect: Constructor<T>): void {
+    public static Register<T extends Constructor<CompoundEffect>>(Effect: T): void {
         const name = tostring(Effect)
+        print(name)
         if (this.RegisteredCompoundEffects.has(name)) {log.w(Effect + " already registered"); return}
         this.RegisteredCompoundEffects.set(name, Effect)
     }
@@ -40,7 +43,7 @@ export class Container_CompoundEffect {
      * Get a registered effect instance by its constructor.
      */
     public static GetFromConstructor<T extends Constructor<CompoundEffect>>(Constructor: T): T | undefined {
-        return this.RegisteredCompoundEffects.get(tostring(Constructor)) as T| undefined
+        return this.RegisteredCompoundEffects.get(tostring(Constructor)) as T | undefined
     }
 }
 
@@ -136,6 +139,8 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     public readonly Carrier: Character
     public readonly janitor = new Janitor()
 
+    public LastStartParams?: GetParamType<Params, "OnStart">
+
     private _main_thread: thread | undefined
     private _msic_thread: thread | undefined
 
@@ -176,6 +181,14 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         is_client_context()? this.OnApplyingClient(this) : this.OnApplyingServer(this)
     }
 
+    public GetInfo(): CompoundEffectInfo {
+        return {
+            id: this.id,
+            carrier_id: this.Carrier.id,
+            constructor_params: this.ConstructorParams
+        }
+    }
+
     /**
      * Increase remaining duration by the provided amount.
      */
@@ -202,6 +215,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
             log.w(this.Name + " Effect cant be started twice!")
             return this
         }
+        this.LastStartParams = params
         this.timer.SetLength(this.Duration) // update length
         this.timer.Start()
         this.for_each_effect((effect) => {
@@ -347,7 +361,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
 }
 
 export function Decorator_CompoundEffect(
-    Constructor: Constructor<any>
+    Constructor: Constructor<CompoundEffect>
 ): void {
-    Container_CompoundEffect.Register(Constructor as Constructor<CompoundEffect>)
+    Container_CompoundEffect.Register(Constructor)
 }
