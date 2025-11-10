@@ -215,7 +215,6 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
             log.w(this.Name + " Effect cant be started twice!")
             return this
         }
-        this.LastStartParams = params
         this.timer.SetLength(this.Duration) // update length
         this.timer.Start()
         this.for_each_effect((effect) => {
@@ -255,7 +254,6 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         this.for_each_effect_included((effect) => {
             effect.state.SetState("On")
         })
-
         this._main_thread = coroutine.create(() => {
             is_client_context()? this.OnStartClient(...this._last_start_params) : this.OnStartServer(...this._last_start_params)
         })

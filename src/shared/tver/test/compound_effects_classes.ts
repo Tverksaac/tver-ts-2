@@ -2,14 +2,10 @@
 import { AppliedCompoundEffect, CompoundEffect, Decorator_CompoundEffect } from "../classes/objects/compound_effect";
 import { AutoRotateEffect } from "./property_effect_classes";
 import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
-import { CustomStatEffect, StrictStatEffect } from "../exports";
+import { Character, CustomStatEffect, StrictStatEffect } from "../exports";
 
 @Decorator_CompoundEffect
-export class Stun extends CompoundEffect<
-    {
-        ConstructorParams: undefined
-    }
-> {
+export class Stun extends CompoundEffect<{}> {
     public PropertyEffects = [
         new AutoRotateEffect(false, 10),
     ]
@@ -18,8 +14,20 @@ export class Stun extends CompoundEffect<
         new JumpHeightEffect("Modifier", 0),
     ]
 
-    public OnApplyingServer(applied: AppliedCompoundEffect<{ ConstructorParams: undefined; }>): void {
-        
+    public ApplyTo(to: Character): AppliedCompoundEffect {
+        const effect = new AppliedCompoundEffect(this, to, 5)
+
+        effect.OnStartServer = () => {
+            print("Overrided effect!")
+        }
+        effect.Start()
+        return effect
+    }
+    public OnApplyingServer(applied: AppliedCompoundEffect): void {
+
+    }
+    public OnStartServer(): void {
+        print("Not overrided")
     }
 }
 
@@ -36,5 +44,9 @@ export class JumpBoost extends CompoundEffect<
         this.StatEffects = [
             new JumpHeightEffect("Raw", strength)
         ]
+    }
+
+    public OnStartServer(): void {
+        
     }
 }
