@@ -9,7 +9,6 @@ import { Constructor } from "@flamework/core/out/utility";
 import { Janitor } from "@rbxts/janitor";
 import Signal from "@rbxts/signal";
 import { Timer } from "../fundamental/timer";
-import { effect } from "@rbxts/charm";
 import { CompoundEffectInfo } from "shared/tver/utility/_ts_only/interfaces";
  
 
@@ -29,7 +28,6 @@ export class Container_CompoundEffect {
      */
     public static Register<T extends Constructor<CompoundEffect>>(Effect: T): void {
         const name = tostring(Effect)
-        print(name)
         if (this.RegisteredCompoundEffects.has(name)) {log.w(Effect + " already registered"); return}
         this.RegisteredCompoundEffects.set(name, Effect)
     }
@@ -114,7 +112,6 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
     }
 }
 
-
 /**
  * A live instance of a `CompoundEffect` applied to a carrier character.
  */
@@ -142,7 +139,8 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     public LastStartParams?: GetParamType<Params, "OnStart">
 
     private _main_thread: thread | undefined
-    private _msic_thread: thread | undefined
+    private _pause_thread: thread | undefined
+    private _resume_thread: thread | undefined
 
     private _last_start_params: GetParamType<Params, 'OnStart'> = [] as unknown as GetParamType<Params, 'OnStart'>
 
@@ -254,14 +252,12 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         this.for_each_effect_included((effect) => {
             effect.state.SetState("On")
         })
-        this._main_thread = coroutine.create(() => {
-            is_client_context()? this.OnStartClient(...this._last_start_params) : this.OnStartServer(...this._last_start_params)
+
+        this._resume_thread? coroutine.close(this._resume_thread): undefined
+        this._resume_thread = coroutine.create(() => {
+            is_client_context()? this.OnResumeClient(...params): this.OnResumeServer(...params)
         })
-        this._msic_thread = coroutine.create(() => {
-            is_client_context()? this.OnResumeClient(...params) : this.OnResumeServer(...params)
-        })
-        coroutine.resume(this._main_thread)
-        coroutine.resume(this._msic_thread)
+        coroutine.resume(this._resume_thread)
 
         this.Resumed.Fire()
     }
@@ -282,12 +278,12 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
             effect.state.SetState("Off")
         })
 
-        this._main_thread? coroutine.close(this._main_thread): undefined
-        this._msic_thread? coroutine.close(this._msic_thread): undefined
-        this._msic_thread = coroutine.create(() => {
+        this._pause_thread? coroutine.close(this._pause_thread): undefined
+
+        this._pause_thread = coroutine.create(() => {
             is_client_context()? this.OnPauseClient(...params) : this.OnPauseServer(...params)
         })
-        coroutine.resume(this._msic_thread)
+        coroutine.resume(this._pause_thread)
 
         this.Paused.Fire()
     }
@@ -312,7 +308,8 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
             effect.state.SetState("Ended")
         })
 
-        this._msic_thread? coroutine.close(this._msic_thread): undefined
+        this._pause_thread? coroutine.close(this._pause_thread): undefined
+        this._resume_thread? coroutine.close(this._resume_thread): undefined
         this._main_thread? coroutine.close(this._main_thread): undefined
         is_client_context()? this.OnEndClient() : this.OnEndServer() // Yields!
         
@@ -358,8 +355,8 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     }
 }
 
-export function Decorator_CompoundEffect(
-    Constructor: Constructor<CompoundEffect>
+export function Decorator_CompoundEffect<Params extends Partial<StatusEffectGenericParams>>(
+    Constructor: Constructor<CompoundEffect<Params>>
 ): void {
     Container_CompoundEffect.Register(Constructor)
 }

@@ -2,8 +2,8 @@ import Charm, { Atom, atom, effect, subscribe } from "@rbxts/charm"
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
-import { get_handler, get_logger, is_server_context, set_handler } from "shared/tver/utility/utils"
-import { Handler } from "../core/handler"
+import { get_logger, get_node, is_server_context, set_node } from "shared/tver/utility/utils"
+import { Node } from "../core/node"
 
 const LOG_KEY = "[SERVER]"
 const log = get_logger(LOG_KEY)
@@ -14,7 +14,7 @@ let server_activated = false
 /**
  * Server-side handler responsible for syncing character atoms to clients.
  */
-export class Server extends Handler {
+export class Server extends Node {
     public Active = false
 
     public atom = atom<Map<Instance, CharacterInfo>>(new Map())
@@ -26,7 +26,7 @@ export class Server extends Handler {
 
     constructor () {
         super()
-        set_handler(this)
+        set_node(this)
     }
 
     /** Start the server handler and set up syncing. */
@@ -85,7 +85,7 @@ export function CreateServer(): Server {
     }
     if (server_activated) {
         log.w("Server cannot be created twice!")
-        return get_handler() as Server
+        return get_node() as Server
     }
 
     server_activated = true

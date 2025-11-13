@@ -53,13 +53,13 @@ export function get_id(): number {
     return id
 }
 
-// Handler getter
-let handler: Server | Client
-export function set_handler(new_handler: Server | Client): void {
-    handler = new_handler
+// Node getter
+let node: Server | Client
+export function set_node(new_node: Server | Client): void {
+    node = new_node
 }
-export function get_handler(): Server | Client | undefined {
-    return handler
+export function get_node(): Server | Client | undefined {
+    return node
 }
 
 //Output

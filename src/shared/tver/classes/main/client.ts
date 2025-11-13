@@ -1,10 +1,10 @@
 import CharmSync from "@rbxts/charm-sync"
 import { ClientEvents } from "shared/tver/network/networking"
 import { client_atom } from "shared/tver/utility/shared"
-import { get_handler, get_logger, is_client_context, set_handler } from "shared/tver/utility/utils"
+import { get_logger, get_node, is_client_context, set_node } from "shared/tver/utility/utils"
 import { Character } from "../objects/character"
 import { subscribe } from "@rbxts/charm"
-import { Handler } from "../core/handler"
+import { Node } from "../core/node"
 
 const LOG_KEY = "[CLIENT]"
 const log = get_logger(LOG_KEY)
@@ -15,7 +15,7 @@ let client_activated = false
 /**
  * Client-side handler that mirrors server atom and spawns local `Character`.
  */
-export class Client extends Handler {
+export class Client extends Node {
     public Active = false;
 
     private syncer = CharmSync.client(
@@ -26,7 +26,7 @@ export class Client extends Handler {
 
     constructor () {
         super()
-        set_handler(this)
+        set_node(this)
     }
 
     /** Start the client handler and set up syncing/replication. */
@@ -72,7 +72,7 @@ export function CreateClient(): Client {
     }
     if (client_activated) {
         log.w("Client already created")
-        return get_handler() as Client
+        return get_node() as Client
     }
 
     client_activated = true

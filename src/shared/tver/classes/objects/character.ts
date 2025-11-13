@@ -1,7 +1,7 @@
 //!native
 import Signal from "@rbxts/signal";
 import { CharacterInfo, CompoundEffectInfo, SkillInfo } from "shared/tver/utility/_ts_only/interfaces";
-import { elog, get_handler, get_id, get_logger, is_client_context, is_server_context, map_to_array } from "shared/tver/utility/utils";
+import { elog, get_id, get_logger, get_node, is_client_context, is_server_context, map_to_array } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
 import { AppliedCompoundEffect, Container_CompoundEffect } from "./compound_effect";
@@ -118,10 +118,10 @@ export class Character {
         this.player = Players.GetPlayerFromCharacter(this.instance)
 
         this._manipulate = {
-            _apply_effect: (effect: AppliedCompoundEffect) => {
+            _apply_effect: (effect: AppliedCompoundEffect): void => {
                 this._compound_effect_only_apply_effect(effect)
             },
-            _remove_effect: (find_from: string | number) => {
+            _remove_effect: (find_from: string | number): AppliedCompoundEffect | undefined => {
                 return this._compound_effect_only_remove_effect(find_from)
             }
         }
@@ -496,7 +496,7 @@ export class Character {
      * Push this character's replicated info into the server-side atom.
      */
     private _update_server_atom(): void {
-        const server = get_handler() as Server
+        const server = get_node() as Server
         server.atom((state) => {
             const new_state = table.clone(state)
             new_state.set(this.instance, this.GetCharacterInfo())
@@ -549,13 +549,14 @@ export class Character {
      * Initialize server-side replication and mark when client acknowledges.
      */
     private _server_replication(): void {
-        const server = get_handler() as Server
+        const server = get_node() as Server
         if (!server) log.e("Server not found! Maybe you forgot to Create it?")
         
         this._connect_server_atom_updating()
         this._update_server_atom()
 
         if (this.player) {
+            //If owner of a Character is player
             this.janitor.Add(ServerEvents.character_replication_done.connect(() => {
                 this.replication_done = true
                 this.ReplicationReady.Fire()
@@ -572,7 +573,7 @@ export class Character {
      */
     private _client_replication(): void {
         if (!this.player) return
-        const client = get_handler() as Client
+        const client = get_node() as Client
         if (!client) {log.e("Client not found! Maybe you forgot to Create it?")}
 
         observe(
@@ -601,7 +602,7 @@ export class Character {
     }
 
     /**
-     * Lifecycle bootstrap for replication and effect observers.
+     * Lifecycle bootstrap for replication and observers.
      */
     private init(): boolean {
         this._start_replication()

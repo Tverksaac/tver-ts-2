@@ -1,4 +1,3 @@
-import { effect } from "@rbxts/charm";
 import { Players } from "@rbxts/services";
 import { Character, CreateServer } from "shared/tver/exports"
 import { Stun } from "shared/tver/test/compound_effects_classes";
