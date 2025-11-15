@@ -1,6 +1,5 @@
 import { Networking } from "@flamework/networking";
-import type { SyncPayload } from "@rbxts/charm-sync";
-import { CharacterInfo } from "../utility/_ts_only/interfaces";
+import { CharacterInfo, CompoundEffectInfo } from "../utility/_ts_only/interfaces";
 import CharmSync from "@rbxts/charm-sync";
 
 /** Events that clients may fire to the server. */
@@ -16,6 +15,11 @@ interface ServerToClientEvents {
 			{atom: Charm.Atom<CharacterInfo | undefined>}
 		>[]
 	): void
+
+	//Manipulation events
+	Manipulate: {
+		sync_compound_effect(effect_info: CompoundEffectInfo): void
+	}
 }
 
 interface ClientToServerFunctions {

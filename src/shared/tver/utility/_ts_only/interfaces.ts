@@ -1,3 +1,5 @@
+import { EffectState } from "./types"
+
 /** Roblox character instance with a `Humanoid` child. */
 export interface CharacterInstance extends Instance {
     Humanoid: Humanoid
@@ -7,7 +9,11 @@ export interface CharacterInstance extends Instance {
 export interface CompoundEffectInfo {
     id: number,
     carrier_id: number,
-    constructor_params: unknown[]
+    state: EffectState,
+    constructor_params: unknown[],
+    start_params?: unknown[],
+    resume_params?: unknown[],
+    pause_params?: unknown[]
     
 }
 export interface SkillInfo {}

@@ -37,10 +37,10 @@ export class JumpBoost extends CompoundEffect<
         ConstructorParams: [strength: number]
     }
 > {
-    public StatEffects: (StrictStatEffect<never> | CustomStatEffect)[];
+    public StatEffects: (StrictStatEffect<Humanoid> | CustomStatEffect)[];
     
     constructor (strength: number) {
-        super([strength])
+        super(strength)
         this.StatEffects = [
             new JumpHeightEffect("Raw", strength)
         ]

@@ -56,9 +56,6 @@ export class Client extends Node {
         subscribe(client_atom, (state) => {
             if (!character && state) {
                 character = new Character(state.instance)
-                task.delay(2, () => {
-                    print(character)
-                })
             } else if (!state && character) {
                 character.Destroy()
             }

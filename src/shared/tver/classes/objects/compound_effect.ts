@@ -10,6 +10,7 @@ import { Janitor } from "@rbxts/janitor";
 import Signal from "@rbxts/signal";
 import { Timer } from "../fundamental/timer";
 import { CompoundEffectInfo } from "shared/tver/utility/_ts_only/interfaces";
+import { ServerEvents } from "shared/tver/network/networking";
  
 
 const LOG_KEY = "[CEFFECT]"
@@ -82,13 +83,14 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
     public OnRemovingServer() {}
     public OnRemovingClient() {}
 
-    constructor (params: GetParamType<Params, "ConstructorParams">) {
+    constructor (...params: GetParamType<Params, "ConstructorParams">) {
         this.ConstructorParams = params
     }
     
     /**
      * Apply this effect to a `Character` with optional duration (<=0 means infinite).
      */
+    //Override
     public ApplyTo(to: Character, duration = -1): AppliedCompoundEffect<Params> {
         let effect = to.GetAppliedEffectFromName(this.Name)
         if (effect) {
@@ -137,15 +139,14 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     public readonly janitor = new Janitor()
 
     public LastStartParams?: GetParamType<Params, "OnStart">
+    public LastResumeParams?: GetParamType<Params, "OnResume">
+    public LastPauseParams?: GetParamType<Params, "OnPause">
 
     private _main_thread: thread | undefined
     private _pause_thread: thread | undefined
     private _resume_thread: thread | undefined
-
-    private _last_start_params: GetParamType<Params, 'OnStart'> = [] as unknown as GetParamType<Params, 'OnStart'>
-
     constructor (from: CompoundEffect<Params>, to: Character, duration: number) {
-        super(from.ConstructorParams)
+        super(...from.ConstructorParams)
         this.InheritsFrom = from
         this.Carrier = to
         this.Name = tostring(getmetatable(this.InheritsFrom))
@@ -174,7 +175,6 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         }
 
         this.init()
-        to._manipulate._apply_effect(this)
 
         is_client_context()? this.OnApplyingClient(this) : this.OnApplyingServer(this)
     }
@@ -183,7 +183,11 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         return {
             id: this.id,
             carrier_id: this.Carrier.id,
-            constructor_params: this.ConstructorParams
+            state: this.state.GetState() || "Ready",
+            constructor_params: this.ConstructorParams,
+            start_params: this.LastStartParams,
+            resume_params: this.LastResumeParams,
+            pause_params: this.LastPauseParams
         }
     }
 
@@ -213,6 +217,9 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
             log.w(this.Name + " Effect cant be started twice!")
             return this
         }
+
+        this.LastStartParams = params
+
         this.timer.SetLength(this.Duration) // update length
         this.timer.Start()
         this.for_each_effect((effect) => {
@@ -229,9 +236,6 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         })
         coroutine.resume(this._main_thread)
 
-        this._last_start_params = params
-        //
-
         this.Started.Fire()
 
         return this
@@ -244,6 +248,9 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
             log.w(this.Name + " is already ended!")
             return
         }
+
+        this.LastResumeParams = params
+
         this.timer.Resume()
         this.for_each_effect((effect) => {
             effect.Resume()
@@ -269,6 +276,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
             log.w(this.Name + " is already ended!")
             return
         }
+
         this.timer.Pause()
         this.for_each_effect((effect) => {
             effect.Stop()
@@ -352,6 +360,15 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         })
 
         this._listen_for_timer()
+
+        this.Carrier._manipulate._apply_effect(this)
+
+        //Start syncing client-sided and server-sided effect
+        this.Carrier.player? this.janitor.Add(
+            this.state.StateChanged.Connect(() => {
+                ServerEvents.Manipulate.sync_compound_effect.fire(this.Carrier.player as Player, this.GetInfo())
+            })
+        ): undefined
     }
 }
 

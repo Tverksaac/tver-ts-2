@@ -1,10 +1,10 @@
 import { Players } from "@rbxts/services";
 import { Character, CreateServer } from "shared/tver/exports"
-import { Stun } from "shared/tver/test/compound_effects_classes";
+import { JumpBoost, Stun } from "shared/tver/test/compound_effects_classes";
 const server = CreateServer()
 server.Start()
 task.wait(2)
-const jumpboost = new Stun([])
+const jumpboost = new JumpBoost(10)
 const plr = Players.GetPlayers()[0]
 if (plr) {
     const char = plr.Character

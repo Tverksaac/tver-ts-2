@@ -524,11 +524,13 @@ export class Character {
 
     //Should be called only on client
     /**
-     * Client-only helper to mirror a compound effect by name, returns disposer.
+     * Client-Context
+     * 
+     * Client-only to mirror a compound effect by name, returns disposer.
      */
     private _replicate_compound_effect(name: string, info: CompoundEffectInfo) {
         const wthrow = (reason: string) => log.w(name + "CompoundEffect Replication failed. " + reason)
-
+        
         if (!is_client_context()) {
             wthrow("Cant call Replication on Server!")
         }
