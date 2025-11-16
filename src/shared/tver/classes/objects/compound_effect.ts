@@ -142,9 +142,9 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     public LastResumeParams?: GetParamType<Params, "OnResume">
     public LastPauseParams?: GetParamType<Params, "OnPause">
 
-    private _main_thread: thread | undefined
-    private _pause_thread: thread | undefined
-    private _resume_thread: thread | undefined
+    public _main_thread: thread | undefined
+    public _pause_thread: thread | undefined
+    public _resume_thread: thread | undefined
 
     constructor (from: CompoundEffect<Params>, to: Character, duration: number, id?: number) {
         super(...from.ConstructorParams)
@@ -244,6 +244,8 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     }
     /**
      * Resume a paused effect.
+     * 
+     * Previous OnResume callback will be closed
      */
     public Resume(...params: GetParamType<Params, 'OnResume'>): void {
         if (this.state.GetState() === "Ended") {
@@ -272,6 +274,8 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     }
     /**
      * Pause the running effect.
+     * 
+     * Previous pause thread will be closed
      */
     public Pause(...params: GetParamType<Params, 'OnPause'>): void {
         if (this.state.GetState() === "Ended") {

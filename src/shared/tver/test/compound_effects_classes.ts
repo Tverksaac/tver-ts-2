@@ -19,7 +19,21 @@ export class JumpBoost extends CompoundEffect<
         ]
     }
 
-    public OnStartServer(): void {
-        
+    public ApplyTo(to: Character, duration?: number, id?: number): AppliedCompoundEffect<{ ConstructorParams: [strength: number]; }> {
+        const applied = new AppliedCompoundEffect(this, to, duration || -1)
+
+        applied.OnStartServer = () => {
+        let counter = 1
+        while (true) {
+            counter++
+            print(counter)
+            if (counter === 10) {
+                applied._resume_thread? coroutine.close(applied._resume_thread): undefined
+            }
+            print("mmm it shoudnt loged")
+     }
+        }
+
+        return applied
     }
 }

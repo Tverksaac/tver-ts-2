@@ -34,7 +34,6 @@ function sync_compound_effect(info: CompoundEffectInfo): void {
         log.w(warn_msg + " Failed to determine manipulation action")
         return
     }
-    print(char)
 }
 
 export class Manipulator {
