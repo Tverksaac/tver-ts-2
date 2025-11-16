@@ -5,6 +5,7 @@ import { get_logger, get_node, is_client_context, set_node } from "shared/tver/u
 import { Character } from "../objects/character"
 import { subscribe } from "@rbxts/charm"
 import { Node } from "../core/node"
+import { Manipulator } from "shared/tver/manipulator"
 
 const LOG_KEY = "[CLIENT]"
 const log = get_logger(LOG_KEY)
@@ -27,6 +28,8 @@ export class Client extends Node {
     constructor () {
         super()
         set_node(this)
+
+        new Manipulator().client_initialize()
     }
 
     /** Start the client handler and set up syncing/replication. */

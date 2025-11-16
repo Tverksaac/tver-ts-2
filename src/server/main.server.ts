@@ -1,6 +1,6 @@
 import { Players } from "@rbxts/services";
 import { Character, CreateServer } from "shared/tver/exports"
-import { JumpBoost, Stun } from "shared/tver/test/compound_effects_classes";
+import { JumpBoost } from "shared/tver/test/compound_effects_classes";
 const server = CreateServer()
 server.Start()
 task.wait(2)
@@ -10,8 +10,11 @@ if (plr) {
     const char = plr.Character
     const tver_char = char? new Character(char): undefined
     if (tver_char !== undefined) {
-        const applied = jumpboost.ApplyTo(tver_char)
-        print(tver_char)
+        const applied = jumpboost.ApplyTo(tver_char, 5).Start()
+        task.wait(3)
+        applied.Pause()
+        task.wait(1)
+        applied.Resume()
     }
     
 }

@@ -4,6 +4,7 @@ import { ClientEvents, ServerEvents } from "shared/tver/network/networking"
 import { CharacterInfo } from "shared/tver/utility/_ts_only/interfaces"
 import { get_logger, get_node, is_server_context, set_node } from "shared/tver/utility/utils"
 import { Node } from "../core/node"
+import { Manipulator } from "shared/tver/manipulator"
 
 const LOG_KEY = "[SERVER]"
 const log = get_logger(LOG_KEY)
@@ -27,6 +28,8 @@ export class Server extends Node {
     constructor () {
         super()
         set_node(this)
+        
+        new Manipulator().server_initialize()
     }
 
     /** Start the server handler and set up syncing. */

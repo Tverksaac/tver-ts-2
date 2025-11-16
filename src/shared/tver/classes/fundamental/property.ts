@@ -6,8 +6,13 @@ import Signal from "@rbxts/signal";
 import { get_context_name, get_logger, is_client_context } from "shared/tver/utility/utils";
 
 const LOG_KEY = "[PROPERTY]"
-const CONNECTED_TAG = "[TVER]" + LOG_KEY + " Connected to "
+const CONNECTED_TAG = "[TVER]" + LOG_KEY
 const dlog = get_logger(LOG_KEY, true)
+
+function create_tag(name: string): string {
+	return CONNECTED_TAG + (`[${string.upper(get_context_name())}]`) + " Connected to " + name
+}
+
 
 /**
  * Property that maintains its own value and change notifications (not bound to an Instance).
@@ -112,11 +117,12 @@ export class ConnectedProperty<
 		this.connected_to = Name;
 		this.override = Override;
 
-		if (ConnectToInstance.HasTag(CONNECTED_TAG + tostring(Name))) {
+		const tag = create_tag(tostring(Name))
+		if (ConnectToInstance.HasTag(tag)) {
 			this.Destroy()
 			return
 		} else {
-			ConnectToInstance.AddTag(CONNECTED_TAG + tostring(Name))
+			ConnectToInstance.AddTag(tag)
 		}
 
 		if (is_client_context() && !CanBeCreatedOnClient) return

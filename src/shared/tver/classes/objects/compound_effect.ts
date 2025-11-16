@@ -91,12 +91,12 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
      * Apply this effect to a `Character` with optional duration (<=0 means infinite).
      */
     //Override
-    public ApplyTo(to: Character, duration = -1): AppliedCompoundEffect<Params> {
+    public ApplyTo(to: Character, duration = -1, id?: number): AppliedCompoundEffect<Params> {
         let effect = to.GetAppliedEffectFromName(this.Name)
         if (effect) {
             effect.SetDuration(duration < 0? math.huge : duration)
         } else {
-            effect = new AppliedCompoundEffect<Params>(this, to, duration)
+            effect = new AppliedCompoundEffect<Params>(this, to, duration, id)
         }
         return effect
     }
@@ -132,7 +132,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
 
     public readonly state = new StateMachine<[EffectState]>()
     public readonly timer = new Timer()
-    public readonly id = get_id()
+    public readonly id: number
 
     public readonly InheritsFrom: CompoundEffect<Params>
     public readonly Carrier: Character
@@ -145,11 +145,13 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     private _main_thread: thread | undefined
     private _pause_thread: thread | undefined
     private _resume_thread: thread | undefined
-    constructor (from: CompoundEffect<Params>, to: Character, duration: number) {
+
+    constructor (from: CompoundEffect<Params>, to: Character, duration: number, id?: number) {
         super(...from.ConstructorParams)
         this.InheritsFrom = from
         this.Carrier = to
         this.Name = tostring(getmetatable(this.InheritsFrom))
+        this.id = id? id: get_id()
 
         this.Duration = duration < 0? math.huge : duration
         this.StatEffects = from.StatEffects
@@ -359,16 +361,18 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
             effect.state.SetState("Ready")
         })
 
+        //Init
         this._listen_for_timer()
-
         this.Carrier._manipulate._apply_effect(this)
 
         //Start syncing client-sided and server-sided effect
-        this.Carrier.player? this.janitor.Add(
-            this.state.StateChanged.Connect(() => {
-                ServerEvents.Manipulate.sync_compound_effect.fire(this.Carrier.player as Player, this.GetInfo())
-            })
-        ): undefined
+        if (!is_client_context() && this.Carrier.player) {
+            this.janitor.Add(
+                this.state.StateChanged.Connect(() => {
+                    ServerEvents.Manipulate.sync_compound_effect(this.Carrier.player as Player, this.GetInfo())
+                })
+            )
+        }
     }
 }
 

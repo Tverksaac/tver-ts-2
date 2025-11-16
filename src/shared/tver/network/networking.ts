@@ -18,7 +18,7 @@ interface ServerToClientEvents {
 
 	//Manipulation events
 	Manipulate: {
-		sync_compound_effect(effect_info: CompoundEffectInfo): void
+		sync_compound_effect(effect_info: CompoundEffectInfo): void,
 	}
 }
 

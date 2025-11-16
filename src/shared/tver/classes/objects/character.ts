@@ -279,12 +279,26 @@ export class Character {
     /**
      * Non-blocking replication readiness hook. If already ready, callback is called deferred.
      */
-    public onReplicationReady(callback: () => void): void {
+    public OnReplicationReady(callback: () => void): void {
         if (this.replication_done) {
             task.defer(callback)
             return
         }
         this.janitor.Add(this.ReplicationReady.Connect(callback))
+    }
+
+    /**
+     * Client-Context
+     * 
+     * Will yield until effect with provided ID added to character. Use-cases only on client, because replication not instant
+     */
+    public AwaitForCompoundEffect(id: number): AppliedCompoundEffect {
+        let to_return = undefined
+        while (to_return === undefined) {
+            to_return = this.GetAppliedEffectFromId(id)
+            task.wait()
+        }
+        return to_return
     }
 
     // PUBLIC: DESTROY
@@ -541,7 +555,8 @@ export class Character {
             return
         }
 
-        const applied_effect = new effect(...info.constructor_params as never[]).ApplyTo(this)
+        const applied_effect = new effect(...info.constructor_params as never[]).ApplyTo(this, -1, info.id)
+        dlog.l("Replicated: " + effect)
 
         //On End on Server
         return () => {applied_effect?.End()}
