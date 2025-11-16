@@ -28,7 +28,8 @@ export class JumpBoost extends CompoundEffect<
             counter++
             print(counter)
             if (counter === 10) {
-                applied._resume_thread? coroutine.close(applied._resume_thread): undefined
+                applied._resume_thread ? coroutine.close(applied._resume_thread) : undefined
+                break
             }
             print("mmm it shoudnt loged")
      }
