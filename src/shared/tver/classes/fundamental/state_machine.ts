@@ -4,6 +4,7 @@ import Signal from "@rbxts/signal"
 /** Helper union of valid states from provided tuple. */
 type StatesUnion<T extends string[]> = T[number]
 
+
 /**
  * Minimal state machine with previous-state tracking and signal emission.
  */

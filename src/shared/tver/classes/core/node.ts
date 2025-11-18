@@ -1,7 +1,7 @@
-import { get_logger, is_client_context } from "shared/tver/utility/utils"
+import { get_context_name, get_logger, is_client_context } from "shared/tver/utility/utils"
 
 export abstract class Node {
-    public Type = is_client_context()? "Client" : "Server"
+    public Type = get_context_name()
     public Active = false
     public log = get_logger("[" + this.Type.upper() + "]")
 

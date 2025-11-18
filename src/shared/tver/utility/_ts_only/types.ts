@@ -1,3 +1,5 @@
+import { CustomPropertyEffect, CustomStatEffect, StrictPropertyEffect, StrictStatEffect } from "shared/tver/exports"
+
 /** Property names for a given Instance type. */
 export type PropertyNames<OfInstance extends Instance> = keyof WritableInstanceProperties<OfInstance>
 /** Writable property names (alias) used for effect targeting. */
@@ -11,7 +13,9 @@ export type EffectState = "Ready" | "On" | "Off" | "Ended"
 /** Lifecycle states for timers. */
 export type TimerState = "Ready" | "Running" | "Paused"
 
-export type StatusEffectGenericParams = {
+export type CompoundEffectStatEffects = (StrictStatEffect<never> | CustomStatEffect)[]
+export type CompoundEffectPropertyEffects = (StrictPropertyEffect<never, never> | CustomPropertyEffect)[]
+export type CompoundEffectGenericParams = {
     ConstructorParams: unknown[]
     OnStart: unknown[],
     OnResume: unknown[],
@@ -21,7 +25,7 @@ export type SkillGenericParams = {
     OnStart: unknown[],
     OnAbort: unknown[],
 }
-export type GetParamType<T, K extends (keyof StatusEffectGenericParams | keyof SkillGenericParams)> = 
+export type GetParamType<T, K extends (keyof CompoundEffectGenericParams | keyof SkillGenericParams)> = 
     T extends { [P in K]: infer U } 
         ? U extends unknown[]
             ? U 

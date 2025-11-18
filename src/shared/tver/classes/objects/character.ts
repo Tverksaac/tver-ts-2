@@ -292,7 +292,7 @@ export class Character {
      * 
      * Will yield until effect with provided ID added to character. Use-cases only on client, because replication not instant
      */
-    public AwaitForCompoundEffect(id: number): AppliedCompoundEffect {
+    public AwaitForAppliedCompoundEffect(id: number): AppliedCompoundEffect {
         let to_return = undefined
         while (to_return === undefined) {
             to_return = this.GetAppliedEffectFromId(id)
@@ -363,10 +363,10 @@ export class Character {
         effects.forEach((effect) => {
             if (effect.state.GetState() === "Ended") return
 
-            effect.StatEffects.forEach((stat_effect) => {
+            effect.StatEffects?.forEach((stat_effect) => {
                 this._stat_effects.push(stat_effect)
             })
-            effect.PropertyEffects.forEach((property_effect) => {
+            effect.PropertyEffects?.forEach((property_effect) => {
                 this._property_effects.push(property_effect)
             })
         })
@@ -426,7 +426,8 @@ export class Character {
             } else if (effect_type === "Raw") {
                 member.Raw = member.Raw + effect.Strength
             } else {
-                 log.e(effect + " have wrong effect type property! /n Should be 'Raw' or 'Modifier' but have value of: " + effect.EffectType)
+                log.w(effect + " have wrong effect type property! /n Should be 'Raw' or 'Modifier' but have value of: " + effect.EffectType)
+                return
             }
 
             calculated.set(member.Affects, member)
@@ -459,7 +460,8 @@ export class Character {
                 stat_to_affect.Bonus.Modifier.Set(stat.Modifier)
                  stat_to_affect.Bonus.Raw.Set(stat.Raw)               
             } else {
-                log.e(stat + " Cant affect any of stats becuase theres no stat with name: " + stat.Affects)
+                log.w(stat + " Cant affect any of stats becuase no stat exists with name: " + stat.Affects)
+                return
             } 
         })
     }
@@ -499,7 +501,9 @@ export class Character {
                         log.e(prop + " has wrong Strength value!\nCannot assign " + typeOf(prop.Strength) + " to " + typeOf(prop_to_affect.Get()))
                     }
                 } else {
-                    log.e(prop + " cannot affect properties because no property exists with name: " + prop.Affects)
+                    //Wrong property provided
+                    log.w(prop + " Cant affect any of properties because no property exists with name: " + prop.Affects)
+                    return
                 }
             }
         })
@@ -623,7 +627,7 @@ export class Character {
      */
     private init(): boolean {
         this._start_replication()
-         while(!this.replication_done && !is_client_context()) {task.wait()} // yield until replciation is done
+        while(!this.replication_done && !is_client_context()) {task.wait()} // yield until replciation is done
         this._start_listen_to_effect_changes()
         return true
     }

@@ -5,7 +5,7 @@ import { get_logger, get_node, is_client_context, set_node } from "shared/tver/u
 import { Character } from "../objects/character"
 import { subscribe } from "@rbxts/charm"
 import { Node } from "../core/node"
-import { Manipulator } from "shared/tver/manipulator"
+import { Manipulator } from "shared/tver/classes/main/manipulator"
 
 const LOG_KEY = "[CLIENT]"
 const log = get_logger(LOG_KEY)

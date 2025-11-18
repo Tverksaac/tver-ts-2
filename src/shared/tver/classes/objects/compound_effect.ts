@@ -2,7 +2,7 @@ import { Effect } from "../core/effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect"
 import {CustomStatEffect, StrictStatEffect } from "../core/stat_effect"
 import { Character } from "./character";
-import { EffectState, GetParamType, StatusEffectGenericParams } from "shared/tver/utility/_ts_only/types";
+import { CompoundEffectGenericParams, CompoundEffectPropertyEffects, CompoundEffectStatEffects, EffectState, GetParamType } from "shared/tver/utility/_ts_only/types";
 import { StateMachine } from "../fundamental/state_machine";
 import { get_context_name, get_id, get_logger, is_client_context, wlog } from "shared/tver/utility/utils";
 import { Constructor } from "@flamework/core/out/utility";
@@ -49,7 +49,7 @@ export class Container_CompoundEffect {
 /**
  * Base class for a set of stat/property effects that act together.
  */
-export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericParams> = {
+export abstract class CompoundEffect<Params extends Partial<CompoundEffectGenericParams> = {
     ConstructorParams: unknown[]
     OnStart: unknown[],
     OnResume: unknown[],
@@ -58,8 +58,8 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
 }> {
     public readonly Name = tostring(getmetatable(this))
 
-    public readonly StatEffects: (StrictStatEffect<never> | CustomStatEffect)[] = []
-    public readonly PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[] = []
+    public readonly StatEffects?: CompoundEffectStatEffects = []
+    public readonly PropertyEffects?: CompoundEffectPropertyEffects = []
 
     public readonly ConstructorParams: GetParamType<Params, "ConstructorParams">
 
@@ -105,10 +105,10 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
      * Cleanup child effects.
      */
     public Destroy(): void {
-        this.StatEffects.forEach((val) => {
+        this.StatEffects?.forEach((val) => {
             val.Destroy()
         })
-        this.PropertyEffects.forEach((val) => [
+        this.PropertyEffects?.forEach((val) => [
             val.Destroy()
         ])
     }
@@ -117,12 +117,12 @@ export abstract class CompoundEffect<Params extends Partial<StatusEffectGenericP
 /**
  * A live instance of a `CompoundEffect` applied to a carrier character.
  */
-export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericParams> = {}> extends CompoundEffect<Params>{
+export class AppliedCompoundEffect<Params extends Partial<CompoundEffectGenericParams> = {}> extends CompoundEffect<Params>{
     public readonly Name: string
 
     public Duration: number;
-    public StatEffects: (StrictStatEffect<never> | CustomStatEffect)[];
-    public PropertyEffects: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[];
+    public StatEffects?: (StrictStatEffect<never> | CustomStatEffect)[];
+    public PropertyEffects?: (StrictPropertyEffect<never, never> | CustomPropertyEffect)[];
 
     public Started = new Signal()
     public Resumed = new Signal()
@@ -345,8 +345,8 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
         this.Destroy()
     }
     private for_each_effect(callback: (effect: Effect) => void): void {
-        this.StatEffects.forEach(callback)
-        this.PropertyEffects.forEach(callback)
+        this.StatEffects?.forEach(callback)
+        this.PropertyEffects?.forEach(callback)
     }
     private for_each_effect_included(callback: (effect: Effect | AppliedCompoundEffect<Params>) => void): void {
         this.for_each_effect(callback)
@@ -380,7 +380,7 @@ export class AppliedCompoundEffect<Params extends Partial<StatusEffectGenericPar
     }
 }
 
-export function Decorator_CompoundEffect<Params extends Partial<StatusEffectGenericParams>>(
+export function Decorator_CompoundEffect<Params extends Partial<CompoundEffectGenericParams>>(
     Constructor: Constructor<CompoundEffect<Params>>
 ): void {
     Container_CompoundEffect.Register(Constructor)

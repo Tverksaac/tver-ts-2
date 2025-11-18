@@ -1,40 +1,25 @@
-
-import { AppliedCompoundEffect, CompoundEffect, Decorator_CompoundEffect } from "../classes/objects/compound_effect";
-import { AutoRotateEffect } from "./property_effect_classes";
+import { CompoundEffect, Decorator_CompoundEffect } from "../classes/objects/compound_effect";
 import { JumpHeightEffect, WalkSpeedEffect} from "./stat_effect_classes";
-import { Character, CustomStatEffect, StrictStatEffect } from "../exports";
+import { AutoRotateEffect } from "./property_effect_classes";
+import { CompoundEffectPropertyEffects, CompoundEffectStatEffects } from "../utility/_ts_only/types";
 
 @Decorator_CompoundEffect
-export class JumpBoost extends CompoundEffect<
+export class Stun extends CompoundEffect<
     {
-        ConstructorParams: [strength: number]
+        ConstructorParams: [AutoRotate: boolean]
     }
-> {
-    public StatEffects: (StrictStatEffect<Humanoid> | CustomStatEffect)[];
-    
-    constructor (strength: number) {
-        super(strength)
+    > {
+    public PropertyEffects?: CompoundEffectPropertyEffects | undefined;
+    public StatEffects?: CompoundEffectStatEffects | undefined;
+
+    constructor(AutoRotate: boolean) {
+        super(AutoRotate)
         this.StatEffects = [
-            new JumpHeightEffect("Raw", strength)
+            new JumpHeightEffect("Modifier", 0),
+            new WalkSpeedEffect("Modifier", 0)
         ]
-    }
-
-    public ApplyTo(to: Character, duration?: number, id?: number): AppliedCompoundEffect<{ ConstructorParams: [strength: number]; }> {
-        const applied = new AppliedCompoundEffect(this, to, duration || -1)
-
-        applied.OnStartServer = () => {
-        let counter = 1
-        while (true) {
-            counter++
-            print(counter)
-            if (counter === 10) {
-                applied._resume_thread ? coroutine.close(applied._resume_thread) : undefined
-                break
-            }
-            print("mmm it shoudnt loged")
-     }
-        }
-
-        return applied
+        this.PropertyEffects = [
+            new AutoRotateEffect(AutoRotate, 999)
+        ]
     }
 }

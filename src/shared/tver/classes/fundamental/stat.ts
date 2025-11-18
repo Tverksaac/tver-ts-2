@@ -102,12 +102,12 @@ export class ConnectedStat<
 		type Indexable = ConnectedInstance[Name];
 		this.instance[Name] = this.Total.Get() as Indexable;
 
+		if (is_client_context()) return
 		this.janitor.Add(
 			this.instance.GetPropertyChangedSignal(Name).Connect(() => {
 				this.instance[Name] = this.Total.Get() as Indexable;
 			}),
 		);
-		if (is_client_context()) return
 		this.janitor.Add(
 			this.Total.changed.Connect(() => {
 				this.instance[Name] = this.Total.Get() as Indexable;
