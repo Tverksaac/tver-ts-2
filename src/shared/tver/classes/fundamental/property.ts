@@ -5,26 +5,25 @@ import { RunService } from "@rbxts/services";
 import Signal from "@rbxts/signal";
 import { get_context_name, get_logger, is_client_context } from "shared/tver/utility/utils";
 
-const LOG_KEY = "[PROPERTY]"
-const CONNECTED_TAG = "[TVER]" + LOG_KEY
-const dlog = get_logger(LOG_KEY, true)
+const LOG_KEY = "[PROPERTY]";
+const CONNECTED_TAG = "[TVER]" + LOG_KEY;
+const dlog = get_logger(LOG_KEY, true);
 
 function create_tag(name: string): string {
-	return CONNECTED_TAG + (`[${string.upper(get_context_name())}]`) + " Connected to " + name
+	return CONNECTED_TAG + `[${string.upper(get_context_name())}]` + " Connected to " + name;
 }
-
 
 /**
  * Property that maintains its own value and change notifications (not bound to an Instance).
  */
 export class SeparatedProperty<T> {
-	protected janitor = new Janitor()
+	protected janitor = new Janitor();
 
 	public readonly name: string;
 	protected value: T;
 	protected default_value: T;
 
-	public changed = new Signal<(new_value: T, prev_value: T) => void>()
+	public changed = new Signal<(new_value: T, prev_value: T) => void>();
 
 	Behaviours: {
 		OnTick: (this: void) => void;
@@ -35,7 +34,7 @@ export class SeparatedProperty<T> {
 	constructor(name: string, value: T) {
 		this.name = name;
 		this.value = value;
-		this.default_value = value
+		this.default_value = value;
 
 		this.Behaviours = {
 			OnTick() {},
@@ -74,7 +73,7 @@ export class SeparatedProperty<T> {
 	}
 
 	SetDefault(set_to: T) {
-		this.default_value = set_to
+		this.default_value = set_to;
 	}
 
 	/** Get the current property value. */
@@ -84,7 +83,7 @@ export class SeparatedProperty<T> {
 
 	/** Reset the property back to its default value. */
 	Reset(): void {
-		this.Set(this.default_value)
+		this.Set(this.default_value);
 	}
 
 	/** Cleanup any connections/resources. */
@@ -109,7 +108,7 @@ export class ConnectedProperty<
 		Name: Name,
 		Value: ConnectedInstance[Name],
 		Override = true,
-		CanBeCreatedOnClient = false
+		CanBeCreatedOnClient = false,
 	) {
 		super(tostring(Name), Value);
 		this.instance = ConnectToInstance;
@@ -117,15 +116,15 @@ export class ConnectedProperty<
 		this.connected_to = Name;
 		this.override = Override;
 
-		const tag = create_tag(tostring(Name))
+		const tag = create_tag(tostring(Name));
 		if (ConnectToInstance.HasTag(tag)) {
-			this.Destroy()
-			return
+			this.Destroy();
+			return;
 		} else {
-			ConnectToInstance.AddTag(tag)
+			ConnectToInstance.AddTag(tag);
 		}
 
-		if (is_client_context() && !CanBeCreatedOnClient) return
+		if (is_client_context() && !CanBeCreatedOnClient) return;
 		this.janitor.Add(
 			this.changed.Connect((new_value: ConnectedInstance[Name]) => {
 				this.instance[Name] = new_value;
@@ -141,8 +140,8 @@ export class ConnectedProperty<
 			}),
 		);
 	}
-	
+
 	public getType(): string {
-		return "ConnectedProperty"
+		return "ConnectedProperty";
 	}
 }

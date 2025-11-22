@@ -1,3 +1,7 @@
 исрпавить thread в compound_effects, OnStart может вызываться два раза если не yields. --СЛОЖНАААААА
 при измении state CompoundEffectа изменения будут реплицироваться клиенту +- done
 подумать на счёт получение конструкторов эффектов +- done
+
+Passive class
+Skill class
+Damage class

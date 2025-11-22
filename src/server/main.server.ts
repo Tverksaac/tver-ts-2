@@ -4,7 +4,7 @@ import { Stun } from "shared/tver/test/compound_effects_classes";
 const server = CreateServer()
 server.Start()
 task.wait(2)
-const stun = new Stun(false)
+const stun = new Stun()
 const plr = Players.GetPlayers()[0]
 if (plr) {
     const char = plr.Character
@@ -15,6 +15,5 @@ if (plr) {
         applied.Pause()
         task.wait(1)
         applied.Resume()
-    }
-    
+    }   
 }

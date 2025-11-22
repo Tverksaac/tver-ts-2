@@ -4,40 +4,28 @@ import CharmSync from "@rbxts/charm-sync";
 
 /** Events that clients may fire to the server. */
 interface ClientToServerEvents {
-	request_sync(): void,
-	character_replication_done(): void
+	request_sync(): void;
+	character_replication_done(): void;
 }
 
 /** Events that the server may fire to clients. */
 interface ServerToClientEvents {
-	sync(
-		payloads: CharmSync.SyncPayload<
-			{atom: Charm.Atom<CharacterInfo | undefined>}
-		>[]
-	): void
+	sync(payloads: CharmSync.SyncPayload<{ atom: Charm.Atom<CharacterInfo | undefined> }>[]): void;
 
 	//Manipulation events
 	Manipulate: {
-		sync_compound_effect(effect_info: CompoundEffectInfo): void,
-	}
+		sync_compound_effect(effect_info: CompoundEffectInfo): void;
+	};
 }
 
-interface ClientToServerFunctions {
-}
+interface ClientToServerFunctions {}
 
-interface ServerToClientFunctions {
-}
+interface ServerToClientFunctions {}
 
-export const GlobalFunctions = Networking.createFunction<
-	ClientToServerFunctions,
-	ServerToClientFunctions
->();
+export const GlobalFunctions = Networking.createFunction<ClientToServerFunctions, ServerToClientFunctions>();
 export const ServerFunctions = GlobalFunctions.createServer({});
 export const ClientFunctions = GlobalFunctions.createClient({});
 
-export const GlobalEvents = Networking.createEvent<
-	ClientToServerEvents,
-	ServerToClientEvents
->();
+export const GlobalEvents = Networking.createEvent<ClientToServerEvents, ServerToClientEvents>();
 export const ServerEvents = GlobalEvents.createServer({});
 export const ClientEvents = GlobalEvents.createClient({});

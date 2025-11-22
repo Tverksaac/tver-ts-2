@@ -4,12 +4,12 @@ import { Janitor } from "@rbxts/janitor";
 import { SeparatedProperty } from "./property";
 import { get_context_name, get_logger, is_client_context } from "shared/tver/utility/utils";
 
-const LOG_KEY = "[STAT]"
-const CONNECTED_TAG = "[TVER]" + LOG_KEY
-const dlog = get_logger(LOG_KEY, true)
+const LOG_KEY = "[STAT]";
+const CONNECTED_TAG = "[TVER]" + LOG_KEY;
+const dlog = get_logger(LOG_KEY, true);
 
 function create_tag(name: string): string {
-	return CONNECTED_TAG + (`[${string.upper(get_context_name())}]`) + " Connected to" + name
+	return CONNECTED_TAG + `[${string.upper(get_context_name())}]` + " Connected to" + name;
 }
 
 function calculate_total_bonus(stat: SeparatedStat): number {
@@ -90,19 +90,19 @@ export class ConnectedStat<
 		super(tostring(Name), Value);
 		this.instance = ConnectToInstance;
 		this.conected_to = Name;
-		
-		const tag = create_tag(tostring(Name))
+
+		const tag = create_tag(tostring(Name));
 		if (ConnectToInstance.HasTag(tag)) {
-			this.Destroy()
-			return
+			this.Destroy();
+			return;
 		} else {
-			ConnectToInstance.AddTag(tag)
+			ConnectToInstance.AddTag(tag);
 		}
 
 		type Indexable = ConnectedInstance[Name];
 		this.instance[Name] = this.Total.Get() as Indexable;
 
-		if (is_client_context()) return
+		if (is_client_context()) return;
 		this.janitor.Add(
 			this.instance.GetPropertyChangedSignal(Name).Connect(() => {
 				this.instance[Name] = this.Total.Get() as Indexable;
@@ -113,6 +113,5 @@ export class ConnectedStat<
 				this.instance[Name] = this.Total.Get() as Indexable;
 			}),
 		);
-		
 	}
 }
