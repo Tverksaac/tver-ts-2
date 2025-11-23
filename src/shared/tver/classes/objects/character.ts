@@ -254,30 +254,30 @@ export class Character {
 		return true;
 	}
 
-	/** Whether this character has a stat by name (connected or custom). */
+	/** Whether this character has a stat by name. */
 	public HasStat(name: string): boolean {
 		return this._stats.has(name) || this._custom_stats.has(name);
 	}
-	/** Whether this character has a property by name (connected or custom). */
+	/** Whether this character has a property by name. */
 	public HasProperty(name: string): boolean {
 		return this._properties.has(name) || this._custom_properties.has(name);
 	}
-	/** Get a stat by name (connected or custom). */
+	/** Get a stat by name. */
 	public GetStat(name: string): _every_possible_stats_type | undefined {
 		return this._stats.get(name) || this._custom_stats.get(name);
 	}
-	/** Get a property by name (connected or custom). */
+	/** Get a property by name. */
 	public GetProperty(name: string): _every_possible_properties_type | undefined {
 		return this._properties.get(name) || this._custom_properties.get(name);
 	}
-	/** List all stat names (connected and custom). */
+	/** List all stat names. */
 	public ListStatNames(): string[] {
 		const names = [] as string[];
 		this._stats.forEach((_, key) => names.push(key));
 		this._custom_stats.forEach((_, key) => names.push(key));
 		return names;
 	}
-	/** List all property names (connected and custom). */
+	/** List all property names. */
 	public ListPropertyNames(): string[] {
 		const names = [] as string[];
 		this._properties.forEach((_, key) => names.push(key));
@@ -286,6 +286,8 @@ export class Character {
 	}
 
 	/**
+	 * Server-Context
+	 *
 	 * Non-blocking replication readiness hook. If already ready, callback is called deferred.
 	 */
 	public OnReplicationReady(callback: () => void): void {
@@ -298,6 +300,7 @@ export class Character {
 
 	/**
 	 * Client-Context
+	 * Yields
 	 *
 	 * Will yield until effect with provided ID added to character. Use-cases only on client, because replication not instant
 	 */
@@ -339,6 +342,10 @@ export class Character {
 			type(find_from) === "string"
 				? this.GetAppliedEffectFromName(find_from as string)
 				: this.GetAppliedEffectFromId(find_from as number);
+		if (!effect) {
+			log.w("No AppliedCompoundEffect found for " + this.instance.Name + " from " + find_from);
+			return;
+		}
 		this._effects.forEach((val, index) => {
 			if (val === effect) {
 				this.EffectRemoved.Fire(effect);
@@ -387,7 +394,7 @@ export class Character {
 	/**
 	 * Combine property effects by highest priority per affected property.
 	 */
-	private _calculate_property_effects() {
+	private _calculate_property_effects(): Map<string, { Affects: string; Strength: unknown; Priority: number }> {
 		const calculated = new Map<string, { Affects: string; Strength: unknown; Priority: number }>();
 
 		this._property_effects.forEach((effect) => {
@@ -409,12 +416,12 @@ export class Character {
 			calculated.set(member.Affects, member);
 		});
 
-		return calculated as Map<string, { Affects: string; Strength: unknown; Priority: number }>;
+		return calculated;
 	}
 	/**
 	 * Accumulate stat effects into raw and modifier components per affected stat.
 	 */
-	private _calculate_stat_effects() {
+	private _calculate_stat_effects(): Map<string, { Affects: string; Raw: number; Modifier: number }> {
 		const calculated = new Map<string, { Affects: string; Raw: number; Modifier: number }>();
 
 		this._stat_effects.forEach((effect) => {
@@ -600,7 +607,7 @@ export class Character {
 	 */
 	private _server_replication(): void {
 		const server = get_node() as Server;
-		if (!server) log.e("Server not found! Maybe you forgot to Create it?");
+		if (!server) log.e("Server Node not found! Maybe you forgot to Create it?");
 
 		this._connect_server_atom_updating();
 		this._update_server_atom();
@@ -627,7 +634,7 @@ export class Character {
 		if (!this.player) return;
 		const client = get_node() as Client;
 		if (!client) {
-			log.e("Client not found! Maybe you forgot to Create it?");
+			log.e("Client Node not found! Maybe you forgot to Create it?");
 		}
 
 		observe(

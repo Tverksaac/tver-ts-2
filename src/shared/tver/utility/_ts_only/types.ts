@@ -13,6 +13,8 @@ export type Strength<
 export type EffectType = "Raw" | "Modifier";
 /** Lifecycle states for effects. */
 export type EffectState = "Ready" | "On" | "Off" | "Ended";
+/** Lifecycle states for skills */
+export type SkillState = "Ready" | "Ongoing" | "Ended";
 /** Lifecycle states for timers. */
 export type TimerState = "Ready" | "Running" | "Paused";
 

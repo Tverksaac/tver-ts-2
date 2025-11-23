@@ -35,7 +35,8 @@
 		"tver-ts-2:out/shared/tver/test/skills_classes@Punch": "shared/tver/test/skills_classes@Punch",
 		"tver-ts-2:out/shared/tver/network/networking@GlobalFunctions": "shared/tver/network/networking@GlobalFunctions",
 		"tver-ts-2:out/shared/tver/network/networking@GlobalEvents": "shared/tver/network/networking@GlobalEvents",
-		"tver-ts-2:out/shared/tver/test/compound_effects_classes@TestEffect": "shared/tver/test/compound_effects_classes@TestEffect"
+		"tver-ts-2:out/shared/tver/test/compound_effects_classes@TestEffect": "shared/tver/test/compound_effects_classes@TestEffect",
+		"tver-ts-2:out/shared/tver/test/compound_effects_classes@AppliedStun": "shared/tver/test/compound_effects_classes@AppliedStun"
 	},
 	"metadata": {}
 }

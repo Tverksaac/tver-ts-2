@@ -1,7 +1,10 @@
 import { get_logger } from "shared/tver/utility/utils";
 import { Character } from "./character";
 import { Constructor } from "@flamework/core/out/utility";
-import { GetParamType, SkillGenericParams } from "shared/tver/utility/_ts_only/types";
+import { GetParamType, SkillGenericParams, SkillState } from "shared/tver/utility/_ts_only/types";
+import { StateMachine } from "../fundamental/state_machine";
+import { Janitor } from "@rbxts/janitor";
+import { Timer } from "../fundamental/timer";
 
 const LOG_KEY = "[SKILL]";
 const log = get_logger(LOG_KEY);
@@ -38,6 +41,12 @@ export class Container_Skill {
 export abstract class Skill<Params extends Partial<SkillGenericParams> = {}> {
 	public readonly Name = tostring(getmetatable(this));
 
+	public readonly ConstructorParams: GetParamType<Params, "ConstructorParams">;
+
+	constructor(...params: GetParamType<Params, "ConstructorParams">) {
+		this.ConstructorParams = params;
+	}
+
 	//@override
 	public OnRecieveServer(recieved_skill: AppliedSkill<Params>) {}
 	public OnRecieveClient(recieved_skill: AppliedSkill<Params>) {}
@@ -54,11 +63,17 @@ export abstract class Skill<Params extends Partial<SkillGenericParams> = {}> {
 	}
 }
 export class AppliedSkill<Params extends Partial<SkillGenericParams> = {}> extends Skill<Params> {
-	public InheritsFrom: Skill;
-	public Carrier: Character;
+	public readonly InheritsFrom: Skill<Params>;
+	public readonly Carrier: Character;
 
-	constructor(from: Skill, to: Character) {
-		super();
+	public readonly state = new StateMachine<[SkillState]>();
+	public readonly janitor = new Janitor();
+
+	private readonly cooldown: number = 0;
+	private readonly cooldown_timer = new Timer();
+
+	constructor(from: Skill<Params>, to: Character) {
+		super(...from.ConstructorParams);
 
 		this.InheritsFrom = from;
 		this.Carrier = to;
@@ -69,6 +84,13 @@ export class AppliedSkill<Params extends Partial<SkillGenericParams> = {}> exten
 		};
 	}
 
+	public Start(...params: GetParamType<Params, "OnStart">): void {
+		if (this.state.GetState() === "Ongoing") {
+			log.w("Can't start an ongoing effect");
+		}
+	}
+	public Abort(...params: GetParamType<Params, "OnAbort">): void {}
+	public End(): void {}
 	public Remove(): void {}
 
 	private init() {}
