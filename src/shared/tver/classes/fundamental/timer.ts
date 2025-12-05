@@ -16,7 +16,7 @@ export class Timer {
 
 	private _length: number = 0;
 	private _time_left: number = 0;
-	private _state = new StateMachine<[TimerState]>();
+	private _state = new StateMachine<[TimerState]>("Ready");
 	private janitor = new Janitor();
 	private _run_thread: thread | undefined;
 	private _run_connection: RBXScriptConnection | undefined;

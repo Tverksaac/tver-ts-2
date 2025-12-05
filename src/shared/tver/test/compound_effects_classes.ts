@@ -1,20 +1,9 @@
-import { AppliedCompoundEffect, CompoundEffect, Decorator_CompoundEffect } from "../classes/objects/compound_effect";
+import { CompoundEffect, Decorator_CompoundEffect, LinkedCompoundEffect } from "../classes/objects/compound_effect";
 import { JumpHeightEffect, WalkSpeedEffect } from "./stat_effect_classes";
 import { AutoRotateEffect } from "./property_effect_classes";
-import { CompoundEffectPropertyEffects, CompoundEffectStatEffects } from "../utility/_ts_only/types";
+import { CompoundEffectPropertyEffects, CompoundEffectStatEffects, Strength } from "../utility/_ts_only/types";
 import { Character } from "../exports";
 
-class AppliedStun extends AppliedCompoundEffect<{
-	ConstructorParams: [AutoRotate: boolean];
-}> {
-	public auto: boolean = this.InheritsFrom.ConstructorParams[0];
-	public counter = 0;
-
-	public OnStartServer(): void {
-		this.counter++;
-		print(this.counter);
-	}
-}
 @Decorator_CompoundEffect
 export class Stun extends CompoundEffect<{
 	ConstructorParams: [AutoRotate: boolean];
@@ -28,10 +17,26 @@ export class Stun extends CompoundEffect<{
 		this.PropertyEffects = [new AutoRotateEffect(AutoRotate || false, 999)];
 	}
 
-	public ApplyTo(
-		to: Character,
-		duration: number,
-	): AppliedCompoundEffect<{ ConstructorParams: [AutoRotate?: boolean] }> {
-		return new AppliedStun(this, to, duration);
+	public OnStartServer(): void {
+		print("not overrided");
+	}
+}
+
+@Decorator_CompoundEffect
+export class Test extends LinkedCompoundEffect<{}> {
+	public sigma: number = 2;
+	public StatEffects: CompoundEffectStatEffects = [new WalkSpeedEffect("Modifier", 2)];
+
+	constructor(link_to: Character) {
+		super(link_to);
+		this.sigma = 1;
+		print(this.sigma);
+	}
+
+	public OnStartServer(this: CompoundEffect<{}>): void {
+		print(this);
+	}
+	public OnStartClient(this: CompoundEffect<{}>): void {
+		print(this);
 	}
 }

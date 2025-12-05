@@ -15,7 +15,11 @@ export interface CompoundEffectInfo {
 	resume_params?: unknown[];
 	pause_params?: unknown[];
 }
-export interface SkillInfo {}
+export interface SkillInfo {
+	id: number;
+}
+
+export interface PassiveInfo {}
 /** Minimal info needed to represent a character. */
 export interface CharacterInfo {
 	instance: Instance;

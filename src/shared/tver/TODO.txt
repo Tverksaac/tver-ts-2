@@ -5,3 +5,10 @@
 Passive class
 Skill class
 Damage class
+
+Как будут работать скиллы и пассивки ааа
+
+может быть будут:
+ CompoundEffect и LinkedCompoundEffect
+ CompoundEffect - Накладывается на нескольких
+ LinkedCompoundEffect - Привязан к одному

@@ -19,7 +19,7 @@ export abstract class Effect {
 	public abstract readonly Strength: unknown;
 
 	public readonly timer = new Timer();
-	public readonly state = new StateMachine<[EffectState]>();
+	public readonly state = new StateMachine<[EffectState]>("Ready");
 
 	public readonly Changed = new Signal<(effect: Effect, args: unknown) => void>();
 

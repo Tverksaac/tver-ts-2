@@ -67,17 +67,20 @@ export abstract class CompoundEffect<Params extends Partial<CompoundEffectGeneri
 
 	public readonly Stackable = false;
 
-	public OnApplyingServer(applied: AppliedCompoundEffect<Params>) {}
-	public OnApplyingClient(applied: AppliedCompoundEffect<Params>) {}
+	public OnApplyingServer(this: CompoundEffect<Params>, applied: AppliedCompoundEffect<Params>) {}
+	public OnApplyingClient(this: CompoundEffect<Params>, applied: AppliedCompoundEffect<Params>) {}
 
-	public OnStartServer(...params: GetParamType<Params, "OnStart">) {}
-	public OnStartClient(...params: GetParamType<Params, "OnStart">) {}
+	public OnStartServer(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnStart">) {}
+	public OnStartClient(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnStart">) {}
 
-	public OnResumeServer(...params: GetParamType<Params, "OnResume">) {}
-	public OnResumeClient(...params: GetParamType<Params, "OnResume">) {}
+	public OnResumeServer(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnResume">) {}
+	public OnResumeClient(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnResume">) {}
 
-	public OnPauseServer(...params: GetParamType<Params, "OnPause">) {}
-	public OnPauseClient(...params: GetParamType<Params, "OnPause">) {}
+	public OnPauseServer(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnPause">) {}
+	public OnPauseClient(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnPause">) {}
+
+	public OnAbortServer(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnAbort">) {}
+	public OnAbortClient(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnAbort">) {}
 
 	public OnEndServer() {}
 	public OnEndClient() {}
@@ -98,7 +101,7 @@ export abstract class CompoundEffect<Params extends Partial<CompoundEffectGeneri
 		if (effect) {
 			effect.SetDuration(duration < 0 ? math.huge : duration);
 		} else {
-			effect = new AppliedCompoundEffect<Params>(this, to, duration, id);
+			effect = new AppliedCompoundEffect(this, to, duration, id);
 		}
 		return effect;
 	}
@@ -110,7 +113,29 @@ export abstract class CompoundEffect<Params extends Partial<CompoundEffectGeneri
 		this.StatEffects?.forEach((val) => {
 			val.Destroy();
 		});
-		this.PropertyEffects?.forEach((val) => [val.Destroy()]);
+		this.PropertyEffects?.forEach((val) => {
+			val.Destroy();
+		});
+	}
+}
+
+export class LinkedCompoundEffect<
+	Params extends Partial<CompoundEffectGenericParams> = {},
+> extends CompoundEffect<Params> {
+	public readonly LinkedCharacter: Character;
+	public readonly Applied: AppliedCompoundEffect<Params>;
+
+	constructor(link_to: Character, ...params: GetParamType<Params, "ConstructorParams">) {
+		super(...params);
+		this.LinkedCharacter = link_to;
+
+		this.Applied = this.ApplyTo(link_to);
+
+		this.ApplyTo = () => {
+			log.w(tostring(getmetatable(this)) + " already linked!");
+			return this.Applied;
+		};
+		print(this);
 	}
 }
 
@@ -132,7 +157,7 @@ export class AppliedCompoundEffect<
 	public Ended = new Signal();
 	public Destroying = new Signal();
 
-	public readonly state = new StateMachine<[EffectState]>();
+	public readonly state = new StateMachine<[EffectState]>("Ready");
 	public readonly timer = new Timer();
 	public readonly id: number;
 
@@ -147,6 +172,8 @@ export class AppliedCompoundEffect<
 	public _main_thread: thread | undefined;
 	public _pause_thread: thread | undefined;
 	public _resume_thread: thread | undefined;
+
+	public RemoveOnEnd: boolean = true;
 
 	constructor(from: CompoundEffect<Params>, to: Character, duration: number, id?: number) {
 		super(...from.ConstructorParams);
@@ -202,6 +229,8 @@ export class AppliedCompoundEffect<
 		this.for_each_effect_included((effect) => {
 			effect.timer.ExtendDuration(to);
 		});
+
+		this.Duration = this.Duration + to;
 	}
 	/**
 	 * Set a new absolute duration for the effect and children.
@@ -211,6 +240,8 @@ export class AppliedCompoundEffect<
 		this.for_each_effect((effect) => {
 			effect.timer.SetLength(to);
 		});
+
+		this.Duration = to;
 	}
 
 	/**
@@ -304,6 +335,11 @@ export class AppliedCompoundEffect<
 		this.Paused.Fire();
 	}
 	/**
+	 *
+	 * Aborts the effect, it can be reused after abort, even if RemoveOnEnd == true
+	 */
+	public Abort(...params: GetParamType<Params, "OnAbort">) {}
+	/**
 	 * End the effect and clean up child effects.
 	 */
 	public End(): void {
@@ -321,7 +357,7 @@ export class AppliedCompoundEffect<
 		this.Carrier?._manipulate._remove_effect(this.id); // remove effect from carrier
 
 		this.for_each_effect_included((effect) => {
-			effect.state.SetState("Ended");
+			effect.state.SetState(this.RemoveOnEnd ? "Ended" : "Ready");
 		});
 
 		this._pause_thread ? coroutine.close(this._pause_thread) : undefined;
@@ -331,18 +367,22 @@ export class AppliedCompoundEffect<
 
 		this.Ended.Fire();
 
-		this._remove();
+		if (this.RemoveOnEnd) {
+			this.Remove();
+		}
 	}
 	/**
 	 * Destroy this instance and release resources.
 	 */
-	private _remove(): void {
+	public Remove(): void {
 		dlog.w("Destroying: " + this.Name + " On " + get_context_name());
 
 		if (this.state.GetState() !== "Ended") {
 			dlog.w("Cant remove ongoing effect!");
 			return;
 		}
+
+		this.End();
 
 		is_client_context() ? this.OnRemovingClient() : this.OnRemovingServer();
 

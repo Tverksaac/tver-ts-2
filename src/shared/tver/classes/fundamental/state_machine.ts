@@ -8,8 +8,13 @@ type StatesUnion<T extends string[]> = T[number];
  * Minimal state machine with previous-state tracking and signal emission.
  */
 export class StateMachine<States extends string[]> {
-	private _state?: StatesUnion<States>;
-	private _prev_state?: StatesUnion<States>;
+	private _state: StatesUnion<States>;
+	private _prev_state: StatesUnion<States>;
+
+	constructor(state: StatesUnion<States>) {
+		this._state = state;
+		this._prev_state = state;
+	}
 
 	public readonly StateChanged = new Signal<
 		(new_state: StatesUnion<States>, prev_state: StatesUnion<States> | undefined) => void

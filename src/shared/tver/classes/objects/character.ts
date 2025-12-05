@@ -12,7 +12,12 @@ import {
 } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
-import { AppliedCompoundEffect, Container_CompoundEffect } from "./compound_effect";
+import {
+	AppliedCompoundEffect,
+	CompoundEffect,
+	Container_CompoundEffect,
+	LinkedCompoundEffect,
+} from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
@@ -23,6 +28,8 @@ import { Players } from "@rbxts/services";
 import { observe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
 import { Janitor } from "@rbxts/janitor";
+import { getParentConstructor } from "@flamework/components/out/utility";
+import { Constructor } from "@flamework/core/out/utility";
 
 const LOG_KEY = "[CHARACTER]";
 const log = get_logger(LOG_KEY);
@@ -67,11 +74,13 @@ export class Character {
 	private readonly _custom_properties = new Map<string, _possible_custom_properties_type>();
 
 	private readonly _effects = [] as AppliedCompoundEffect[];
+	private readonly _stat_effects = [] as (StrictStatEffect<Humanoid> | CustomStatEffect)[];
 	private readonly _property_effects = [] as (
 		| StrictPropertyEffect<Humanoid, Affects<Humanoid>>
 		| CustomPropertyEffect
 	)[];
-	private readonly _stat_effects = [] as (StrictStatEffect<Humanoid> | CustomStatEffect)[];
+
+	private readonly _passives = [];
 
 	private readonly _effect_changed = new Signal();
 	private readonly janitor = new Janitor();
@@ -119,10 +128,10 @@ export class Character {
 
 	/**
 	 * Construct a `Character` from a Roblox `Instance` (expects a `Humanoid` child).
-	 * Yields on server until replication completes.
+	 * @yields on server until replication completes.
 	 */
 	constructor(from_instance: Instance) {
-		this.id = is_server_context() ? get_id() : 1;
+		this.id = is_server_context() ? get_id() : -1;
 		this.instance = from_instance;
 		this.humanoid =
 			this.instance.FindFirstChildWhichIsA("Humanoid") || elog(this.instance + " Do not have Humanoid as Child!");
@@ -228,7 +237,7 @@ export class Character {
 	 */
 	public AddStat(stat: _every_possible_stats_type): boolean {
 		if (this._stats.get(stat.name) || this._custom_stats.get(stat.name)) {
-			log.w(stat.name + " Stat" + " is already exists in " + this.instance.Name + "!");
+			log.w(stat.name + " Stat" + " already exists in " + this.instance.Name + ".");
 			return false;
 		}
 		if (tostring(getmetatable(stat)) === "ConnectedStat") {
@@ -286,7 +295,7 @@ export class Character {
 	}
 
 	/**
-	 * Server-Context
+	 * @Server
 	 *
 	 * Non-blocking replication readiness hook. If already ready, callback is called deferred.
 	 */
@@ -299,8 +308,8 @@ export class Character {
 	}
 
 	/**
-	 * Client-Context
-	 * Yields
+	 * @Client
+	 * @yields
 	 *
 	 * Will yield until effect with provided ID added to character. Use-cases only on client, because replication not instant
 	 */
@@ -325,8 +334,6 @@ export class Character {
 
 	// @internal //
 	//STATUS EFFECTS
-
-	// !! Dont use directly (internal) !! ---
 	private _compound_effect_only_apply_effect(applied_effect: AppliedCompoundEffect) {
 		this._effects.push(applied_effect);
 		this.EffectApplied.Fire(applied_effect);
@@ -354,7 +361,6 @@ export class Character {
 		});
 		return effect;
 	}
-	// ^^^ Dont use directly (internal) ^^^
 
 	/**
 	 * Subscribe to all signals that may affect effects, and recompute on change.
@@ -574,7 +580,7 @@ export class Character {
 
 	//Should be called only on client
 	/**
-	 * Client-Context
+	 * @Client
 	 *
 	 * Client-only to mirror a compound effect by name, returns disposer.
 	 */
@@ -585,20 +591,28 @@ export class Character {
 			wthrow("Cant call Replication on Server!");
 		}
 
-		const effect = Container_CompoundEffect.GetFromName(name);
+		const effect = Container_CompoundEffect.GetFromName(name) as
+			| Constructor<CompoundEffect>
+			| Constructor<LinkedCompoundEffect>
+			| undefined;
 		if (!effect) {
 			wthrow(
-				`Cannot find CompoundEffect with name "${name}". Possible reasons: \n Typescript only: No applied decorator to desired class. Apply it by using @Decorator_CompoundEffect \n Maybe "${name}" was not registred on client`,
+				`Cannot find CompoundEffect with name "${name}". Possible reasons: \n Typescript only: No applied decorator to desired class. Apply it by using @Decorator_CompoundEffect \n "${name}" May not be registred on client`,
 			);
 			return;
 		}
 
-		const applied_effect = new effect(...(info.constructor_params as never[])).ApplyTo(this, -1, info.id);
+		const isLinked = tostring(getParentConstructor(effect)) === "LinkedCompoundEffect";
+		const args = isLinked ? [this, ...info.constructor_params] : [...info.constructor_params];
+		const applied_effect = new effect(...(args as never[])) as CompoundEffect | LinkedCompoundEffect;
+		!isLinked ? applied_effect.ApplyTo(this, -1, info.id) : undefined;
 		dlog.l("Replicated: " + effect);
 
 		//On End on Server
 		return () => {
-			applied_effect?.End();
+			isLinked
+				? (applied_effect as LinkedCompoundEffect).Applied.Remove()
+				: (applied_effect as AppliedCompoundEffect).Remove();
 		};
 	}
 

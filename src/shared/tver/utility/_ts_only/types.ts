@@ -25,11 +25,17 @@ export type CompoundEffectGenericParams = {
 	OnStart: unknown[];
 	OnResume: unknown[];
 	OnPause: unknown[];
+	OnAbort: unknown[];
 };
 export type SkillGenericParams = {
 	ConstructorParams: unknown[];
 	OnStart: unknown[];
 	OnAbort: unknown[];
+	OnRemove: unknown[];
+};
+export type PassiveGenericParams = {
+	ConstructorParams: unknown[];
+	OnApply: unknown[];
 	OnRemove: unknown[];
 };
 export type GetParamType<T, K extends keyof CompoundEffectGenericParams | keyof SkillGenericParams> = T extends {

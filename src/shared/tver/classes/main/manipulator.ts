@@ -8,11 +8,14 @@ const LOG_KEY = "[MANIPULATOR]";
 const log = get_logger(LOG_KEY);
 const dlog = get_logger(LOG_KEY, true);
 
+/**
+ * @Client
+ */
 function sync_compound_effect(info: CompoundEffectInfo): void {
 	if (info.state === "Ready") return;
 	const warn_msg = "Failed to sync compound effect with id: " + info.id;
 
-	const char = Character.GetCharacterFromId(1); // Local id = 1
+	const char = Character.GetCharacterFromId(-1); // Local id = -1
 	if (!char) {
 		log.w(warn_msg + " Client-Sided Character was not found");
 	}
@@ -20,7 +23,7 @@ function sync_compound_effect(info: CompoundEffectInfo): void {
 		OnStart: unknown[];
 		OnResume: unknown[];
 		OnPause: unknown[];
-	}>; // Client-sided
+	}>;
 
 	if (!effect) {
 		log.w(warn_msg + " Failed to find from id.");
@@ -41,10 +44,16 @@ function sync_compound_effect(info: CompoundEffectInfo): void {
 }
 
 export class Manipulator {
+	/**
+	 * @Client
+	 */
 	public client_initialize(): boolean {
 		ClientEvents.Manipulate.sync_compound_effect.connect(sync_compound_effect);
 		return true;
 	}
+	/**
+	 * @Server
+	 */
 	public server_initialize(): boolean {
 		return true;
 	}

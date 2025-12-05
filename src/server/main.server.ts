@@ -1,6 +1,6 @@
-import { Players } from "@rbxts/services";
+import { Players, Workspace } from "@rbxts/services";
 import { Character, CreateServer } from "shared/tver/exports";
-import { Stun } from "shared/tver/test/compound_effects_classes";
+import { Stun, Test } from "shared/tver/test/compound_effects_classes";
 const server = CreateServer();
 server.Start();
 task.wait(2);
@@ -9,11 +9,14 @@ const plr = Players.GetPlayers()[0];
 if (plr) {
 	const char = plr.Character;
 	const tver_char = char ? new Character(char) : undefined;
+	const test_char = new Character(Workspace.FindFirstChild("Rig") as Model);
+
 	if (tver_char !== undefined) {
-		const applied = stun.ApplyTo(tver_char, 5).Start();
-		task.wait(3);
-		applied.Pause();
-		task.wait(1);
-		applied.Resume();
+		const test = new Test(tver_char);
+		const test_applied = test.Applied;
+
+		test_applied.SetDuration(5);
+		print(test_applied.timer.GetLength());
+		test_applied.Start();
 	}
 }
