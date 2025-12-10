@@ -67,20 +67,20 @@ export abstract class CompoundEffect<Params extends Partial<CompoundEffectGeneri
 
 	public readonly Stackable = false;
 
-	public OnApplyingServer(this: CompoundEffect<Params>, applied: AppliedCompoundEffect<Params>) {}
-	public OnApplyingClient(this: CompoundEffect<Params>, applied: AppliedCompoundEffect<Params>) {}
+	public OnApplyingServer(applied: AppliedCompoundEffect<Params>) {}
+	public OnApplyingClient(applied: AppliedCompoundEffect<Params>) {}
 
-	public OnStartServer(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnStart">) {}
-	public OnStartClient(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnStart">) {}
+	public OnStartServer(...params: GetParamType<Params, "OnStart">) {}
+	public OnStartClient(...params: GetParamType<Params, "OnStart">) {}
 
-	public OnResumeServer(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnResume">) {}
-	public OnResumeClient(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnResume">) {}
+	public OnResumeServer(...params: GetParamType<Params, "OnResume">) {}
+	public OnResumeClient(...params: GetParamType<Params, "OnResume">) {}
 
-	public OnPauseServer(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnPause">) {}
-	public OnPauseClient(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnPause">) {}
+	public OnPauseServer(...params: GetParamType<Params, "OnPause">) {}
+	public OnPauseClient(...params: GetParamType<Params, "OnPause">) {}
 
-	public OnAbortServer(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnAbort">) {}
-	public OnAbortClient(this: CompoundEffect<Params>, ...params: GetParamType<Params, "OnAbort">) {}
+	public OnAbortServer(...params: GetParamType<Params, "OnAbort">) {}
+	public OnAbortClient(...params: GetParamType<Params, "OnAbort">) {}
 
 	public OnEndServer() {}
 	public OnEndClient() {}
@@ -116,26 +116,6 @@ export abstract class CompoundEffect<Params extends Partial<CompoundEffectGeneri
 		this.PropertyEffects?.forEach((val) => {
 			val.Destroy();
 		});
-	}
-}
-
-export class LinkedCompoundEffect<
-	Params extends Partial<CompoundEffectGenericParams> = {},
-> extends CompoundEffect<Params> {
-	public readonly LinkedCharacter: Character;
-	public readonly Applied: AppliedCompoundEffect<Params>;
-
-	constructor(link_to: Character, ...params: GetParamType<Params, "ConstructorParams">) {
-		super(...params);
-		this.LinkedCharacter = link_to;
-
-		this.Applied = this.ApplyTo(link_to);
-
-		this.ApplyTo = () => {
-			log.w(tostring(getmetatable(this)) + " already linked!");
-			return this.Applied;
-		};
-		print(this);
 	}
 }
 

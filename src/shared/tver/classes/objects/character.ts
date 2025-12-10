@@ -12,12 +12,7 @@ import {
 } from "shared/tver/utility/utils";
 import { ConnectedStat, SeparatedStat } from "../fundamental/stat";
 import { ConnectedProperty, SeparatedProperty } from "../fundamental/property";
-import {
-	AppliedCompoundEffect,
-	CompoundEffect,
-	Container_CompoundEffect,
-	LinkedCompoundEffect,
-} from "./compound_effect";
+import { AppliedCompoundEffect, CompoundEffect, Container_CompoundEffect } from "./compound_effect";
 import { CustomStatEffect, StrictStatEffect } from "../core/stat_effect";
 import { CustomPropertyEffect, StrictPropertyEffect } from "../core/property_effect";
 import { Affects } from "shared/tver/utility/_ts_only/types";
@@ -591,10 +586,7 @@ export class Character {
 			wthrow("Cant call Replication on Server!");
 		}
 
-		const effect = Container_CompoundEffect.GetFromName(name) as
-			| Constructor<CompoundEffect>
-			| Constructor<LinkedCompoundEffect>
-			| undefined;
+		const effect = Container_CompoundEffect.GetFromName(name);
 		if (!effect) {
 			wthrow(
 				`Cannot find CompoundEffect with name "${name}". Possible reasons: \n Typescript only: No applied decorator to desired class. Apply it by using @Decorator_CompoundEffect \n "${name}" May not be registred on client`,
@@ -602,17 +594,13 @@ export class Character {
 			return;
 		}
 
-		const isLinked = tostring(getParentConstructor(effect)) === "LinkedCompoundEffect";
-		const args = isLinked ? [this, ...info.constructor_params] : [...info.constructor_params];
-		const applied_effect = new effect(...(args as never[])) as CompoundEffect | LinkedCompoundEffect;
-		!isLinked ? applied_effect.ApplyTo(this, -1, info.id) : undefined;
+		const args = [...info.constructor_params];
+		const applied_effect = new effect(...(args as never[])).ApplyTo(this, -1, info.id);
 		dlog.l("Replicated: " + effect);
 
 		//On End on Server
 		return () => {
-			isLinked
-				? (applied_effect as LinkedCompoundEffect).Applied.Remove()
-				: (applied_effect as AppliedCompoundEffect).Remove();
+			applied_effect.Remove();
 		};
 	}
 

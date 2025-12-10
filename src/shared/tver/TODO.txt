@@ -6,9 +6,6 @@ Passive class
 Skill class
 Damage class
 
-Как будут работать скиллы и пассивки ааа
+Сначала CompoundEffect реплицируется -> OnStartSrver() -> OnStartClient()
 
-может быть будут:
- CompoundEffect и LinkedCompoundEffect
- CompoundEffect - Накладывается на нескольких
- LinkedCompoundEffect - Привязан к одному
+Как будут работать скиллы и пассивки ааа

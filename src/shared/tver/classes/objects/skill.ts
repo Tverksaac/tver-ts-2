@@ -38,18 +38,26 @@ export class Container_Skill {
 	}
 }
 
+/**
+ * Unique for every character
+ */
 export abstract class Skill<Params extends Partial<SkillGenericParams> = {}> {
 	public readonly Name = tostring(getmetatable(this));
-
 	public readonly ConstructorParams: GetParamType<Params, "ConstructorParams">;
+	public readonly Carrier: Character;
 
-	constructor(...params: GetParamType<Params, "ConstructorParams">) {
+	public readonly state = new StateMachine<[SkillState]>("Ready");
+	public readonly janitor = new Janitor();
+
+	constructor(Carrier: Character, ...params: GetParamType<Params, "ConstructorParams">);
+	constructor(Carrier: Character, ...params: GetParamType<Params, "ConstructorParams">) {
+		this.Carrier = Carrier;
 		this.ConstructorParams = params;
 	}
 
 	//@override
-	public OnRecieveServer(recieved_skill: AppliedSkill<Params>) {}
-	public OnRecieveClient(recieved_skill: AppliedSkill<Params>) {}
+	public OnRecieveServer() {}
+	public OnRecieveClient() {}
 	public OnStartServer(...params: GetParamType<Params, "OnStart">) {}
 	public OnStartClient(...params: GetParamType<Params, "OnStart">) {}
 	public OnAbortServer(...params: GetParamType<Params, "OnAbort">) {}
@@ -58,40 +66,13 @@ export abstract class Skill<Params extends Partial<SkillGenericParams> = {}> {
 	public OnRemoveClient(...params: GetParamType<Params, "OnRemove">) {}
 	public OnEndServer() {}
 	public OnEndClient() {}
-	public GiveTo(to: Character): AppliedSkill {
-		return new AppliedSkill(this, to);
-	}
-}
-export class AppliedSkill<Params extends Partial<SkillGenericParams> = {}> extends Skill<Params> {
-	public readonly InheritsFrom: Skill<Params>;
-	public readonly Carrier: Character;
 
-	public readonly state = new StateMachine<[SkillState]>();
-	public readonly janitor = new Janitor();
+	public Start() {}
+	public Abort() {}
+	public End() {}
+	public Remove() {}
 
-	private readonly cooldown: number = 0;
-	private readonly cooldown_timer = new Timer();
-
-	constructor(from: Skill<Params>, to: Character) {
-		super(...from.ConstructorParams);
-
-		this.InheritsFrom = from;
-		this.Carrier = to;
-
-		this.GiveTo = () => {
-			log.w("Can't give an already Applied Skill!");
-			return this;
-		};
-	}
-
-	public Start(...params: GetParamType<Params, "OnStart">): void {
-		if (this.state.GetState() === "Ongoing") {
-			log.w("Can't start an ongoing effect");
-		}
-	}
-	public Abort(...params: GetParamType<Params, "OnAbort">): void {}
-	public End(): void {}
-	public Remove(): void {}
+	public Destroy(): void {}
 
 	private init() {}
 }
