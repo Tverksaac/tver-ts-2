@@ -1,5 +1,5 @@
-import { Players, Workspace } from "@rbxts/services";
-import { Character, CreateServer } from "shared/tver/exports";
+import { Players } from "@rbxts/services";
+import { Character, CreateServer } from "shared/tver";
 import { Stun } from "shared/tver/test/compound_effects_classes";
 const server = CreateServer();
 server.Start();

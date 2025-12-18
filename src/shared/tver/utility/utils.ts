@@ -1,6 +1,7 @@
 import { Players, RunService } from "@rbxts/services";
-import { Client, Server } from "../exports";
-import { __DEBUG__ } from "..";
+import { Client } from "../classes/main/client";
+import { Server } from "../classes/main/server";
+import { __DEBUG__ } from "../config";
 
 /** Convert a Map's values to an array. */
 export function map_to_array<K extends defined, V extends defined>(map: Map<K, V>): V[] {

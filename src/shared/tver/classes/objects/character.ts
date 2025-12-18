@@ -23,8 +23,6 @@ import { Players } from "@rbxts/services";
 import { observe } from "@rbxts/charm";
 import { client_atom } from "shared/tver/utility/shared";
 import { Janitor } from "@rbxts/janitor";
-import { getParentConstructor } from "@flamework/components/out/utility";
-import { Constructor } from "@flamework/core/out/utility";
 
 const LOG_KEY = "[CHARACTER]";
 const log = get_logger(LOG_KEY);
