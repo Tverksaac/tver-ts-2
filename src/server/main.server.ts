@@ -6,4 +6,6 @@ const plr = Players.GetPlayers()[0];
 if (plr) {
 	const char = plr.Character;
 	const tver_char = (char ? new Character(char) : undefined) as Character;
+	tver_char.GetPort("StatManager").AddStat("");
+	print(tver_char.GetPort("StatManager"));
 }

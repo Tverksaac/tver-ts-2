@@ -39,7 +39,19 @@
 		"tver-ts-2:out/shared/tver/test/compound_effects_classes@AppliedStun": "shared/tver/test/compound_effects_classes@AppliedStun",
 		"tver-ts-2:out/shared/tver/classes/objects/pasive@Passive": "shared/tver/classes/objects/pasive@Passive",
 		"tver-ts-2:out/shared/tver/classes/objects/compound_effect@LinkedCompoundEffect": "shared/tver/classes/objects/compound_effect@LinkedCompoundEffect",
-		"tver-ts-2:out/shared/tver/test/compound_effects_classes@Test": "shared/tver/test/compound_effects_classes@Test"
+		"tver-ts-2:out/shared/tver/test/compound_effects_classes@Test": "shared/tver/test/compound_effects_classes@Test",
+		"tver-ts-2:out/shared/ctver/core/server@Server": "shared/ctver/core/server@Server",
+		"tver-ts-2:out/shared/ctver/core/client@Client": "shared/ctver/core/client@Client",
+		"tver-ts-2:out/shared/ctver/core/component@Component": "shared/ctver/core/component@Component",
+		"tver-ts-2:out/shared/ctver/core/port@Port": "shared/ctver/core/port@Port",
+		"tver-ts-2:out/shared/ctver/base/components/stat@Stat": "shared/ctver/base/components/stat@Stat",
+		"tver-ts-2:out/shared/ctver/base/prebuilt/health@HealthStat": "shared/ctver/base/prebuilt/health@HealthStat",
+		"tver-ts-2:out/shared/ctver/base/ports/stats_manager@StatsManager": "shared/ctver/base/ports/stats_manager@StatsManager",
+		"tver-ts-2:out/shared/ctver/base/components/compound_effect@CompoundEffect": "shared/ctver/base/components/compound_effect@CompoundEffect",
+		"tver-ts-2:out/shared/ctver/base/ports/compound_effect_manager@CompoundEffectManager": "shared/ctver/base/ports/compound_effect_manager@CompoundEffectManager",
+		"tver-ts-2:out/shared/ctver/core/character@Character": "shared/ctver/core/character@Character",
+		"tver-ts-2:out/shared/ctver/network/networking@GlobalFunctions": "shared/ctver/network/networking@GlobalFunctions",
+		"tver-ts-2:out/shared/ctver/network/networking@GlobalEvents": "shared/ctver/network/networking@GlobalEvents"
 	},
 	"metadata": {}
 }

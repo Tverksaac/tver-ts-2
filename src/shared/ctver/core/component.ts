@@ -9,12 +9,12 @@ export enum UpdateRateEnum {
 export abstract class Component {
 	public Id: number = get_id();
 
-	public Port: Port<Component[]>;
+	public readonly Port: Port<Component[]>;
 
 	abstract Key: string;
 	abstract UpdateRate: UpdateRateEnum;
 
-	constructor(ConnectToPort: Port<Component[]>, _key: symbol) {
+	constructor(ConnectToPort: Port<Component[]>) {
 		this.Port = ConnectToPort;
 	}
 

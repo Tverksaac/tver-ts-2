@@ -25,7 +25,16 @@ export abstract class Port<AttachableComponents extends Component[]> {
 		this.Host = NewHost;
 	}
 
-	public AttachComponent<CMP extends AttachableComponents[number]>(cmp: CMP): void {
+	protected CreateComponent<C extends AttachableComponents[number]>(
+		ComponentClass: new (port: this, ...args: unknown[]) => C,
+		...args: unknown[]
+	): C {
+		const cmp = new ComponentClass(this, ...args);
+		this.AttachComponent(cmp);
+		return cmp;
+	}
+
+	private AttachComponent<CMP extends AttachableComponents[number]>(cmp: CMP): void {
 		if (!this.AttachableComponentsKeys.includes(cmp.Key)) {
 			log.w(
 				`Can not attach "${cmp.Key}" to the port which can only take "${array_to_string(this.AttachableComponentsKeys)}"`,
@@ -35,6 +44,7 @@ export abstract class Port<AttachableComponents extends Component[]> {
 
 		if (cmp.AttachCondition(this) && this.AttachCondition(cmp)) {
 			this._attached_components.push(cmp);
+			cmp.OnAttach();
 			this.OnComponentAttached.Fire(cmp);
 		} else {
 			dlog.w(`${cmp.Key}_${cmp.Id} was not attached, because conditions was not met`);
@@ -42,8 +52,9 @@ export abstract class Port<AttachableComponents extends Component[]> {
 	}
 	public DetachComponent(id: number): void {
 		this._attached_components.forEach((cmp, idx) => {
-			if (cmp.Id == id) {
+			if (cmp.Id === id) {
 				this.OnComponentDetaching.Fire(cmp);
+				cmp.OnDetach();
 				this._attached_components.remove(idx);
 				return;
 			}
@@ -55,12 +66,13 @@ export abstract class Port<AttachableComponents extends Component[]> {
 	}
 
 	public GetComponent(key: string): AttachableComponents[number] | undefined {
+		let to_return;
 		this._attached_components.forEach((cmp) => {
-			if (cmp.Key == key) {
-				return cmp;
+			if (cmp.Key === key) {
+				to_return = cmp;
 			}
 		});
-		return undefined;
+		return to_return;
 	}
 
 	/**
