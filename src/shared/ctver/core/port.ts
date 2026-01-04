@@ -25,16 +25,16 @@ export abstract class Port<AttachableComponents extends Component[]> {
 		this.Host = NewHost;
 	}
 
-	protected CreateComponent<C extends AttachableComponents[number]>(
+	protected AttachComponent<C extends AttachableComponents[number]>(
 		ComponentClass: new (port: this, ...args: unknown[]) => C,
 		...args: unknown[]
 	): C {
 		const cmp = new ComponentClass(this, ...args);
-		this.AttachComponent(cmp);
+		this._attach_component(cmp);
 		return cmp;
 	}
 
-	private AttachComponent<CMP extends AttachableComponents[number]>(cmp: CMP): void {
+	private _attach_component<CMP extends AttachableComponents[number]>(cmp: CMP): void {
 		if (!this.AttachableComponentsKeys.includes(cmp.Key)) {
 			log.w(
 				`Can not attach "${cmp.Key}" to the port which can only take "${array_to_string(this.AttachableComponentsKeys)}"`,
@@ -69,6 +69,15 @@ export abstract class Port<AttachableComponents extends Component[]> {
 		let to_return;
 		this._attached_components.forEach((cmp) => {
 			if (cmp.Key === key) {
+				to_return = cmp;
+			}
+		});
+		return to_return;
+	}
+	public GetComponentByUniqueKey(key: string): AttachableComponents[number] | undefined {
+		let to_return;
+		this._attached_components.forEach((cmp) => {
+			if (cmp.UniqueKey === key) {
 				to_return = cmp;
 			}
 		});

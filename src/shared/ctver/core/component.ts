@@ -12,6 +12,7 @@ export abstract class Component {
 	public readonly Port: Port<Component[]>;
 
 	abstract Key: string;
+	abstract UniqueKey: string;
 	abstract UpdateRate: UpdateRateEnum;
 
 	constructor(ConnectToPort: Port<Component[]>) {

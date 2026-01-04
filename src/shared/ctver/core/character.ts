@@ -6,7 +6,6 @@ import { __CONFIG__ } from "../config";
 import Signal from "@rbxts/signal";
 import { StatsManager } from "../base/ports/stats_manager";
 import { CompoundEffectManager } from "../base/ports/compound_effect_manager";
-import { BasicPorts } from "../utility/_ts_only/types";
 
 const LOG_KEY = "CHARACTER";
 
@@ -72,9 +71,7 @@ export class Character {
 	public GetPort<PredictedPort extends Port<Component[]>>(key: string): PredictedPort | undefined {
 		let to_return;
 		this._connected_ports.forEach((port) => {
-			print(port);
 			if (port.Key === key) {
-				print(port);
 				to_return = port;
 				return;
 			}

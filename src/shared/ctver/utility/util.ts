@@ -18,7 +18,7 @@ export function map_to_array<K extends defined, V extends defined>(map: Map<K, V
 export function array_to_string(array: defined[], separator: string = ", "): string {
 	let s = "";
 	array.forEach((val, index) => {
-		s = s + tostring(val) + (index === array.size() ? "" : separator);
+		s = s + tostring(val) + (index + 1 === array.size() ? "" : separator);
 	});
 	return s;
 }
