@@ -51,7 +51,11 @@
 		"tver-ts-2:out/shared/ctver/base/ports/compound_effect_manager@CompoundEffectManager": "shared/ctver/base/ports/compound_effect_manager@CompoundEffectManager",
 		"tver-ts-2:out/shared/ctver/core/character@Character": "shared/ctver/core/character@Character",
 		"tver-ts-2:out/shared/ctver/network/networking@GlobalFunctions": "shared/ctver/network/networking@GlobalFunctions",
-		"tver-ts-2:out/shared/ctver/network/networking@GlobalEvents": "shared/ctver/network/networking@GlobalEvents"
+		"tver-ts-2:out/shared/ctver/network/networking@GlobalEvents": "shared/ctver/network/networking@GlobalEvents",
+		"tver-ts-2:out/shared/ctver/fundamental/property@SeparatedProperty": "shared/ctver/fundamental/property@SeparatedProperty",
+		"tver-ts-2:out/shared/ctver/fundamental/property@ConnectedProperty": "shared/ctver/fundamental/property@ConnectedProperty",
+		"tver-ts-2:out/shared/ctver/fundamental/stat@SeparatedStat": "shared/ctver/fundamental/stat@SeparatedStat",
+		"tver-ts-2:out/shared/ctver/fundamental/stat@ConnectedStat": "shared/ctver/fundamental/stat@ConnectedStat"
 	},
 	"metadata": {}
 }

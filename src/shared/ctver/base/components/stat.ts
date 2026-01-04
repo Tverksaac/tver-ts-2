@@ -1,19 +1,19 @@
-import { Component, UpdateRateEnum } from "../../core/component";
+import { ConnectedStat, SeparatedStat } from "shared/ctver/fundamental/stat";
+import { Component } from "../../core/component";
+
+type StatReturns = {};
 
 export abstract class Stat extends Component {
 	Key: string = "Stat";
-	UpdateRate: UpdateRateEnum = UpdateRateEnum.Custom;
 
-	abstract Affects: string;
+	abstract ConnectedStat:
+		| ConnectedStat<Humanoid, ExtractKeys<WritableInstanceProperties<Humanoid>, number>>
+		| SeparatedStat;
 
 	OnAttach(): void {}
 	OnDetach(): void {}
 	Update(): void {}
-	GetState(): {
-		value: number;
-	} {
-		return {
-			value: 52,
-		};
+	GetState(): StatReturns {
+		return {};
 	}
 }

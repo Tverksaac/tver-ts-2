@@ -1,11 +1,6 @@
 import { get_id } from "../utility/util";
 import { Port } from "./port";
 
-export enum UpdateRateEnum {
-	Tick,
-	Custom,
-}
-
 export abstract class Component {
 	public Id: number = get_id();
 
@@ -13,7 +8,6 @@ export abstract class Component {
 
 	abstract Key: string;
 	abstract UniqueKey: string;
-	abstract UpdateRate: UpdateRateEnum;
 
 	constructor(ConnectToPort: Port<Component[]>) {
 		this.Port = ConnectToPort;
