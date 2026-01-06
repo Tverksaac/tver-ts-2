@@ -4,7 +4,7 @@ export abstract class CompoundEffect extends Component {
 	Key: string = "CompoundEffect";
 
 	OnAttach(): void {
-		print("atached");
+		print("attached");
 	}
 	OnDetach(): void {
 		print("detached");

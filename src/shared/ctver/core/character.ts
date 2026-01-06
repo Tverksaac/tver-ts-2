@@ -17,17 +17,17 @@ const dlog = get_logger(LOG_KEY, true);
  */
 
 export class Character {
-	public Id: number = get_id();
+	public readonly Id: number = get_id();
 
-	public Model: Model;
-	public Humanoid: Humanoid;
+	public readonly Model: Model;
+	public readonly Humanoid: Humanoid;
 
-	private _connected_ports: Port<Component[]>[] = [];
+	private readonly _connected_ports: Port<Component[]>[] = [];
 
-	private _janitor: Janitor = new Janitor();
+	private readonly _janitor: Janitor = new Janitor();
 
-	public PortConnected = new Signal<(port: Port<Component[]>) => void>();
-	public PortDisconnecting = new Signal<(port: Port<Component[]>) => void>();
+	public readonly PortConnected = new Signal<(port: Port<Component[]>) => void>();
+	public readonly PortDisconnecting = new Signal<(port: Port<Component[]>) => void>();
 
 	constructor(CharacterModel: Model) {
 		const hum = CharacterModel.FindFirstChildWhichIsA("Humanoid");

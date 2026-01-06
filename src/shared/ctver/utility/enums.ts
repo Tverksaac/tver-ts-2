@@ -3,3 +3,8 @@ export enum ReplciationRate {
 	EverySecond,
 	OnChanged,
 }
+export enum UpdateRate {
+	Heartbeat,
+	EveryXSeconds,
+	Manual,
+}

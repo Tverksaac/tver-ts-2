@@ -1,21 +1,19 @@
 import { Component } from "../../core/component";
-import { Replicable } from "shared/ctver/utility/_ts_only/interfaces";
-import { ReplciationRate } from "shared/ctver/utility/enums";
 
 type StatReturns = {};
 
-export abstract class Stat extends Component implements Replicable {
+export abstract class Stat extends Component {
 	Key: string = "Stat";
 
-	ReplicationRate: ReplciationRate = ReplciationRate.Heartbeat;
-	GetReplicationState: unknown;
+	abstract PropertyToAffect: ExtractKeys<WritableInstanceProperties<Humanoid>, number>;
 
-	OnAttach(): void {
-		this.Port.Host.GetPort("StatManager").GetStat("Health")?.GetState();
+	public OnAttach(): void {}
+	public OnDetach(): void {}
+	public Update(): void {
+		this.UpdateCallback();
 	}
-	OnDetach(): void {}
-	Update(): void {}
-	GetState(): StatReturns {
+	protected UpdateCallback(): void {}
+	public GetState(): StatReturns {
 		return {};
 	}
 }

@@ -9,17 +9,17 @@ const log = get_logger(LOG_KEY, false);
 const dlog = get_logger(LOG_KEY, true);
 
 export abstract class Port<AttachableComponents extends Component[]> {
-	public Id: number = get_id();
-	public Host: Character;
+	public readonly Id: number = get_id();
+	public readonly Host: Character;
 
-	abstract Key: string;
+	abstract readonly Key: string;
 
-	abstract AttachableComponentsKeys: string[];
+	abstract readonly AttachableComponentsKeys: string[];
 
-	private _attached_components: AttachableComponents[number][] = [];
+	private readonly _attached_components: AttachableComponents[number][] = [];
 
-	public OnComponentAttached = new Signal<(ComponentAttached: AttachableComponents[number]) => void>();
-	public OnComponentDetaching = new Signal<(ComponentDetached: AttachableComponents[number]) => void>();
+	public readonly OnComponentAttached = new Signal<(ComponentAttached: AttachableComponents[number]) => void>();
+	public readonly OnComponentDetaching = new Signal<(ComponentDetached: AttachableComponents[number]) => void>();
 
 	constructor(NewHost: Character) {
 		this.Host = NewHost;
