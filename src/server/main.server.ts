@@ -7,6 +7,7 @@ const plr = Players.GetPlayers()[0];
 if (plr) {
 	const char = plr.Character;
 	const tver_char = (char ? new Character(char) : undefined) as Character;
-	tver_char.GetPort("StatManager").AddStat(HealthStat);
-	print(tver_char.GetPort("StatManager"));
+	const sm = tver_char.GetPort("StatManager");
+	sm.GetStat("Health");
+	print(sm);
 }

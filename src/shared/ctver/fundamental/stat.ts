@@ -2,7 +2,7 @@
 
 import { Janitor } from "@rbxts/janitor";
 import { SeparatedProperty } from "./property";
-import { get_context_name, get_logger, is_client_context } from "shared/tver/utility/utils";
+import { get_context_name, get_logger, is_client_context } from "../utility/util";
 
 const LOG_KEY = "[STAT]";
 const CONNECTED_TAG = "[TVER]" + LOG_KEY;

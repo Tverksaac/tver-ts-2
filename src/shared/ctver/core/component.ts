@@ -13,9 +13,9 @@ export abstract class Component {
 		this.Port = ConnectToPort;
 	}
 
-	abstract OnAttach(): void;
-	abstract OnDetach(): void;
-	abstract Update(): void;
+	public abstract OnAttach(): void;
+	public abstract OnDetach(): void;
+	public abstract Update(): void;
 
 	abstract GetState(): unknown;
 

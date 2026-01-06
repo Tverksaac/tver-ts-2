@@ -1,7 +1,5 @@
 import { RunService } from "@rbxts/services";
 import { __CONFIG__ } from "../config";
-import { Server } from "../core/server";
-import { Client } from "../core/client";
 
 const __DEBUG__ = __CONFIG__.DEBUG_CONFIG.__DEBUG__;
 
@@ -40,15 +38,6 @@ let id = 0;
 export function get_id(): number {
 	id++;
 	return id;
-}
-
-// Node getter
-let node: Server | Client;
-export function set_node(new_node: Server | Client): void {
-	node = new_node;
-}
-export function get_node(): Server | Client | undefined {
-	return node;
 }
 
 //Output

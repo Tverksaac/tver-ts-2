@@ -1,16 +1,18 @@
-import { ConnectedStat, SeparatedStat } from "shared/ctver/fundamental/stat";
 import { Component } from "../../core/component";
+import { Replicable } from "shared/ctver/utility/_ts_only/interfaces";
+import { ReplciationRate } from "shared/ctver/utility/enums";
 
 type StatReturns = {};
 
-export abstract class Stat extends Component {
+export abstract class Stat extends Component implements Replicable {
 	Key: string = "Stat";
 
-	abstract ConnectedStat:
-		| ConnectedStat<Humanoid, ExtractKeys<WritableInstanceProperties<Humanoid>, number>>
-		| SeparatedStat;
+	ReplicationRate: ReplciationRate = ReplciationRate.Heartbeat;
+	GetReplicationState: unknown;
 
-	OnAttach(): void {}
+	OnAttach(): void {
+		this.Port.Host.GetPort("StatManager").GetStat("Health")?.GetState();
+	}
 	OnDetach(): void {}
 	Update(): void {}
 	GetState(): StatReturns {

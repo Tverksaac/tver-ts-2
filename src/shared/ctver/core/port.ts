@@ -30,6 +30,12 @@ export abstract class Port<AttachableComponents extends Component[]> {
 		...args: unknown[]
 	): C {
 		const cmp = new ComponentClass(this, ...args);
+		const existing_cmp = this.GetComponentByUniqueKey(cmp.UniqueKey);
+		if (existing_cmp) {
+			log.w(`Component with UniqueKey ${cmp.UniqueKey} already exists in ${this.Key}_${this.Id}_${this.Host}`);
+			cmp.Destroy();
+			return existing_cmp as C;
+		}
 		this._attach_component(cmp);
 		return cmp;
 	}
@@ -65,16 +71,16 @@ export abstract class Port<AttachableComponents extends Component[]> {
 		return this._attached_components;
 	}
 
-	public GetComponent(key: string): AttachableComponents[number] | undefined {
-		let to_return;
+	protected GetAllComponentsWithKey(key: string): AttachableComponents[number][] {
+		let to_return: AttachableComponents[number][] = [];
 		this._attached_components.forEach((cmp) => {
 			if (cmp.Key === key) {
-				to_return = cmp;
+				to_return.push(cmp);
 			}
 		});
 		return to_return;
 	}
-	public GetComponentByUniqueKey(key: string): AttachableComponents[number] | undefined {
+	protected GetComponentByUniqueKey(key: string): AttachableComponents[number] | undefined {
 		let to_return;
 		this._attached_components.forEach((cmp) => {
 			if (cmp.UniqueKey === key) {
@@ -87,7 +93,7 @@ export abstract class Port<AttachableComponents extends Component[]> {
 	/**
 	 * @override
 	 */
-	public AttachCondition(cmp: Component): boolean {
+	protected AttachCondition(cmp: Component): boolean {
 		return true;
 	}
 
