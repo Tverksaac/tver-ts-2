@@ -1,5 +1,6 @@
 import { UpdateRate } from "../utility/enums";
 import { get_id } from "../utility/util";
+import { Character } from "./character";
 import { Port } from "./port";
 
 export abstract class Component {
@@ -19,18 +20,22 @@ export abstract class Component {
 
 	public abstract OnAttach(): void;
 	public abstract OnDetach(): void;
-	/**
-	 * @override
-	 */
+
 	public Update(): void {
 		this.UpdateCallback();
 	}
+	/**
+	 * @override
+	 */
 	protected abstract UpdateCallback(): void;
 
 	abstract GetState(): unknown;
 
 	public AttachCondition(attaching_to: Port<Component[]>): boolean {
 		return true;
+	}
+	public Host(): Character {
+		return this.Port.Host;
 	}
 
 	public Destroy(): void {}
