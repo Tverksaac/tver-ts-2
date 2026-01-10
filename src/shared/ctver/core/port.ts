@@ -2,6 +2,7 @@ import Signal from "@rbxts/signal";
 import { array_to_string, get_id, get_logger, loggers } from "../utility/util";
 import { Component } from "./component";
 import { Character } from "./character";
+import { SPECIAL_KEYS } from "../utility/shared";
 
 const LOG_KEY = "PORT";
 
@@ -48,9 +49,10 @@ export abstract class Port<AttachableComponents extends Component[]> {
 			return;
 		}
 
-		if (cmp.AttachCondition(this) && this.AttachCondition(cmp)) {
+		if (cmp.CanBeAttached() && this.AttachCondition(cmp)) {
 			this._attached_components.push(cmp);
-			cmp.OnAttach();
+			cmp.OnConstruct();
+			cmp.CallOnAttachCallbackWithKey(SPECIAL_KEYS.CALL_ALL_CALLBACKS);
 			this.OnComponentAttached.Fire(cmp);
 		} else {
 			dlog.w(`${cmp.Key}_${cmp.Id} was not attached, because conditions was not met`);
@@ -60,7 +62,7 @@ export abstract class Port<AttachableComponents extends Component[]> {
 		this._attached_components.forEach((cmp, idx) => {
 			if (cmp.Id === id) {
 				this.OnComponentDetaching.Fire(cmp);
-				cmp.OnDetach();
+				cmp.CallOnDetachCallbackWithKey(SPECIAL_KEYS.CALL_ALL_CALLBACKS);
 				this._attached_components.remove(idx);
 				return;
 			}
