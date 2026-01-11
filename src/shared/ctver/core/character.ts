@@ -50,6 +50,7 @@ export class Character {
 	): NewPort {
 		const new_port = new port(this, ...args);
 		this._connected_ports.push(new_port);
+		new_port.OnConstruct();
 		this.PortConnected.Fire(new_port);
 		return new_port;
 	}

@@ -8,7 +8,6 @@ if (plr) {
 	const char = plr.Character;
 	const tver_char = (char ? new Character(char) : undefined) as Character;
 	const sm = tver_char.GetPort("StatManager");
-	sm.AddStat(HealthStat);
 	sm.GetStat("Health")?.Set(10);
 	print(sm);
 }

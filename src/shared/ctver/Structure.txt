@@ -32,3 +32,5 @@ health - Component
 А ещё можно будет через Factory
 то есть
 Stat.Factory(sadasdas)
+
+think about Symbol later

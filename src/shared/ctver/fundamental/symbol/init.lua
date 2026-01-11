@@ -7,7 +7,9 @@
 	@class Symbol
 ]=]
 
-local Symbol = {}
+local Symbol = {
+	id = 0
+}
 
 export type Symbol = typeof(newproxy(true))
 
@@ -25,7 +27,8 @@ function Symbol.named(name: string): Symbol
 
 	local self = newproxy(true)
 
-	local wrappedName = string.format("Symbol(%s)", name)
+	local wrappedName = string.format("Symbol(%s)", name).."_"..tostring(Symbol.id)
+	Symbol.id += 1
 
 	getmetatable(self).__tostring = function()
 		return wrappedName

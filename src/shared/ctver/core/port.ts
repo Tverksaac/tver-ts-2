@@ -95,6 +95,7 @@ export abstract class Port<AttachableComponents extends Component[]> {
 	/**
 	 * @override
 	 */
+	public OnConstruct(): void {}
 	protected AttachCondition(cmp: Component): boolean {
 		return true;
 	}

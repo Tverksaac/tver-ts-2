@@ -1,6 +1,7 @@
 import { Janitor } from "@rbxts/janitor";
 import { Component } from "../../core/component";
 import { SeparatedStat } from "shared/ctver/fundamental/stat";
+import { CreateSymbol } from "shared/ctver/fundamental/symbol";
 
 type StatReturns = {};
 
@@ -18,8 +19,12 @@ export abstract class Stat extends Component {
 		this.Stat.Base.Set(value);
 	}
 
+	s1 = CreateSymbol("");
+	s2 = CreateSymbol("");
+	s3 = CreateSymbol("");
+
 	public OnConstruct(): void {
-		this.AddOnAttachCallback(1, () => {
+		this.AddOnAttachCallback(this.s1, () => {
 			this.Stat = new SeparatedStat(this.UniqueKey + "_Stat", this.Humanoid[this.PropertyToAffect]);
 
 			this._janitor.Add(
@@ -37,8 +42,13 @@ export abstract class Stat extends Component {
 
 			this.Humanoid[this.PropertyToAffect] = this.Stat.Total.Get();
 		});
-
-		this.AddOnDetachCallback(1, () => {
+		this.AddOnAttachCallback(this.s2, () => {
+			print("attached");
+		});
+		this.AddOnAttachCallback(this.s3, () => {
+			print("attached 2");
+		});
+		this.AddOnDetachCallback(this.s1, () => {
 			this._janitor.Destroy();
 			this.Destroy();
 		});

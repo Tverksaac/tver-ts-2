@@ -1,6 +1,7 @@
 import { Stat } from "../components/stat";
 import { Port } from "../../core/port";
 import { Component } from "shared/ctver/core/component";
+import { HealthStat } from "../prebuilt/health";
 
 export class StatsManager extends Port<[Stat]> {
 	AttachableComponentsKeys: string[] = ["Stat"];
@@ -11,5 +12,8 @@ export class StatsManager extends Port<[Stat]> {
 	}
 	public GetStat(UniqueKey: string): Stat | undefined {
 		return this.GetComponentByUniqueKey(UniqueKey);
+	}
+	public OnConstruct() {
+		this.AddStat(HealthStat);
 	}
 }

@@ -10,7 +10,7 @@ const LOG_KEY = "COMPONENT";
 const log = get_logger(LOG_KEY);
 const dlog = get_logger(LOG_KEY, true);
 
-type CallbackDict = { [key: possible_dict_keys]: () => void };
+type CallbackMap = Map<possible_dict_keys, () => void>;
 
 export abstract class Component {
 	public readonly Id: number = get_id();
@@ -24,29 +24,29 @@ export abstract class Component {
 	public readonly UpdateRate: UpdateRate = UpdateRate.Heartbeat;
 	protected UpdateEvery: number = 1;
 
-	private _on_attach_callbacks: CallbackDict = {};
-	private _on_detach_callbacks: CallbackDict = {};
-	private _on_update_callbacks: CallbackDict = {};
-	private _attach_conditions: { [key: possible_dict_keys]: (cmp: Component) => boolean } = {};
+	private _on_attach_callbacks: CallbackMap = new Map();
+	private _on_detach_callbacks: CallbackMap = new Map();
+	private _on_update_callbacks: CallbackMap = new Map();
+	private _attach_conditions: Map<possible_dict_keys, (cmp: Component) => boolean> = new Map();
 
 	constructor(ConnectToPort: Port<Component[]>) {
 		this.Port = ConnectToPort;
 		this.Host = this.Port.Host;
 	}
 
-	private _add_callback_to(dict: CallbackDict, key: possible_dict_keys, callback: () => void, override: boolean) {
-		if (dict[key] && !override) {
+	private _add_callback_to(map: CallbackMap, key: possible_dict_keys, callback: () => void, override: boolean) {
+		if (map.get(key) && !override) {
 			log.w(`There is already attach callback with key ${tostring(key)}!`);
 			return;
 		}
-		dict[key] = callback;
+		map.set(key, callback);
 	}
-	private _remove_callback_from(dict: CallbackDict, key: possible_dict_keys) {
-		if (!dict[key]) {
+	private _remove_callback_from(map: CallbackMap, key: possible_dict_keys) {
+		if (!map.get(key)) {
 			log.w(`Threres no callback in dictionary with key ${tostring(key)}`);
 			return;
 		}
-		delete dict[key];
+		map.delete(key);
 	}
 
 	public AddOnAttachCallback(key: possible_dict_keys, callback: () => void, override = false): void {
@@ -68,29 +68,29 @@ export abstract class Component {
 		this._remove_callback_from(this._on_update_callbacks, key);
 	}
 	public AddAttachCondition(key: possible_dict_keys, condition: (cmp: Component) => boolean, override = false): void {
-		if (this._attach_conditions[key] && !override) {
+		if (this._attach_conditions.get(key) && !override) {
 			log.w(`There is already attach callback with key ${tostring(key)}!`);
 			return;
 		}
-		this._attach_conditions[key] = condition;
+		this._attach_conditions.set(key, condition);
 	}
 	public RemoveAttachCondition(key: possible_dict_keys): void {
-		if (!this._attach_conditions[key]) {
+		if (!this._attach_conditions.get(key)) {
 			log.w(`Threres no callback in dictionary with key ${tostring(key)}`);
 			return;
 		}
-		delete this._attach_conditions[key];
+		this._attach_conditions.delete(key);
 	}
 
-	private _call_all_callbacks_in_dict(dict: { [key: string]: () => void }) {
-		for (const key in dict) dict[key]();
+	private _call_all_callbacks_in_map(map: CallbackMap) {
+		map.forEach((callback) => callback());
 	}
-	private _call_callback_in_by_key(dict: CallbackDict, key: possible_dict_keys) {
+	private _call_callback_in_by_key(map: CallbackMap, key: possible_dict_keys) {
 		if (key === SPECIAL_KEYS.CALL_ALL_CALLBACKS) {
-			this._call_all_callbacks_in_dict(dict);
+			this._call_all_callbacks_in_map(map);
 			return;
 		}
-		const callback = dict[key];
+		const callback = map.get(key);
 		callback ? callback() : log.w(`Theres no callback in dictionary with key ${tostring(key)}`);
 	}
 	public CallOnAttachCallbackWithKey(key: possible_dict_keys) {
@@ -103,20 +103,20 @@ export abstract class Component {
 		this._call_callback_in_by_key(this._on_update_callbacks, key);
 	}
 	public CanBeAttached(): boolean {
-		for (const key in this._attach_conditions) {
-			if (!this._attach_conditions[key](this)) {
+		this._attach_conditions.forEach((callback) => {
+			if (!callback(this)) {
 				return false;
 			}
-		}
+		});
 		return true;
 	}
 	public GetAmountOfAttachConditionsMet(): number {
 		let met = 0;
-		for (const key in this._attach_conditions) {
-			if (this._attach_conditions[key](this)) {
+		this._attach_conditions.forEach((callback) => {
+			if (callback(this)) {
 				met++;
 			}
-		}
+		});
 		return met;
 	}
 	public IsAtLeastXConditionsMet(HowMuchConditionsMet: number): boolean {
