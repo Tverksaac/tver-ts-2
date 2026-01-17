@@ -64,6 +64,7 @@ export abstract class Port<AttachableComponents extends Component[]> {
 				this.OnComponentDetaching.Fire(cmp);
 				cmp.CallOnDetachCallbackWithKey(SPECIAL_KEYS.CALL_ALL_CALLBACKS);
 				this._attached_components.remove(idx);
+				cmp.Destroy();
 				return;
 			}
 		});

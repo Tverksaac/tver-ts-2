@@ -11,7 +11,7 @@ const dlog = get_logger(LOG_KEY, true);
 
 export class StatsManager extends Port<[Stat]> {
 	AttachableComponentsKeys: string[] = ["Stat"];
-	Key: string = "StatsManager";
+	Key: string = "StatManager";
 
 	public AddStat<NewStat extends Stat>(ctor: new (port: Port<Component[]>) => NewStat): NewStat | undefined {
 		return this.AttachComponent(ctor);
@@ -24,6 +24,9 @@ export class StatsManager extends Port<[Stat]> {
 		return this.GetComponentByUniqueKey(UniqueKey);
 	}
 	public OnConstruct() {
-		this.AddStat(HealthStat);
+		this.AddStat(Stat.Factory("MaxHealth"));
+		this.AddStat(Stat.Factory("Health"));
+		this.AddStat(Stat.Factory("WalkSpeed"));
+		this.AddStat(Stat.Factory("JumpHeight"));
 	}
 }

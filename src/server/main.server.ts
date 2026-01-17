@@ -8,6 +8,6 @@ if (plr) {
 	const char = plr.Character;
 	const tver_char = (char ? new Character(char) : undefined) as Character;
 	const sm = tver_char.GetPort("StatManager");
-	sm.GetStat("Health")?.Set(10);
+	sm.GetStat("WalkSpeed")?.Set(10);
 	print(sm);
 }
