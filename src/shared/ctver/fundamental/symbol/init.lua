@@ -34,6 +34,8 @@ function Symbol.named(name: string): Symbol
 		return wrappedName
 	end
 
+	print(self)
+
 	return self
 end
 
