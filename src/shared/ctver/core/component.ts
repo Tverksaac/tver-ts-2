@@ -1,9 +1,12 @@
+import { RunService } from "@rbxts/services";
+import { Timer } from "../fundamental/timer";
 import { possible_dict_keys } from "../utility/_ts_only/types";
 import { UpdateRate } from "../utility/enums";
 import { SPECIAL_KEYS } from "../utility/shared";
 import { get_id, get_logger } from "../utility/util";
 import { Character } from "./character";
 import { Port } from "./port";
+import { Janitor } from "@rbxts/janitor";
 
 const LOG_KEY = "COMPONENT";
 
@@ -24,6 +27,7 @@ export abstract class Component {
 	public readonly UpdateRate: UpdateRate = UpdateRate.EveryXSeconds;
 	protected UpdateEvery: number = 1;
 
+	private _internal_janitor = new Janitor();
 	private _on_attach_callbacks: CallbackMap = new Map();
 	private _on_detach_callbacks: CallbackMap = new Map();
 	private _on_update_callbacks: CallbackMap = new Map();
@@ -32,6 +36,24 @@ export abstract class Component {
 	constructor(ConnectToPort: Port<Component[]>) {
 		this.Port = ConnectToPort;
 		this.Host = this.Port.Host;
+
+		if (UpdateRate.Heartbeat === this.UpdateRate) {
+			this._internal_janitor.Add(
+				RunService.Heartbeat.Connect(() => {
+					this._call_all_callbacks_in_map(this._on_update_callbacks);
+				}),
+			);
+		} else if (UpdateRate.EveryXSeconds === this.UpdateRate) {
+			const timer = new Timer();
+			timer.Looped = true;
+			timer.SetLength(this.UpdateEvery);
+
+			this._internal_janitor.Add(
+				timer.LoopEnded.Connect(() => {
+					this._call_all_callbacks_in_map(this._on_update_callbacks);
+				}),
+			);
+		}
 	}
 
 	private _add_callback_to(map: CallbackMap, key: possible_dict_keys, callback: () => void, override: boolean) {
@@ -141,5 +163,7 @@ export abstract class Component {
 
 	abstract GetState(): unknown;
 
-	public Destroy(): void {}
+	public Destroy(): void {
+		this._internal_janitor.Destroy();
+	}
 }

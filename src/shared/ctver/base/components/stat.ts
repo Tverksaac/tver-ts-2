@@ -14,8 +14,6 @@ export abstract class Stat extends Component {
 		return class extends Stat {
 			UniqueKey = PropertyToAffect;
 			PropertyToAffect: ExtractKeys<WritableInstanceProperties<Humanoid>, number> = PropertyToAffect;
-			public UpdateRate = UpdateRate.EveryXSeconds;
-			protected UpdateEvery: number = 1;
 		};
 	}
 
@@ -25,6 +23,8 @@ export abstract class Stat extends Component {
 
 	abstract PropertyToAffect: ExtractKeys<WritableInstanceProperties<Humanoid>, number>;
 	protected Stat!: SeparatedStat;
+
+	public UpdateRate: UpdateRate = UpdateRate.Heartbeat;
 
 	private Humanoid = this.Host.Humanoid;
 
@@ -53,6 +53,9 @@ export abstract class Stat extends Component {
 		});
 		this.AddOnDetachCallback(CreateSymbol(""), () => {
 			this._janitor.Destroy();
+		});
+		this.AddOnUpdateCallback(CreateSymbol(""), () => {
+			print(this.Humanoid[this.PropertyToAffect] + "_" + this.UniqueKey);
 		});
 	}
 
