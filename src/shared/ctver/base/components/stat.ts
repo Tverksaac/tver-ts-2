@@ -2,8 +2,6 @@ import { Janitor } from "@rbxts/janitor";
 import { Component } from "../../core/component";
 import { SeparatedStat } from "shared/ctver/fundamental/stat";
 import { CreateSymbol } from "shared/ctver/fundamental/symbol";
-import { Port } from "shared/ctver/core/port";
-import { StatsManager } from "../ports/stats_manager";
 import { UpdateRate } from "shared/ctver/utility/enums";
 
 type StatReturns = {};

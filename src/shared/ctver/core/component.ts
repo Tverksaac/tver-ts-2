@@ -21,7 +21,7 @@ export abstract class Component {
 	abstract readonly Key: string;
 	abstract readonly UniqueKey: string;
 
-	public readonly UpdateRate: UpdateRate = UpdateRate.Heartbeat;
+	public readonly UpdateRate: UpdateRate = UpdateRate.EveryXSeconds;
 	protected UpdateEvery: number = 1;
 
 	private _on_attach_callbacks: CallbackMap = new Map();
@@ -92,6 +92,13 @@ export abstract class Component {
 		}
 		const callback = map.get(key);
 		callback ? callback() : log.w(`Theres no callback in dictionary with key ${tostring(key)}`);
+	}
+	public ManualUpdate(): void {
+		if (this.UpdateRate !== UpdateRate.Manual) {
+			log.w("Cant update component manually when UpdateRate is not set to Manual!");
+			return;
+		}
+		this._call_all_callbacks_in_map(this._on_update_callbacks);
 	}
 	public CallOnAttachCallbackWithKey(key: possible_dict_keys) {
 		this._call_callback_in_by_key(this._on_attach_callbacks, key);
