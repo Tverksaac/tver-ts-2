@@ -102,6 +102,7 @@ export class Timer {
 	private Loop(): void {
 		this._run_connection?.Disconnect();
 		this._run_thread ? coroutine.close(this._run_thread) : undefined;
+		this._state.SetState("Ready");
 		this.LoopEnded.Fire();
 		this.Start();
 	}

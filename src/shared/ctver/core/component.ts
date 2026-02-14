@@ -48,6 +48,8 @@ export abstract class Component {
 			timer.Looped = true;
 			timer.SetLength(this.UpdateEvery);
 
+			timer.Start();
+
 			this._internal_janitor.Add(
 				timer.LoopEnded.Connect(() => {
 					this._call_all_callbacks_in_map(this._on_update_callbacks);

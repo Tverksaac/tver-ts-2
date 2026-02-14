@@ -4,7 +4,18 @@ import { SeparatedStat } from "shared/ctver/fundamental/stat";
 import { CreateSymbol } from "shared/ctver/fundamental/symbol";
 import { UpdateRate } from "shared/ctver/utility/enums";
 
-type StatReturns = {};
+type StatReturns = {
+	UniqueKey: string;
+	Value: {
+		Base: number;
+		Bonus: {
+			Modifer: number;
+			Raw: number;
+		};
+		Total: number;
+	};
+	Affects: string;
+};
 
 export abstract class Stat extends Component {
 	/**
@@ -14,14 +25,15 @@ export abstract class Stat extends Component {
 		return class extends Stat {
 			UniqueKey = PropertyToAffect;
 			PropertyToAffect: ExtractKeys<WritableInstanceProperties<Humanoid>, number> = PropertyToAffect;
+			public UpdateRate: UpdateRate = UpdateRate.EveryXSeconds;
 		};
 	}
 
-	Key: string = "Stat";
+	public Key: string = "Stat";
 
 	private _janitor = new Janitor();
 
-	abstract PropertyToAffect: ExtractKeys<WritableInstanceProperties<Humanoid>, number>;
+	abstract PropertyToAffect?: ExtractKeys<WritableInstanceProperties<Humanoid>, number>;
 	protected Stat!: SeparatedStat;
 
 	public UpdateRate: UpdateRate = UpdateRate.Heartbeat;
@@ -34,18 +46,19 @@ export abstract class Stat extends Component {
 
 	public OnConstruct(): void {
 		this.AddOnAttachCallback(CreateSymbol(""), () => {
+			if (!this.PropertyToAffect) return;
 			this.Stat = new SeparatedStat(this.UniqueKey + "_Stat", this.Humanoid[this.PropertyToAffect]);
 
 			this._janitor.Add(
 				this.Humanoid.GetPropertyChangedSignal(this.PropertyToAffect).Connect(() => {
-					if (this.Humanoid[this.PropertyToAffect] === this.Stat.Total.Get()) return;
-					this.Humanoid[this.PropertyToAffect] = this.Stat.Total.Get();
+					if (this.Humanoid[this.PropertyToAffect!] === this.Stat.Total.Get()) return;
+					this.Humanoid[this.PropertyToAffect!] = this.Stat.Total.Get();
 				}),
 			);
 			this._janitor.Add(
 				this.Stat.Total.changed.Connect((new_val) => {
-					if (this.Humanoid[this.PropertyToAffect] === new_val) return;
-					this.Humanoid[this.PropertyToAffect] = new_val;
+					if (this.Humanoid[this.PropertyToAffect!] === new_val) return;
+					this.Humanoid[this.PropertyToAffect!] = new_val;
 				}),
 			);
 
@@ -54,12 +67,21 @@ export abstract class Stat extends Component {
 		this.AddOnDetachCallback(CreateSymbol(""), () => {
 			this._janitor.Destroy();
 		});
-		this.AddOnUpdateCallback(CreateSymbol(""), () => {
-			print(this.Humanoid[this.PropertyToAffect] + "_" + this.UniqueKey);
-		});
 	}
 
 	public GetState(): StatReturns {
-		return {};
+		const to_return: StatReturns = {
+			UniqueKey: this.UniqueKey,
+			Affects: this.PropertyToAffect || this.Stat.name,
+			Value: {
+				Base: this.Stat.Base.Get(),
+				Bonus: {
+					Modifer: this.Stat.Bonus.Modifier.Get(),
+					Raw: this.Stat.Bonus.Modifier.Get(),
+				},
+				Total: this.Stat.Total.Get(),
+			},
+		};
+		return to_return;
 	}
 }

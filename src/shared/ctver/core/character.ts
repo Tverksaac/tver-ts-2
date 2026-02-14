@@ -51,6 +51,9 @@ export class Character {
 		const new_port = new port(this, ...args);
 		this._connected_ports.push(new_port);
 		new_port.OnConstruct();
+		new_port.OnConstruct = () => {
+			warn(`Can not manually call OnConstruct method of port ${new_port.Key}!`);
+		};
 		this.PortConnected.Fire(new_port);
 		return new_port;
 	}
