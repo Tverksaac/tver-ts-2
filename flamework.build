@@ -60,7 +60,8 @@
 		"tver-ts-2:out/shared/ctver/core/component@ReplicableComponent": "shared/ctver/core/component@ReplicableComponent",
 		"tver-ts-2:out/shared/ctver/core/timer@Timer": "shared/ctver/core/timer@Timer",
 		"tver-ts-2:out/shared/ctver/fundamental/timer@Timer": "shared/ctver/fundamental/timer@Timer",
-		"tver-ts-2:out/shared/ctver/fundamental/state_machine@StateMachine": "shared/ctver/fundamental/state_machine@StateMachine"
+		"tver-ts-2:out/shared/ctver/fundamental/state_machine@StateMachine": "shared/ctver/fundamental/state_machine@StateMachine",
+		"tver-ts-2:out/shared/ctver/base/prebuilt/Strength@StrengthStat": "shared/ctver/base/prebuilt/Strength@StrengthStat"
 	},
 	"metadata": {}
 }

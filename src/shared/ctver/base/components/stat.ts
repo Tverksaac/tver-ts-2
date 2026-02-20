@@ -34,7 +34,8 @@ export abstract class Stat extends Component {
 	private _janitor = new Janitor();
 
 	abstract PropertyToAffect?: ExtractKeys<WritableInstanceProperties<Humanoid>, number>;
-	protected Stat!: SeparatedStat;
+	protected InitialValue?: number;
+	public Stat!: SeparatedStat;
 
 	public UpdateRate: UpdateRate = UpdateRate.Heartbeat;
 
@@ -46,9 +47,15 @@ export abstract class Stat extends Component {
 
 	public OnConstruct(): void {
 		this.AddOnAttachCallback(CreateSymbol(""), () => {
+			this.Stat = new SeparatedStat(
+				this.UniqueKey + "_Stat",
+				this.InitialValue
+					? this.InitialValue
+					: this.PropertyToAffect
+						? this.Humanoid[this.PropertyToAffect]
+						: 0,
+			);
 			if (!this.PropertyToAffect) return;
-			this.Stat = new SeparatedStat(this.UniqueKey + "_Stat", this.Humanoid[this.PropertyToAffect]);
-
 			this._janitor.Add(
 				this.Humanoid.GetPropertyChangedSignal(this.PropertyToAffect).Connect(() => {
 					if (this.Humanoid[this.PropertyToAffect!] === this.Stat.Total.Get()) return;
