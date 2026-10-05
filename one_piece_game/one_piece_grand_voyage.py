@@ -4183,8 +4183,8 @@ FACTIONS = {
 PIRATE_TITLES = [(0, "Безымянный пират"), (10_000_000, "Пират-новичок"), (50_000_000, "Известный пират"), (100_000_000, "Сверхновая"),
                  (300_000_000, "Худшее Поколение"), (500_000_000, "Великий пират"), (1_000_000_000, "Командир Императора"),
                  (3_000_000_000, "Император Моря"), (5_500_000_000, "Сильнейший пират мира")]
-MARINE_RANKS = [(0, "Рядовой"), (150, "Матрос"), (500, "Старшина"), (1200, "Лейтенант"), (2600, "Капитан"), (5000, "Коммодор"),
-                (9000, "Контр-адмирал"), (16000, "Вице-адмирал"), (30000, "Адмирал"), (55000, "Адмирал Флота")]
+MARINE_RANKS = [(0, "Рядовой"), (150, "Матрос"), (600, "Старшина"), (1600, "Лейтенант"), (3500, "Капитан"), (7000, "Коммодор"),
+                (12000, "Контр-адмирал"), (22000, "Вице-адмирал"), (42000, "Адмирал"), (70000, "Адмирал Флота")]
 REVO_RANKS = [(0, "Новобранец"), (200, "Боец Свободы"), (800, "Агент"), (2500, "Командир Отряда"), (8000, "Командующий Армией"), (25000, "Начальник Штаба"), (50000, "Правая рука Драгона")]
 HUNTER_RANKS = [(0, "Охотник-новичок"), (200, "Охотник"), (900, "Опытный охотник"), (3000, "Мастер охоты"), (9000, "Партнёр Кросс Гильдии"), (25000, "Легенда Кросс Гильдии")]
 
@@ -13865,7 +13865,7 @@ class Game:
         try:
             data = self.pd.to_json()
             data['_ver'] = 1
-            tmp = os.path.join(SAVE_DIR, 'save.json.tmp')
+            tmp = os.path.join(SAVE_DIR, f'save.json.{os.getpid()}.tmp')
             with open(tmp, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False)
             os.replace(tmp, os.path.join(SAVE_DIR, 'save.json'))
@@ -14281,6 +14281,20 @@ class Game:
         pygame.quit()
 
     def step(self, dt):
+        try:
+            self._step(dt)
+        except Exception:
+            traceback.print_exc()
+            self.err_count = getattr(self, 'err_count', 0) + 1
+            try:
+                with open(os.path.join(SAVE_DIR, 'error.log'), 'a', encoding='utf-8') as f:
+                    f.write(traceback.format_exc() + "\n")
+            except Exception:
+                pass
+            if self.overlays:
+                self.overlays.pop()
+
+    def _step(self, dt):
         if self.pd is not None and isinstance(self.scene, (IslandScene, SeaScene)):
             self.pd.playtime += dt
         if self.overlays:
